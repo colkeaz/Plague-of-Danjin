@@ -12,7 +12,7 @@ public class Enemy extends GameCharacter {
         
         // Simple AI: The enemy just attacks randomly
         Random rand = new Random();
-        int damageVar = rand.nextInt(5); // Random variation of 0-4
+        int damageVar = rand.nextInt(6); // Random variation of 0-4
         int totalDamage = this.getAttackPower() + damageVar;
         
         System.out.println(this.getName() + " attacks you savagely!");
