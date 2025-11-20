@@ -82,7 +82,12 @@ public class GameMain {
         
         // Game End Message
         if (hero.isAlive()) {
-            System.out.println("\nCONGRATULATIONS! You cleared the dungeon!");
+            System.out.println("\nCONGRATULATIONS! You have defeated the boss and eradicated the Plague!");
+            System.out.println("You are a true hero, " + hero.getName() + "!");
+            System.out.println("Thank you for playing!");
+            System.out.println("See you next time, Hero!");
+            System.out.println("=========================================");
+            System.out.println("Developed by: \n- Paala, Luke Andre \n- Caraig, Hans Gadiel \n- Fajiculay, Cedric");
         } else {
             System.out.println("\nGAME OVER.");
         }
