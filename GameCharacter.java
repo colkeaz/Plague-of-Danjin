@@ -36,4 +36,13 @@ public abstract class GameCharacter {
     
     public int getAttackPower() { 
         return attackPower; }
+
+    public void heal(int amount) {
+        this.hp += amount;
+        if (this.hp > this.maxHp) {
+            this.hp = this.maxHp;
+        }
+        System.out.println(this.name + " healed for " + amount + " HP!");
+        System.out.println("Current HP: " + this.hp + "/" + this.maxHp);
+    }
 }

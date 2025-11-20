@@ -20,8 +20,7 @@ public class Player extends GameCharacter {
         int choice = sc.nextInt();
 
         if (choice == 1) {
-            // Normal attack logic
-            // TODO: You can add a "Critical Hit" chance calculation here later
+            // attack logic
             int damageDealt = this.getAttackPower();
             Random rand = new Random(); 
             if (rand.nextInt(100) < 10) { // 10% chance for critical hit
@@ -32,10 +31,16 @@ public class Player extends GameCharacter {
             target.takeDamage(damageDealt);
         } else if (choice == 2) {
             // Heal logic
-            // TODO: Implement logic to increase this.hp (using a setter or new method)
+            Random rand = new Random();
+            int bonusHeal = rand.nextInt(11); // Random bonus between 0-10
+            int totalheal = 15 + bonusHeal;
             System.out.println("You drank a potion! (Logic to be added)");
+            this.heal(totalheal); // Heal between 10-20 HP
+
+
         } else {
             System.out.println("You missed your turn by panicking!");
         }
     }
+    
 }
