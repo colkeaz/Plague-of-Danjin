@@ -34,5 +34,6 @@ public abstract class GameCharacter {
         return this.hp > 0;
     }
     
-    public int getAttackPower() { return attackPower; }
+    public int getAttackPower() { 
+        return attackPower; }
 }

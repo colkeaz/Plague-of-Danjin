@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.Random;
 
 public class Player extends GameCharacter {
 
@@ -22,6 +23,11 @@ public class Player extends GameCharacter {
             // Normal attack logic
             // TODO: You can add a "Critical Hit" chance calculation here later
             int damageDealt = this.getAttackPower();
+            Random rand = new Random(); 
+            if (rand.nextInt(100) < 10) { // 10% chance for critical hit
+                damageDealt *= 2;
+                System.out.println("Critical Hit!");
+            }
             System.out.println("You struck the enemy!");
             target.takeDamage(damageDealt);
         } else if (choice == 2) {
