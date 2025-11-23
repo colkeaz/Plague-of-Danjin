@@ -55,12 +55,12 @@ Other Input
 
 File Structure
 
- ├── Enemy.java           // Enemy AI logic
- |
+ ├── Enemy.java           // Enemy AI logi
+ 
  ├── GameCharacter.java   // Abstract parent class
- |
+ 
  ├── GameMain.java        // Main game loop
- |
+ 
  ├── Player.java          // Player behavior + UI input
  
 
