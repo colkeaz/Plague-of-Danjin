@@ -77,15 +77,13 @@ How the Waves Work
 * After every victory, you automatically heal +5 HP.
 
 
+OOP Concepts Used:
 
-OOP Concepts Used
+Encapsulation - Attributes like HP, attackPower are private and accessed through methods.
+Inheritance - Player and Enemy inherit from GameCharacter.
+Abstraction - The abstract attack() method forces subclasses to implement their own style of attacking.
+Polymorphism - Player overrides attack() differently than Enemy.
 
-Concept             How It Is Used                                                                              
-  
-Encapsulation       Attributes like HP, attackPower are private and accessed through methods.                   
-Inheritance         Player and Enemy inherit from GameCharacter.                                                
-Abstraction         The abstract `attack()` method forces subclasses to implement their own style of attacking. 
-Polymorphism        Player overrides `attack()` differently than Enemy.      
 
 How to run this project:
 1. Make sure you have Visual Studio Code or any Java compiler.
