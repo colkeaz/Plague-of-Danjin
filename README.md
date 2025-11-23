@@ -79,10 +79,10 @@ How the Waves Work
 
 OOP Concepts Used:
 
-Encapsulation - Attributes like HP, attackPower are private and accessed through methods.
-Inheritance - Player and Enemy inherit from GameCharacter.
-Abstraction - The abstract attack() method forces subclasses to implement their own style of attacking.
-Polymorphism - Player overrides attack() differently than Enemy.
+* Encapsulation - Attributes like HP, attackPower are private and accessed through methods.
+* Inheritance - Player and Enemy inherit from GameCharacter.
+* Abstraction - The abstract attack() method forces subclasses to implement their own style of attacking.
+* Polymorphism - Player overrides attack() differently than Enemy.
 
 
 How to run this project:
