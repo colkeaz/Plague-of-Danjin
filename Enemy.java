@@ -2,12 +2,13 @@ import java.util.Random;
 
 public class Enemy extends GameCharacter {
 
-    public Enemy(String name, int hp, int attackPower) {
-        super(name, hp, attackPower);
+    public Enemy(String name, int hp, int attackPower, int defense) {
+        super(name, hp, attackPower, defense);
     }
 
     @Override
     public void attack(GameCharacter target) {
+        System.out.println();
         System.out.println("--- Enemy Turn ---");
         
         // Simple AI: The enemy just attacks randomly
