@@ -1,7 +1,7 @@
-<h1 align = "center">𐔌 .⋮ Plague of Danjin  .ᐟ  ֹ   ₊ ꒱</h1>
+<h1 align = "center"> .⋮ Plague of Danjin ⋮. </h1>
 <h3 align = "center">A turn-based Java Console RPG Adventure.</h3>
 <p align = "center">
-<b>CS 2106 </b> <br/>
+<b>CS 2105 </b> <br/>
 Paala, Luke Andre <br/>
 Caraig, Hans Gadiel <br/>
 Fajiculay, John Cedric
@@ -26,6 +26,11 @@ The game showcases the practical application of Object-Oriented Programming (OOP
 
 ## ‧₊˚ ┊ Project Structure
 
+📂 src/
+├── ☕ GameMain.java
+├── ☕ GameCharacter.java
+├── ☕ Player.java
+└── ☕ Enemy.java
 
 - `GameMain.java` – Controls the game loop, waves, battles, and overall flow.
 - `GameCharacter.java` – Abstract parent class defining shared attributes and methods.
@@ -33,12 +38,8 @@ The game showcases the practical application of Object-Oriented Programming (OOP
 - `Enemy.java` – Controls enemy AI and randomized attacks.
 
 ### How to Run the Program
-Open your terminal in the project folder and run:
-
-
-Then execute:
-
-
+Open your terminal in the src folder and run:
+GameMain.java
 
 ---
 
@@ -57,29 +58,53 @@ Then execute:
 
 ## ‧₊˚ ┊ Object-oriented Principles
 
-### 💊 Encapsulation  
+### Encapsulation  
 All attributes such as HP, Attack Power, and Defense are private inside the `GameCharacter` class. Access and modification are controlled using public methods like `takeDamage()`, `heal()`, and getters. This protects the integrity of character data.
 
-### 💡 Abstraction  
+### Abstraction  
 The `GameCharacter` class defines the abstract method `attack()`, forcing subclasses to implement their own attack behavior. This hides implementation details while defining a common interface.
 
-### 🧬 Inheritance  
+### Inheritance  
 Both `Player` and `Enemy` inherit from `GameCharacter`, allowing them to reuse shared properties and behaviors such as HP, damage handling, and healing.
 
-### 🎭 Polymorphism  
+### Polymorphism  
 The `attack()` method is overridden by both `Player` and `Enemy`, allowing different attack behaviors to be executed at runtime depending on the object type.
 
 ---
 
 ## ‧₊˚ ┊ Example Output
 
+Welcome to the Plague of Danjin!
+Enter your Hero's Name: Cedric
+
+=========================
+STARTING WAVE 1
+
+A wild Goblin Grunt appears!
+
+--- Your Turn ---
+
+Attack
+
+Heal
+Choose an action: 1
+
+You struck the enemy!
+Goblin Grunt blocked 2 damage and took 13 damage!
+Current HP: 38/40
 
 
 ---
 
 ##  ‧₊˚ ┊ Victory Screen (Snippet)
 
+################################################################################
 
+______ _ __
+| ___ | | / _|
+| |/ /| | __ _ __ _ _ _ ___ ___ | |
+
+################################################################################
 
 ---
 
@@ -108,14 +133,5 @@ The `attack()` method is overridden by both `Player` and `Enemy`, allowing diffe
 </tr>
 </table>
 
----
 
-##  ‧₊˚ ┊ Acknowledgment
-We sincerely thank our instructor for guidance throughout the development of this project. We also appreciate our classmates for their feedback and encouragement during testing and refinement.
 
----
-
-<small>
-<b>DISCLAIMER</b><br/>
-This project is created strictly for educational and academic purposes. It is intended to demonstrate Java programming and object-oriented design concepts.
-</small>
