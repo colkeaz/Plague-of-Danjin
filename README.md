@@ -29,10 +29,15 @@ The game applies **Object-Oriented Programming (OOP)** principles such as encaps
 ## ‧₊˚ ┊ Project Structure
 
 📂 src/
+
 ├── ☕ GameMain.java
+
 ├── ☕ GameCharacter.java
+
 ├── ☕ Player.java
+
 ├── ☕ Enemy.java
+
 └── ☕ Enemy_Lich.java
 
 
