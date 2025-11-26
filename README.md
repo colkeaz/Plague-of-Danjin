@@ -27,19 +27,15 @@ The game applies **Object-Oriented Programming (OOP)** principles such as encaps
 ---
 
 ## ‧₊˚ ┊ Project Structure
-
+```
 📂 src/
-
 ├── ☕ GameMain.java
-
 ├── ☕ GameCharacter.java
-
 ├── ☕ Player.java
-
 ├── ☕ Enemy.java
-
 └── ☕ Enemy_Lich.java
 
+```
 
 - `GameMain.java` – Game loop, enemy phases, waves, chest system, and victory screen.  
 - `GameCharacter.java` – Abstract parent class controlling stats, damage, healing, and mana.  
@@ -47,9 +43,10 @@ The game applies **Object-Oriented Programming (OOP)** principles such as encaps
 - `Enemy.java` – Standard enemy AI with random damage.  
 - `Enemy_Lich.java` – Advanced boss enemy with minion summoning and passive attacks.  
 
----
 
 ## ‧₊˚ ┊ How to Run the Program
+
+```
 Open your terminal in the project src folder and run:
 
 javac *.java
@@ -58,7 +55,7 @@ Run the game using:
 
 java GameMain
 
----
+```
 
 ## ‧₊˚ ┊ Features
 1. **Turn-Based Combat System**
@@ -77,50 +74,55 @@ java GameMain
 9. **Auto Heal +5 After Every Kill**
 10. **Animated Text & Victory Screen**
 
----
-
 ## ‧₊˚ ┊ Object-oriented Principles
 
-💊 Encapsulation
-All attributes such as `HP`, `attackPower`, `defense`, and `mana` are private in `GameCharacter`. Controlled access is done using getters and methods like `takeDamage()`, `heal()`, and `spendMana()`.
+- `💊 Encapsulation` - All attributes such as `HP`, `attackPower`, `defense`, and `mana` are private in `GameCharacter`.
+  
+   Controlled access is done using getters and methods like `takeDamage()`, `heal()`, and `spendMana()`.
 
-💡 Abstraction
-The `GameCharacter` class defines the abstract method:
+- `💡 Abstraction` - The `GameCharacter` class defines the abstract method: public abstract void attack(GameCharacter target);
+  
+  This forces all child classes to define their own attack styles.
 
-public abstract void attack(GameCharacter target);
+- `🧬 Inheritance` - Player, Enemy, and Enemy_Lich all inherit from GameCharacter.
+  
+  Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.
 
-This forces all child classes to define their own attack styles.
-
-🧬 Inheritance
-Player, Enemy, and Enemy_Lich all inherit from GameCharacter.
- Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.
-
-🎭 Polymorphism
-The attack() method behaves differently based on the object:
-Player → user choices & skills
-
-
-Enemy → random attacks
-
-
-Enemy_Lich → summoning minions + passive damage
-
-
-Dynamic method dispatch is used at runtime.
+- `🎭 Polymorphism` -  The attack() method behaves differently based on the object:
+  
+  Player → user choices & skills
+  
+  Enemy → random attacks
+  
+  Enemy_Lich → summoning minions + passive damage
+  
+  Dynamic method dispatch is used at runtime.
 
 ‧₊˚ ┊ Enemy Phases
-Phase 1 – Goblins (Waves 1–9)
-Basic enemies with scaling HP and attack.
-Boss 1 – Goblin King (Wave 10)
-High HP, strong attack, increased defense.
-Phase 2 – Skeleton Warriors (Waves 11–19)
-Naturally armored enemies with higher stats.
-Final Boss – Necromancer Lich (Wave 20)
+
+- `Phase 1` – Goblins (Waves 1–9)
+  
+  Basic enemies with scaling HP and attack.
+  
+- `Boss 1` – Goblin King (Wave 10)
+  
+  High HP, strong attack, increased defense.
+  
+- `Phase 2` – Skeleton Warriors (Waves 11–19)
+
+  Naturally armored enemies with higher stats.
+  
+- `Final Boss` – Necromancer Lich (Wave 20)
+  
 ☠️ Summons skeleton minions every 3 turns
+
 ☠️ Minions deal passive damage every turn
+
 ☠️ Extremely high HP and strong defense
 
 ‧₊˚ ┊ Example Output
+
+```
 
 --- Your Turn (HP: 84 | MP: 55) ---
 1. Basic Attack
@@ -146,6 +148,8 @@ Current HP: 12/140
 #   | ___ \| |                                     / _|                        #
 #                                                                              #
 ################################################################################
+
+```
 
 ## ‧₊˚ ┊ Contributors
 <table>
