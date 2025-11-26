@@ -27,9 +27,13 @@ The game showcases the practical application of Object-Oriented Programming (OOP
 ## ‧₊˚ ┊ Project Structure
 
 📂 src/
+
 ├── ☕ GameMain.java
+
 ├── ☕ GameCharacter.java
+
 ├── ☕ Player.java
+
 └── ☕ Enemy.java
 
 - `GameMain.java` – Controls the game loop, waves, battles, and overall flow.
