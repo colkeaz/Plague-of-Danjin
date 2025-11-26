@@ -1,98 +1,135 @@
-Plague of Danjin – Java Console RPG
+<h1 align = "center">𐔌 .⋮ Plague of Danjin  .ᐟ  ֹ   ₊ ꒱ </h1>
+<h3 align = "center">A turn-based Java Console RPG Adventure.</h3>
+<p align = "center">
+<b>CS 2105 </b> <br/>
+Paala, Luke Andre <br/>
+Caraig, Hans Gadiel <br/>
+Fajiculay, John Cedric
+</p>
 
-A simple turn-based RPG project written in Java, showcasing Object-Oriented Programming concepts such as encapsulation, inheritance, abstraction, and polymorphism.
+## ‧₊˚ ┊ Overview
+Plague of Danjin is a console-based role-playing game developed in Java where the player controls a hero who must survive ten waves of enemies to end the plague threatening the kingdom.
+<br/><br/>
+The game showcases the practical application of Object-Oriented Programming (OOP) principles such as encapsulation, inheritance, abstraction, and polymorphism, combined with turn-based combat mechanics, random encounters, and progression-based difficulty.
+<br/>
+### Players can:
+⚔️ Fight goblin enemies in turn-based combat  
+🩹 Heal using potions  
+🎯 Deal critical hits  
+📈 Improve stats through loot chests  
+👑 Defeat the Goblin King boss  
 
-This game runs in the console and features:
+### Game Data Handling
+💾 Player stats persist across waves and are updated dynamically during gameplay.
 
-* A Hero character controlled by the player
-* Randomly generated enemies
-* A boss battle at Wave 10
-* Turn-based combat system (Attack / Heal)
-* Progressive waves with healing after each victory
+---
+
+## ‧₊˚ ┊ Project Structure
+
+📂 src/
+
+├── ☕ GameMain.java
+
+├── ☕ GameCharacter.java
+
+├── ☕ Player.java
+
+└── ☕ Enemy.java
+
+- `GameMain.java` – Controls the game loop, waves, battles, and overall flow.
+- `GameCharacter.java` – Abstract parent class defining shared attributes and methods.
+- `Player.java` – Handles user input, attacks, healing, and critical hits.
+- `Enemy.java` – Controls enemy AI and randomized attacks.
+
+### How to Run the Program
+Open your terminal in the src folder and run:
+GameMain.java
+
+---
+
+## ‧₊˚ ┊ Features
+1. **Turn-Based Combat** – Player and enemies take turns attacking.
+2. **Critical Hit System** – 10% chance to deal double damage.
+3. **Healing System** – Randomized healing with potions.
+4. **Progressive Waves** – Enemy stats scale every wave.
+5. **Boss Battle** – Final fight against the Goblin King at Wave 10.
+6. **Chest & Loot System** – Random upgrades and traps after waves.
+7. **Defense System** – Damage reduction based on defense stat.
+8. **Auto-Heal Per Kill** – Player heals +5 HP after every enemy defeat.
+9. **Animated Text & Victory Screen** – Typewriter effect and ASCII art ending.
+
+---
+
+## ‧₊˚ ┊ Object-oriented Principles
+
+### Encapsulation  
+All attributes such as HP, Attack Power, and Defense are private inside the `GameCharacter` class. Access and modification are controlled using public methods like `takeDamage()`, `heal()`, and getters. This protects the integrity of character data.
+
+### Abstraction  
+The `GameCharacter` class defines the abstract method `attack()`, forcing subclasses to implement their own attack behavior. This hides implementation details while defining a common interface.
+
+### Inheritance  
+Both `Player` and `Enemy` inherit from `GameCharacter`, allowing them to reuse shared properties and behaviors such as HP, damage handling, and healing.
+
+### Polymorphism  
+The `attack()` method is overridden by both `Player` and `Enemy`, allowing different attack behaviors to be executed at runtime depending on the object type.
+
+---
+
+## ‧₊˚ ┊ Example Output
+
+Welcome to the Plague of Danjin!
+Enter your Hero's Name: Cedric
+
+=========================
+STARTING WAVE 1
+
+A wild Goblin Grunt appears!
+
+--- Your Turn ---
+
+Attack
+
+Heal
+Choose an action: 1
+
+You struck the enemy!
+Goblin Grunt blocked 2 damage and took 13 damage!
+Current HP: 38/40
 
 
-Features
+---
 
-1. Object-Oriented Design
+##  ‧₊˚ ┊ Victory Screen (Snippet)
 
-* GameCharacter (Abstract Class)
-  Defines the general blueprint for all characters (HP, attack, healing).
+################################################################################
 
-* Player (Subclass)
-  Handles user actions, attack choice, healing, and critical hits.
+______ _ __
+| ___ | | / _|
+| |/ /| | __ _ __ _ _ _ ___ ___ | |
 
-* Enemy (Subclass)
-  Contains simple AI that performs random-variation attacks.
+################################################################################
 
+---
 
-Gameplay
+##  ‧₊˚ ┊ Contributors
 
-* Enter your hero’s name.
-* Survive 10 waves of enemies.
-* Each normal wave has 1–2 Goblin Grunts.
-* The final wave pits you against the Goblin King (Boss).
-* After defeating an enemy, the player automatically heals for +5 HP.
-* If the player’s HP reaches 0 → GAME OVER.
-
-
-Player Actions
-
-During your turn, choose:
-
-1 — Attack
-
-* Deals your base attack power (15).
-* 10% chance to land a Critical Hit, doubling damage.
-
-2 — Heal
-
-Drinks a potion to restore 15–25 HP (random).
-
-Other Input
-
-* If invalid, the player panics and skips the turn.
-
-
-File Structure
-
- ├── Enemy.java             // Enemy AI logic
- 
- ├── GameCharacter.java     // Abstract parent class
- 
- ├── GameMain.java          // Main game loop
- 
- ├── Player.java            // Player behavior + UI input
- 
-
-
-How the Waves Work
-
-* The game loops from wave 1 to wave 10.
-* Each wave generates either:
-
-  * 1–2 random enemies, OR
-  * 1 boss on wave 10.
+<table>
+<tr>
+    <th> Name </th>
+</tr>
+<tr>
+    <td><strong>Paala, Luke Andre</strong></td>
+</tr>
+<tr>
+    <td><strong>Caraig, Hans Gadiel</strong></td>
     
-* Player HP persists between waves, so resource management matters.
-* After every victory, you automatically heal +5 HP.
+</tr>
+<tr>
+    <td><strong>Fajiculay, John Cedric</strong></td>
+    
+</tr>
+</table>
 
 
-OOP Concepts Used:
-
-* Encapsulation - Attributes like HP, attackPower are private and accessed through methods.
-* Inheritance - Player and Enemy inherit from GameCharacter.
-* Abstraction - The abstract attack() method forces subclasses to implement their own style of attacking.
-* Polymorphism - Player overrides attack() differently than Enemy.
-
-
-How to run this project:
-1. Make sure you have Visual Studio Code or any Java compiler.
-2. Run the main file:
-   GameMain.java
-
-Developers
-
-* Paala, Luke Andre
-* Caraig, Hans Gadiel
-* Fajiculay, John Cedric
 
