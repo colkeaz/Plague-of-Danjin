@@ -116,7 +116,6 @@ ______ _ __
 
 <table>
 <tr>
-    <th> &nbsp; </th>
     <th> Name </th>
 </tr>
 <tr>
