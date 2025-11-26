@@ -5,6 +5,8 @@ public abstract class GameCharacter {
     private int maxHp;
     private int attackPower;
     private int defense;
+    private int mana;
+    private int maxMana;
 
     public GameCharacter(String name, int maxHp, int attackPower, int defense) {
         this.name = name;
@@ -12,6 +14,9 @@ public abstract class GameCharacter {
         this.hp = maxHp; // Start at full health
         this.attackPower = attackPower;
         this.defense = defense;
+
+        this.maxMana = 100; // Default max mana
+        this.mana = 75;      // Start with some mana
     }
 
     // ABSTRACTION: This method is abstract. We know characters attack,
@@ -76,5 +81,21 @@ public abstract class GameCharacter {
         // Cap defense at 75 so they don't become invincible
         if (this.defense > 75) this.defense = 75; 
         System.out.println(this.name + "'s Defense hardened by " + amount + "!");
+    }
+
+    public int getMana() { return mana; }
+
+    public boolean spendMana(int cost) {
+        if (this.mana >= cost) {
+            this.mana -= cost;
+            return true; // Success!
+        }
+        System.out.println(">> Not enough Mana! (Need " + cost + ", Have " + this.mana + ")");
+        return false; // Failed
+    }
+
+    public void regenMana(int amount) {
+        this.mana += amount;
+        if (this.mana > maxMana) this.mana = maxMana;
     }
 }
