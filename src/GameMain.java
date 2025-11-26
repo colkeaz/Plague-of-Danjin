@@ -21,8 +21,23 @@ public class GameMain {
         typeText("Prepare yourself for battle!", 120);
 
         typeText("Let's Begin your adventure!", 75);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // --- WAVE LOOP (Runs 1 to 10) ---
-        for (int wave = 1; wave <= 10; wave++) {
+        for (int wave = 1; wave <= 20; wave++) {
 
              // Check if Player is dead before starting a wave
             if (!hero.isAlive()) break;
@@ -36,11 +51,14 @@ public class GameMain {
 
             // 2. Determine enemies for this wave
             int numEnemies;
-            if (wave == 10) {
-                numEnemies = 1; // Only 1 Boss
+          if (wave == 10 || wave == 20) {
+                numEnemies = 1; // Boss Waves
+            } else if (wave >= 15) {
+                numEnemies = rand.nextInt(2) + 2; // 2 or 3 Enemies (Hardest)
+            } else if (wave >= 5) {
+                numEnemies = rand.nextInt(2) + 1; // 1 or 2 Enemies
             } else {
-                // Randomly 1 or 2 enemies for normal waves
-                numEnemies = rand.nextInt(2) + 1; 
+                numEnemies = 1; // Easy start
             }
 
             // --- ENEMY LOOP (Sequential fights in one wave) ---
@@ -52,28 +70,38 @@ public class GameMain {
                 // 3. Spawn the correct enemy
                 Enemy currentEnemy;
                 
-                if (wave == 10) {
-                    System.out.println("⚠ THE BOSS APPROACHES! ⚠");
-                    // Boss has High HP (150), High Attack (20), and Moderate Defense (20)
-                    currentEnemy = new Enemy("Goblin King", 150, 20, 20); 
-                } else {
-                    //NORMAL ENEMIES (Waves 1-9)
-                    // Scale enemy stats based on wave number
-                    // HP increases by 10 per wave (Wave 1 = 50hp, Wave 9 = 130hp)
-                    int scaledHp = 40 + (wave * 10);
+               if (wave < 10) {
+                    // PHASE 1: GOBLINS (Waves 1-9)
+                    int hp = 40 + (wave * 10);
+                    int atk = 8 + (wave * 2);
+                    currentEnemy = new Enemy("Goblin Grunt", hp, atk, 0);
+
+                } else if (wave == 10) {
+                    // BOSS 1: GOBLIN KING
+                    System.out.println("⚠ THE GOBLIN KING BLOCKS THE PATH! ⚠");
+                    currentEnemy = new Enemy("Goblin King", 150, 20, 15);
+
+                } else if (wave < 20) {
+                    // PHASE 2: SKELETONS (Waves 11-19)
+                    // Skeletons are harder! They have Defense naturally.
+                    int scale = wave - 10; // Reset scaling for Phase 2
+                    int hp = 80 + (scale * 12);
+                    int atk = 15 + (scale * 3);
+                    int def = 5 + (scale * 1); // They have armor
                     
-                    // Attack increases by 2 per wave (Wave 1 = 10atk, Wave 9 = 26atk)
-                    int scaledAtk = 8 + (wave * 2);
-    
-                    // Defense increases slightly every 3 waves
-                    int scaledDef = wave / 3; 
-    
-                    // Create the enemy with these new numbers
-                    currentEnemy = new Enemy("Goblin Grunt", scaledHp, scaledAtk, scaledDef);
-    
-                    System.out.println();
-                    System.out.println("--------------------------------------------------------------------");
-                    System.out.println("A wild " + currentEnemy.getName() + " appears! (" + (i+1) + "/" + numEnemies + ")");
+                    currentEnemy = new Enemy("Skeleton Warrior", hp, atk, def);
+                    
+                } else {
+                    // BOSS 2: THE LICH (Wave 20)
+                    System.out.println("⚠ THE AIR TURNS COLD... THE LICH HAS ARRIVED! ⚠");
+                    // We use the new Class we made!
+                    currentEnemy = new Enemy_Lich(); 
+                }
+
+                // Show Spawn Text
+                if (wave != 10 && wave != 20) {
+                    System.out.println("A " + currentEnemy.getName() + " appears! (" + (i+1) + "/" + numEnemies + ")");
+                    System.out.println("(Stats -> HP: " + currentEnemy.getHp() + " | ATK: " + currentEnemy.getAttackPower() + ")");
                 }
 
                 // --- BATTLE LOOP (The Fight) ---
@@ -107,11 +135,9 @@ public class GameMain {
             // --- POST-WAVE LOGIC (Chest & Pause) ---
             if (hero.isAlive()) {
         
-                if (wave < 10) {
+                if (wave < 20) {
                     // If it is NOT the last wave
-                    if (rand.nextInt(100) < 50) {
-                        findChest(hero);
-                    }
+                    if (rand.nextInt(100) < 50) findChest(hero);
                     System.out.println("Press Enter to start the next wave...");
                     sc.nextLine(); 
                 } else {
