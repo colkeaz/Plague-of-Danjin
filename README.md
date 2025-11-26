@@ -1,4 +1,4 @@
-<h1 align = "center"> .⋮ Plague of Danjin ⋮. </h1>
+<h1 align = "center">𐔌 .⋮ Plague of Danjin  .ᐟ  ֹ   ₊ ꒱ </h1>
 <h3 align = "center">A turn-based Java Console RPG Adventure.</h3>
 <p align = "center">
 <b>CS 2105 </b> <br/>
