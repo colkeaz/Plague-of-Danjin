@@ -76,49 +76,36 @@ java GameMain
 
 ## ‧₊˚ ┊ Object-oriented Principles
 
-- `💊 Encapsulation` - All attributes such as `HP`, `attackPower`, `defense`, and `mana` are private in `GameCharacter`.
-  
-   Controlled access is done using getters and methods like `takeDamage()`, `heal()`, and `spendMana()`.
+- `💊 Encapsulation` - All attributes such as `HP`, `attackPower`, `defense`, and `mana` are private in `GameCharacter`.<br/>
+   Controlled access is done using getters and methods like `takeDamage()`, `heal()`, and `spendMana()`.<br/>
 
-- `💡 Abstraction` - The `GameCharacter` class defines the abstract method: public abstract void attack(GameCharacter target);
-  
-  This forces all child classes to define their own attack styles.
+- `💡 Abstraction` - The `GameCharacter` class defines the abstract method: public abstract void attack(GameCharacter target);<br/>
+  This forces all child classes to define their own attack styles.<br/>
 
-- `🧬 Inheritance` - Player, Enemy, and Enemy_Lich all inherit from GameCharacter.
-  
-  Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.
-
-- `🎭 Polymorphism` -  The attack() method behaves differently based on the object:
-  
-  Player → user choices & skills
-  
-  Enemy → random attacks
-  
-  Enemy_Lich → summoning minions + passive damage
-  
-  Dynamic method dispatch is used at runtime.
+- `🧬 Inheritance` - Player, Enemy, and Enemy_Lich all inherit from GameCharacter.<br/>
+   Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.<br/>
+   
+- `🎭 Polymorphism` -  The attack() method behaves differently based on the object:<br/>
+  Player → user choices & skills<br/>
+  Enemy → random attacks<br/>
+  Enemy_Lich → summoning minions + passive damage<br/>
+  Dynamic method dispatch is used at runtime.<br/>
 
 ‧₊˚ ┊ Enemy Phases
 
 - `Phase 1` – Goblins (Waves 1–9)
-  
-  Basic enemies with scaling HP and attack.
+  - Basic enemies with scaling HP and attack.
   
 - `Boss 1` – Goblin King (Wave 10)
-  
-  High HP, strong attack, increased defense.
+  - High HP, strong attack, increased defense.
   
 - `Phase 2` – Skeleton Warriors (Waves 11–19)
-
-  Naturally armored enemies with higher stats.
+  - Naturally armored enemies with higher stats.
   
 - `Final Boss` – Necromancer Lich (Wave 20)
-  
-☠️ Summons skeleton minions every 3 turns
-
-☠️ Minions deal passive damage every turn
-
-☠️ Extremely high HP and strong defense
+  - Summons skeleton minions every 3 turns
+  - Minions deal passive damage every turn
+  - Extremely high HP and strong defense
 
 ‧₊˚ ┊ Example Output
 
