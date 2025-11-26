@@ -91,7 +91,7 @@ java GameMain
   Enemy_Lich → summoning minions + passive damage<br/>
   Dynamic method dispatch is used at runtime.<br/>
 
-‧₊˚ ┊ Enemy Phases
+## ‧₊˚ ┊ Enemy Phases
 
 - `Phase 1` – Goblins (Waves 1–9)
   - Basic enemies with scaling HP and attack.
@@ -107,7 +107,7 @@ java GameMain
   - Minions deal passive damage every turn
   - Extremely high HP and strong defense
 
-‧₊˚ ┊ Example Output
+## ‧₊˚ ┊ Example Output
 
 ```
 
@@ -129,7 +129,7 @@ Current HP: 12/140
 
 ```
 
-‧₊˚ ┊ Victory Screen (Snippet)
+## ‧₊˚ ┊ Victory Screen (Snippet)
 
 ```
 
