@@ -1,5 +1,5 @@
-<h1 align = "center">𐔌 .⋮ Plague of Danjin  .ᐟ  ֹ   ₊ ꒱ </h1>
-<h3 align = "center">A turn-based Java Console RPG Adventure.</h3>
+<h1 align = "center">𐔌 .⋮ Plague of Danjin  .ᐟ  ֹ   ₊ ꒱</h1>
+<h3 align = "center">A turn-based Java Console RPG with Skills, Mana, and Boss Battles.</h3>
 <p align = "center">
 <b>CS 2105 </b> <br/>
 Paala, Luke Andre <br/>
@@ -8,128 +8,151 @@ Fajiculay, John Cedric
 </p>
 
 ## ‧₊˚ ┊ Overview
-Plague of Danjin is a console-based role-playing game developed in Java where the player controls a hero who must survive ten waves of enemies to end the plague threatening the kingdom.
+Plague of Danjin is a console-based Java RPG where the player controls a hero fighting through **20 progressive waves** of enemies to cleanse the land of corruption.
 <br/><br/>
-The game showcases the practical application of Object-Oriented Programming (OOP) principles such as encapsulation, inheritance, abstraction, and polymorphism, combined with turn-based combat mechanics, random encounters, and progression-based difficulty.
+The game applies **Object-Oriented Programming (OOP)** principles such as encapsulation, inheritance, abstraction, and polymorphism, while integrating **turn-based combat, mana-based skills, scaling difficulty, loot rewards, and multi-phase boss battles**.
 <br/>
+
 ### Players can:
-⚔️ Fight goblin enemies in turn-based combat  
-🩹 Heal using potions  
-🎯 Deal critical hits  
-📈 Improve stats through loot chests  
-👑 Defeat the Goblin King boss  
+⚔️ Perform basic and magic attacks  
+🔥 Cast powerful spells using mana  
+🛡️ Buff defense and regenerate mana  
+🎯 Land critical hits  
+📦 Open mysterious chests for upgrades  
+👑 Defeat the Goblin King and the Necromancer Lich  
 
 ### Game Data Handling
-💾 Player stats persist across waves and are updated dynamically during gameplay.
+💾 Player HP, defense, attack, and mana persist across all 20 waves.
 
 ---
 
 ## ‧₊˚ ┊ Project Structure
 
 📂 src/
-
 ├── ☕ GameMain.java
-
 ├── ☕ GameCharacter.java
-
 ├── ☕ Player.java
+├── ☕ Enemy.java
+└── ☕ Enemy_Lich.java
 
-└── ☕ Enemy.java
 
-- `GameMain.java` – Controls the game loop, waves, battles, and overall flow.
-- `GameCharacter.java` – Abstract parent class defining shared attributes and methods.
-- `Player.java` – Handles user input, attacks, healing, and critical hits.
-- `Enemy.java` – Controls enemy AI and randomized attacks.
+- `GameMain.java` – Game loop, enemy phases, waves, chest system, and victory screen.  
+- `GameCharacter.java` – Abstract parent class controlling stats, damage, healing, and mana.  
+- `Player.java` – Player controls, skills system, mana management, and buffs.  
+- `Enemy.java` – Standard enemy AI with random damage.  
+- `Enemy_Lich.java` – Advanced boss enemy with minion summoning and passive attacks.  
 
-### How to Run the Program
-Open your terminal in the src folder and run:
-GameMain.java
+---
+
+## ‧₊˚ ┊ How to Run the Program
+Open your terminal in the project src folder and run:
+
+javac *.java
+
+Run the game using:
+
+java GameMain
 
 ---
 
 ## ‧₊˚ ┊ Features
-1. **Turn-Based Combat** – Player and enemies take turns attacking.
-2. **Critical Hit System** – 10% chance to deal double damage.
-3. **Healing System** – Randomized healing with potions.
-4. **Progressive Waves** – Enemy stats scale every wave.
-5. **Boss Battle** – Final fight against the Goblin King at Wave 10.
-6. **Chest & Loot System** – Random upgrades and traps after waves.
-7. **Defense System** – Damage reduction based on defense stat.
-8. **Auto-Heal Per Kill** – Player heals +5 HP after every enemy defeat.
-9. **Animated Text & Victory Screen** – Typewriter effect and ASCII art ending.
+1. **Turn-Based Combat System**
+2. **20 Progressive Waves**
+3. **Two Boss Battles**
+   - Goblin King (Wave 10)
+   - Necromancer Lich (Wave 20)
+4. **Mana & Skill System**
+   - Fireball (3x Damage)
+   - Holy Light (Heal)
+   - Iron Will (Defense Buff)
+5. **Skeleton Minion System (Lich Boss)**
+6. **Critical Hit System (15%)**
+7. **Dynamic Defense & Damage Reduction**
+8. **Chest & Loot Rewards**
+9. **Auto Heal +5 After Every Kill**
+10. **Animated Text & Victory Screen**
 
 ---
 
 ## ‧₊˚ ┊ Object-oriented Principles
 
-### Encapsulation  
-All attributes such as HP, Attack Power, and Defense are private inside the `GameCharacter` class. Access and modification are controlled using public methods like `takeDamage()`, `heal()`, and getters. This protects the integrity of character data.
+💊 Encapsulation
+All attributes such as `HP`, `attackPower`, `defense`, and `mana` are private in `GameCharacter`. Controlled access is done using getters and methods like `takeDamage()`, `heal()`, and `spendMana()`.
 
-### Abstraction  
-The `GameCharacter` class defines the abstract method `attack()`, forcing subclasses to implement their own attack behavior. This hides implementation details while defining a common interface.
+💡 Abstraction
+The `GameCharacter` class defines the abstract method:
 
-### Inheritance  
-Both `Player` and `Enemy` inherit from `GameCharacter`, allowing them to reuse shared properties and behaviors such as HP, damage handling, and healing.
+public abstract void attack(GameCharacter target);
 
-### Polymorphism  
-The `attack()` method is overridden by both `Player` and `Enemy`, allowing different attack behaviors to be executed at runtime depending on the object type.
+This forces all child classes to define their own attack styles.
 
----
+🧬 Inheritance
+Player, Enemy, and Enemy_Lich all inherit from GameCharacter.
+ Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.
 
-## ‧₊˚ ┊ Example Output
-
-Welcome to the Plague of Danjin!
-Enter your Hero's Name: Cedric
-
-=========================
-STARTING WAVE 1
-
-A wild Goblin Grunt appears!
-
---- Your Turn ---
-
-Attack
-
-Heal
-Choose an action: 1
-
-You struck the enemy!
-Goblin Grunt blocked 2 damage and took 13 damage!
-Current HP: 38/40
+🎭 Polymorphism
+The attack() method behaves differently based on the object:
+Player → user choices & skills
 
 
----
+Enemy → random attacks
 
-##  ‧₊˚ ┊ Victory Screen (Snippet)
 
+Enemy_Lich → summoning minions + passive damage
+
+
+Dynamic method dispatch is used at runtime.
+
+‧₊˚ ┊ Enemy Phases
+Phase 1 – Goblins (Waves 1–9)
+Basic enemies with scaling HP and attack.
+Boss 1 – Goblin King (Wave 10)
+High HP, strong attack, increased defense.
+Phase 2 – Skeleton Warriors (Waves 11–19)
+Naturally armored enemies with higher stats.
+Final Boss – Necromancer Lich (Wave 20)
+☠️ Summons skeleton minions every 3 turns
+☠️ Minions deal passive damage every turn
+☠️ Extremely high HP and strong defense
+
+‧₊˚ ┊ Example Output
+
+--- Your Turn (HP: 84 | MP: 55) ---
+1. Basic Attack
+2. Skills (Magic)
+Choose an action: 2
+
+--- Grimoire ---
+1. Fireball (20 MP)
+2. Holy Light (15 MP)
+3. Iron Will (10 MP)
+4. Back
+Select Spell: 1
+
+🔥 You cast FIREBALL! 🔥
+Skeleton Warrior blocked 5 damage and took 85 damage!
+Current HP: 12/140
+
+‧₊˚ ┊ Victory Screen (Snippet)
+################################################################################
+#                                                                              #
+#   ______  _                                       __                         #
+#   | ___ \| |                                     / _|                        #
+#                                                                              #
 ################################################################################
 
-______ _ __
-| ___ | | / _|
-| |/ /| | __ _ __ _ _ _ ___ ___ | |
-
-################################################################################
-
----
-
-##  ‧₊˚ ┊ Contributors
-
+## ‧₊˚ ┊ Contributors
 <table>
 <tr>
-    <th> Name </th>
+<th> Name </th>
 </tr>
 <tr>
-    <td><strong>Paala, Luke Andre</strong></td>
+<td><strong>Paala, Luke Andre</strong></td>
 </tr>
 <tr>
-    <td><strong>Caraig, Hans Gadiel</strong></td>
-    
+<td><strong>Caraig, Hans Gadiel</strong></td>
 </tr>
 <tr>
-    <td><strong>Fajiculay, John Cedric</strong></td>
-    
+<td><strong>Fajiculay, John Cedric</strong></td>
 </tr>
 </table>
-
-
-
