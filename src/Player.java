@@ -1,5 +1,5 @@
-import java.util.Scanner;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Player extends GameCharacter {
 
@@ -15,7 +15,7 @@ public class Player extends GameCharacter {
 
         // 1. REGEN MANA AT START OF TURN
         // We do this first so the player sees the updated amount in the menu
-        this.regenMana(5); 
+        this.regenMana(10); // Regenerate 10 MP each turn
 
         boolean turnOver = false;
 
