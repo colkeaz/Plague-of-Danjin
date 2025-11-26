@@ -67,7 +67,7 @@ public class GameMain {
                 // Check death again in case died in previous fight of same wave
                 if (!hero.isAlive()) break; 
 
-                // 3. Spawn the correct enemy
+                //  Spawn the correct enemy
                 Enemy currentEnemy;
                 
                if (wave < 10) {
@@ -229,8 +229,8 @@ public class GameMain {
         "#   \\_|    |_| \\__,_| \\__, | \\__,_| \\___|   \\___/ |_|                          #",
         "#                      __/ |                                                   #",
         "#                     |___/                                                    #",
-        "#    ______              _  _        _                                         #",
-        "#    |  _  \\            (_)(_)      (_)                                        #",
+        "#    ______              _  _                                                 #",
+        "#    |  _  \\            (_)(_)                                              #",
         "#    | | | |  __ _  _ __  _  _  _ __                                           #",
         "#    | | | | / _` || '_ \\| || || '_ \\                                          #",
         "#    | |/ / | (_| || | | || || || | | |                                        #",
@@ -245,7 +245,7 @@ public class GameMain {
     for (String line : victoryArt) {
         System.out.println(line);
         try {
-            Thread.sleep(30); 
+            Thread.sleep(40); 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
