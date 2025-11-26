@@ -139,6 +139,7 @@ Skeleton Warrior blocked 5 damage and took 85 damage!
 Current HP: 12/140
 
 ‧₊˚ ┊ Victory Screen (Snippet)
+
 ################################################################################
 #                                                                              #
 #   ______  _                                       __                         #
