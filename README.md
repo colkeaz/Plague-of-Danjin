@@ -114,22 +114,17 @@ ______ _ __
 <tr>
     <th> &nbsp; </th>
     <th> Name </th>
-    <th> Role </th>
 </tr>
 <tr>
-    <td>⚔️</td>
     <td><strong>Paala, Luke Andre</strong></td>
-    <td>Main Developer / Game Logic</td>
 </tr>
 <tr>
-    <td>🛡️</td>
     <td><strong>Caraig, Hans Gadiel</strong></td>
-    <td>System Design / Testing</td>
+    
 </tr>
 <tr>
-    <td>🎮</td>
     <td><strong>Fajiculay, John Cedric</strong></td>
-    <td>Combat System & Balancing</td>
+    
 </tr>
 </table>
 
