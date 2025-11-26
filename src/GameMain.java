@@ -10,17 +10,19 @@ public class GameMain {
         System.out.println();
         typeText("Welcome, traveler... to the Plague of Danjin.", 100);
         typeText("Before you descend into the depths, speak your name, that it may be remembered.", 75);
-
+        System.out.println();
+        System.out.print("Enter your name: ");
         String name = sc.nextLine();
-
+        System.out.println();
+        
         // 1. Create Hero OUTSIDE the loop so HP persists between waves
         Player hero = new Player(name);
 
-        System.out.println("\nWell met, " + hero.getName() + ".");
+        typeText("A sturdy soul you are, " + hero.getName() + ".", 100);
         typeText("The kingdom of Morthga is withering under a cruel plague.", 100);
         typeText("All signs point to Danjin, the forgotten dungeon where corruption festers.", 100);
-        typeText("If salvation still exists, it lies below.", 120);
-        typeText("Steel yourself... your descent begins now.", 75);
+        typeText("If salvation still exists, it lies below.", 100);
+        typeText("Steel yourself... your descent begins now.", 80);
 
         // --- WAVE LOOP (Runs 1 to 20) ---
         for (int wave = 1; wave <= 20; wave++) {
@@ -28,10 +30,10 @@ public class GameMain {
             // Check if Player is dead before starting a wave
             if (!hero.isAlive()) break;
 
-            System.out.println("\n=========================");
+            System.out.println("\n========================================");
             typeText("   --- YOU DESCEND INTO THE ABYSS ---", 25);
-            typeText("         WAVE " + wave, 25);
-            System.out.println("=========================");
+            typeText("               WAVE " + wave, 25);
+            System.out.println("========================================\n");
 
             // 2. Determine enemies for this wave
             int numEnemies;
