@@ -176,3 +176,29 @@ Current HP: 12/140
 <td><strong>Fajiculay, John Cedric</strong></td>
 </tr>
 </table>
+
+
+## ‧₊˚ ┊ Acknowledgement
+First of all, we would like to express our sincere gratitude to
+our OOP teacher, Ma'am Fatima Marie Agdon, for teaching us and
+providing the knowledge we needed to build this project. Through
+her dedication and guidance, we were able to create a turn-based
+game that reflects our interests—something we can proudly say
+we made ourselves.
+
+We would also like to dedicate this project to our Creator, for
+granting us wisdom, strength, and perseverance throughout the
+development process. Without His guidance, none of this would
+have been possible.
+
+To our parents—thank you for your love, support, and
+encouragement. Your understanding motivates us to keep going,
+especially through difficult moments.
+
+To our friends and classmates, thank you for your ideas,
+feedback, and moral support. Each of you contributed in your
+own way to bringing this project to life.
+
+Lastly, we acknowledge our own effort, patience, and teamwork.
+This project strengthened both our technical skills and our
+collaboration as a group.
