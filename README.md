@@ -191,14 +191,25 @@ granting us wisdom, strength, and perseverance throughout the
 development process. Without His guidance, none of this would
 have been possible.
 
-To our parents—thank you for your love, support, and
-encouragement. Your understanding motivates us to keep going,
-especially through difficult moments.
-
 To our friends and classmates, thank you for your ideas,
 feedback, and moral support. Each of you contributed in your
 own way to bringing this project to life.
 
 Lastly, we acknowledge our own effort, patience, and teamwork.
-This project strengthened both our technical skills and our
-collaboration as a group.
+This project strengthened both our technical skills and our collaboration
+as a group.
+
+
+
+
+## ‧₊˚ ┊ Future Enhancements
+1. **Classes**
+    - Classes with different archetypes such as Knight, Mage, Assassin, and etc.
+2. **Graphic User Interface**
+    - For the visual enhancement of the Player.
+3. **More Enemies**
+   - More Unique enemies and varrying stats.
+4. **Items and INventory**
+    - Improvement of the items and possibly an addition of an Inventory System.
+5. **Lore and Area Expansion**
+    - This project is open to explore more about the lore and have more areas to go through and fight.
