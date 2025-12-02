@@ -1,9 +1,9 @@
-public class Enemy_Lich extends Enemy {
+public class EnemyLich extends Enemy {
     private int turnCounter = 0;
     private int minionsActive = 0;
 
     // Constructor: Lich has huge HP (300) and good Defense (20)
-    public Enemy_Lich() {
+    public EnemyLich() {
         super("The Necromancer Lich", 300, 25, 20);
     }
 

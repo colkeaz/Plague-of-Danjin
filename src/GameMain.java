@@ -98,7 +98,7 @@ public class GameMain {
                     typeText("Hope feels distant... yet this pestilence must be purged.", 120);
                     typeText("Steel your resolve, for the darkness itself is before you... watching.", 75);
 
-                    currentEnemy = new Enemy_Lich();
+                    currentEnemy = new EnemyLich();
                 }
 
                 // --- BATTLE LOOP (The Fight) ---
