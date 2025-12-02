@@ -65,11 +65,14 @@ Abstract classes define the "blueprint" for all entities.
 
 ```
 
-- `GameMain.java` – Game loop, enemy phases, waves, chest system, and victory screen.  
-- `GameCharacter.java` – Abstract parent class controlling stats, damage, healing, and mana.  
-- `Player.java` – Player controls, skills system, mana management, and buffs.  
-- `Enemy.java` – Standard enemy AI with random damage.  
-- `Enemy_Lich.java` – Advanced boss enemy with minion summoning and passive attacks.  
+- `GameMain.java` – The entry point. Handles the game loop, array-based wave generation, chest/loot logic, and the victory condition.
+- `GameCharacter.java` – The abstract blueprint defining the core stats (HP, Mana) and logic for damage/healing.
+- `Player.java` – Handles user input, the skills Grimoire, and mana management.
+- `Enemy.java` – Defines basic AI behavior for standard attacks.
+- `Goblin.java` – Phase 1 enemy with stats that scale based on the wave number.
+- `Skeleton.java` – Phase 2 enemy with higher base stats and natural defense.
+- `GoblinKing.java` – Boss class that utilizes a "Rage" mechanic to increase attack power every turn.
+- `Lich.java` – Final Boss class with unique logic for summoning skeleton minions.
 
 
 ## ‧₊˚ ┊ How to Run the Program
@@ -109,6 +112,7 @@ java GameMain
   
 - `Boss 1` – Goblin King (Wave 10)
   - High HP, strong attack, increased defense.
+  - Unique Ability: Attack increases each turn.
   
 - `Phase 2` – Skeleton Warriors (Waves 11–19)
   - Naturally armored enemies with higher stats.
