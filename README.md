@@ -33,7 +33,7 @@ The game applies **Object-Oriented Programming (OOP)** principles such as encaps
 ├── ☕ GameCharacter.java
 ├── ☕ Player.java
 ├── ☕ Enemy.java
-└── ☕ Enemy_Lich.java
+└── ☕ EnemyLich.java
 
 ```
 
@@ -41,7 +41,7 @@ The game applies **Object-Oriented Programming (OOP)** principles such as encaps
 - `GameCharacter.java` – Abstract parent class controlling stats, damage, healing, and mana.  
 - `Player.java` – Player controls, skills system, mana management, and buffs.  
 - `Enemy.java` – Standard enemy AI with random damage.  
-- `Enemy_Lich.java` – Advanced boss enemy with minion summoning and passive attacks.  
+- `EnemyLich.java` – Advanced boss enemy with minion summoning and passive attacks.  
 
 
 ## ‧₊˚ ┊ How to Run the Program
@@ -83,12 +83,12 @@ java GameMain
   This forces all child classes to define their own attack styles.<br/>
 
 - `🧬 Inheritance` - Player, Enemy, and Enemy_Lich all inherit from GameCharacter.<br/>
-   Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.<br/>
+   EnemyLich also extends Enemy, forming a multi-level inheritance structure.<br/>
    
 - `🎭 Polymorphism` -  The attack() method behaves differently based on the object:<br/>
   Player → user choices & skills<br/>
   Enemy → random attacks<br/>
-  Enemy_Lich → summoning minions + passive damage<br/>
+  EnemyLich → summoning minions + passive damage<br/>
   Dynamic method dispatch is used at runtime.<br/>
 
 ## ‧₊˚ ┊ Enemy Phases
