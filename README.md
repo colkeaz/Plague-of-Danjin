@@ -56,7 +56,10 @@ Abstract classes define the "blueprint" for all entities.
 ├── ☕ GameCharacter.java
 ├── ☕ Player.java
 ├── ☕ Enemy.java
-└── ☕ Enemy_Lich.java
+├── ☕ Goblin.java
+├── ☕ GoblinKing.java
+├── ☕ Skeleton.java
+└── ☕ Lich.java
 
 ```
 
