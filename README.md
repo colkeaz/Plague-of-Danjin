@@ -56,32 +56,15 @@ Abstract classes define the "blueprint" for all entities.
 ├── ☕ GameCharacter.java
 ├── ☕ Player.java
 ├── ☕ Enemy.java
-├── ☕ Skeleton.java
-├── ☕ Goblin.java
-├── ☕ GoblinKing.java
-└── ☕ Lich.java
+└── ☕ Enemy_Lich.java
 
 ```
 
-### Main Classes
-- **`GameMain.java`**: The entry point. Handles the game loop, array-based wave generation, chest/loot logic, and the victory condition.
-- **`GameCharacter.java`**: The abstract blueprint defining the core stats and logic for damage/healing.
-- **`Player.java`**: Handles user input (using `try-catch` for validation), the skills Grimoire, and mana management.
-- **`Enemy.java`**: Defines basic AI behavior.
-
-### Subclasses (Enemies)
-- **`Goblin.java`** & **`Skeleton.java`**: Implements scaling stats based on the current wave number.
-- **`GoblinKing.java`** & **`Lich.java`**: Boss classes with unique stats and abilities.
-
-### Class Relationship Diagram
-```mermaid
-GameCharacter (Abstract)
-   ├── Player
-   └── Enemy
-       ├── Goblin
-       ├── GoblinKing
-       ├── Skeleton
-       └── Lich
+- `GameMain.java` – Game loop, enemy phases, waves, chest system, and victory screen.  
+- `GameCharacter.java` – Abstract parent class controlling stats, damage, healing, and mana.  
+- `Player.java` – Player controls, skills system, mana management, and buffs.  
+- `Enemy.java` – Standard enemy AI with random damage.  
+- `Enemy_Lich.java` – Advanced boss enemy with minion summoning and passive attacks.  
 
 
 ## ‧₊˚ ┊ How to Run the Program
@@ -122,22 +105,17 @@ java GameMain
     - **Access:** External classes interact with these variables only through public methods like `takeDamage()`, `heal()`, and `spendMana()`.
 <br/>
 
-- `💡 Abstraction` 
-    - **Implementation:** `GameCharacter` is an `abstract` class. It cannot be instantiated directly, forcing developers to create specific types of characters (like `Player` or `Goblin`) to implement the `abstract void attack()` method.
-  <br/>
+- `💡 Abstraction` - The `GameCharacter` class defines the abstract method: public abstract void attack(GameCharacter target);<br/>
+  This forces all child classes to define their own attack styles.<br/>
 
-- `🧬 Inheritance`
-  The project uses a hierarchical structure to share code and define specific behaviors, reducing redundancy.
-    - **Implementation:** `GameCharacter` serves as the superclass. `Player` and `Enemy` inherit from it. Specific enemies like `Goblin`, `Skeleton`, and `Lich` further inherit from `Enemy`, creating a deep inheritance tree (Grandparent $\to$ Parent $\to$ Child).
-  <br/>
+- `🧬 Inheritance` - Player, Enemy, and Enemy_Lich all inherit from GameCharacter.<br/>
+   Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.<br/>
    
 - `🎭 Polymorphism` -  The attack() method behaves differently based on the object:<br/>
-- **Implementation:** The `attack()` method is defined abstractly in the parent.
-    - `Player`: Overrides it to show a skills menu.
-    - `Enemy`: Overrides it to perform standard attacks.
-    - `GoblinKing`: Overrides it to trigger a "Rage" buff before attacking (Infinite Scaling).
-    - `Lich`: Overrides it to implement complex boss logic (summoning minions).
-- **Dynamic Usage:** The `GameMain` loop treats all opponents as generic `Enemy` objects, but they behave like specific monsters during execution.
+  Player → user choices & skills<br/>
+  Enemy → random attacks<br/>
+  Enemy_Lich → summoning minions + passive damage<br/>
+  Dynamic method dispatch is used at runtime.<br/>
 
 ## ‧₊˚ ┊ Enemy Phases
 
