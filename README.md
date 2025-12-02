@@ -1,11 +1,7 @@
 <h1 align = "center">𐔌 .⋮ Plague of Danjin  .ᐟ  ֹ   ₊ ꒱</h1>
 <h3 align = "center">A turn-based Java Console RPG with Skills, Mana, and Boss Battles.</h3>
 <p align = "center">
-<b>CS 2105 </b> <br/>
-Paala, Luke Andre <br/>
-Caraig, Hans Gadiel <br/>
-Fajiculay, John Cedric
-</p>
+
 
 ## ‧₊˚ ┊ Overview
 Plague of Danjin is a console-based Java RPG where the player controls a hero fighting through **20 progressive waves** of enemies to cleanse the land of corruption.
