@@ -213,3 +213,5 @@ as a group.
     - Improvement of the items and possibly an addition of an Inventory System.
 5. **Lore and Area Expansion**
     - This project is open to explore more about the lore and have more areas to go through and fight.
+6. **World Interaction**
+    - Make the player able to explore around the dungeon and interact with npc's.
