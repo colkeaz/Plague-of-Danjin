@@ -11,25 +11,27 @@ Fajiculay, John Cedric
 Plague of Danjin is a console-based Java RPG where the player controls a hero fighting through **20 progressive waves** of enemies to cleanse the land of corruption.
 <br/><br/>
 
-## ‧₊˚ ┊ OOP Concepts
-### a. Encapsulation
+## ‧₊˚ ┊ Object-oriented Principles
+
+### 💊 Encapsulation
 Data integrity is maintained by keeping attributes private.
 - **Implementation:** All attributes in `GameCharacter.java` (such as `hp`, `attackPower`, `defense`, `mana`) are `private`.
 - **Access:** External classes interact with these variables only through public methods like `takeDamage()`, `heal()`, and `spendMana()`.
 
-### b. Inheritance
+### 🧬 Inheritance
 The project uses a hierarchical structure to share code and define specific behaviors.
 - **Implementation:** `GameCharacter` serves as the superclass. `Player` and `Enemy` inherit from it. Specific enemies like `Goblin`, `Skeleton`, and `Lich` further inherit from `Enemy`, creating a deep inheritance tree (Grandparent $\to$ Parent $\to$ Child).
 
-### c. Polymorphism
+### 🎭 Polymorphism
 The game uses Method Overriding to treat different objects as a generic type while executing specific behaviors.
 - **Implementation:** The `attack()` method is defined abstractly in the parent.
     - `Player`: Overrides it to show a skills menu.
     - `Enemy`: Overrides it to perform random attacks.
+    - `GoblinKing`: Overrides it to trigger a "Rage" buff before attacking (Infinite Scaling).
     - `Lich`: Overrides it to implement complex boss logic (summoning minions).
 - **Dynamic Usage:** The `GameMain` loop treats all opponents as `Enemy` objects, but they behave like Goblins, Skeletons, or Bosses at runtime.
 
-### d. Abstraction
+### 💡 Abstraction
 Abstract classes define the "blueprint" for all entities.
 - **Implementation:** `GameCharacter` is an `abstract` class. It cannot be instantiated directly, forcing developers to create specific types of characters (like `Player` or `Goblin`) to implement the `abstract void attack()` method.
 
@@ -99,26 +101,6 @@ java GameMain
 8. **Chest & Loot Rewards**
 9. **Auto Heal +5 After Every Kill**
 10. **Animated Text & Victory Screen**
-
-## ‧₊˚ ┊ Object-oriented Principles
-
-- `💊 Encapsulation` 
-   Data integrity is maintained by keeping attributes private to prevent invalid game states (e.g., negative HP).
-    - **Implementation:** All attributes in `GameCharacter.java` (such as `hp`, `attackPower`, `defense`, `mana`) are `private`.
-    - **Access:** External classes interact with these variables only through public methods like `takeDamage()`, `heal()`, and `spendMana()`.
-<br/>
-
-- `💡 Abstraction` - The `GameCharacter` class defines the abstract method: public abstract void attack(GameCharacter target);<br/>
-  This forces all child classes to define their own attack styles.<br/>
-
-- `🧬 Inheritance` - Player, Enemy, and Enemy_Lich all inherit from GameCharacter.<br/>
-   Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.<br/>
-   
-- `🎭 Polymorphism` -  The attack() method behaves differently based on the object:<br/>
-  Player → user choices & skills<br/>
-  Enemy → random attacks<br/>
-  Enemy_Lich → summoning minions + passive damage<br/>
-  Dynamic method dispatch is used at runtime.<br/>
 
 ## ‧₊˚ ┊ Enemy Phases
 
