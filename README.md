@@ -179,21 +179,21 @@ Current HP: 12/140
 ## ‧₊˚ ┊ Authors and Acknowledgement
 <table>
 <tr>
-<th> Name </th>
+<th> Authors </th>
 </tr>
 <tr>
-<td><strong>Paala, Luke Andre</strong></td>
+<td><strong>Paala, Luke Andre V.</strong></td>
 </tr>
 <tr>
-<td><strong>Caraig, Hans Gadiel</strong></td>
+<td><strong>Caraig, Hans Gadiel P.</strong></td>
 </tr>
 <tr>
-<td><strong>Fajiculay, John Cedric</strong></td>
+<td><strong>Fajiculay, John Cedric F.</strong></td>
 </tr>
 </table>
 
 
-# Acknowledgement: 
+### Acknowledgement: 
 First of all, we would like to express our sincere gratitude to
 our OOP teacher, Ma'am Fatima Marie Agdon, for teaching us and
 providing the knowledge we needed to build this project. Through
