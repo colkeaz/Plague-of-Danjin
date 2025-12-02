@@ -1,9 +1,9 @@
-public class EnemyLich extends Enemy {
+public class Lich extends Enemy {
     private int turnCounter = 0;
     private int minionsActive = 0;
 
     // Constructor: Lich has huge HP (300) and good Defense (20)
-    public EnemyLich() {
+    public Lich() {
         super("The Necromancer Lich", 300, 25, 20);
     }
 
@@ -16,7 +16,7 @@ public class EnemyLich extends Enemy {
         // SPECIAL ABILITY: Every 3 turns, summon a minion
         if (turnCounter % 3 == 0) {
             minionsActive++;
-            System.out.println("☠️ THE LICH RAISES HIS STAFF! ☠️");
+            System.out.println("[X] THE LICH RAISES HIS STAFF! [X]");
             System.out.println("The ground trembles... A Skeleton Minion rises from the earth!");
             System.out.println("Total Minions Active: " + minionsActive);
         } else {

@@ -10,7 +10,30 @@ Fajiculay, John Cedric
 ## ‧₊˚ ┊ Overview
 Plague of Danjin is a console-based Java RPG where the player controls a hero fighting through **20 progressive waves** of enemies to cleanse the land of corruption.
 <br/><br/>
-The game applies **Object-Oriented Programming (OOP)** principles such as encapsulation, inheritance, abstraction, and polymorphism, while integrating **turn-based combat, mana-based skills, scaling difficulty, loot rewards, and multi-phase boss battles**.
+
+## ‧₊˚ ┊ OOP Concepts
+### a. Encapsulation
+Data integrity is maintained by keeping attributes private.
+- **Implementation:** All attributes in `GameCharacter.java` (such as `hp`, `attackPower`, `defense`, `mana`) are `private`.
+- **Access:** External classes interact with these variables only through public methods like `takeDamage()`, `heal()`, and `spendMana()`.
+
+### b. Inheritance
+The project uses a hierarchical structure to share code and define specific behaviors.
+- **Implementation:** `GameCharacter` serves as the superclass. `Player` and `Enemy` inherit from it. Specific enemies like `Goblin`, `Skeleton`, and `Lich` further inherit from `Enemy`, creating a deep inheritance tree (Grandparent $\to$ Parent $\to$ Child).
+
+### c. Polymorphism
+The game uses Method Overriding to treat different objects as a generic type while executing specific behaviors.
+- **Implementation:** The `attack()` method is defined abstractly in the parent.
+    - `Player`: Overrides it to show a skills menu.
+    - `Enemy`: Overrides it to perform random attacks.
+    - `Lich`: Overrides it to implement complex boss logic (summoning minions).
+- **Dynamic Usage:** The `GameMain` loop treats all opponents as `Enemy` objects, but they behave like Goblins, Skeletons, or Bosses at runtime.
+
+### d. Abstraction
+Abstract classes define the "blueprint" for all entities.
+- **Implementation:** `GameCharacter` is an `abstract` class. It cannot be instantiated directly, forcing developers to create specific types of characters (like `Player` or `Goblin`) to implement the `abstract void attack()` method.
+
+---
 <br/>
 
 ### Players can:
@@ -33,15 +56,32 @@ The game applies **Object-Oriented Programming (OOP)** principles such as encaps
 ├── ☕ GameCharacter.java
 ├── ☕ Player.java
 ├── ☕ Enemy.java
-└── ☕ Enemy_Lich.java
+├── ☕ Skeleton.java
+├── ☕ Goblin.java
+├── ☕ GoblinKing.java
+└── ☕ Lich.java
 
 ```
 
-- `GameMain.java` – Game loop, enemy phases, waves, chest system, and victory screen.  
-- `GameCharacter.java` – Abstract parent class controlling stats, damage, healing, and mana.  
-- `Player.java` – Player controls, skills system, mana management, and buffs.  
-- `Enemy.java` – Standard enemy AI with random damage.  
-- `Enemy_Lich.java` – Advanced boss enemy with minion summoning and passive attacks.  
+### Main Classes
+- **`GameMain.java`**: The entry point. Handles the game loop, array-based wave generation, chest/loot logic, and the victory condition.
+- **`GameCharacter.java`**: The abstract blueprint defining the core stats and logic for damage/healing.
+- **`Player.java`**: Handles user input (using `try-catch` for validation), the skills Grimoire, and mana management.
+- **`Enemy.java`**: Defines basic AI behavior.
+
+### Subclasses (Enemies)
+- **`Goblin.java`** & **`Skeleton.java`**: Implements scaling stats based on the current wave number.
+- **`GoblinKing.java`** & **`Lich.java`**: Boss classes with unique stats and abilities.
+
+### Class Relationship Diagram
+```mermaid
+GameCharacter (Abstract)
+   ├── Player
+   └── Enemy
+       ├── Goblin
+       ├── GoblinKing
+       ├── Skeleton
+       └── Lich
 
 
 ## ‧₊˚ ┊ How to Run the Program
@@ -76,20 +116,28 @@ java GameMain
 
 ## ‧₊˚ ┊ Object-oriented Principles
 
-- `💊 Encapsulation` - All attributes such as `HP`, `attackPower`, `defense`, and `mana` are private in `GameCharacter`.<br/>
-   Controlled access is done using getters and methods like `takeDamage()`, `heal()`, and `spendMana()`.<br/>
+- `💊 Encapsulation` 
+   Data integrity is maintained by keeping attributes private to prevent invalid game states (e.g., negative HP).
+    - **Implementation:** All attributes in `GameCharacter.java` (such as `hp`, `attackPower`, `defense`, `mana`) are `private`.
+    - **Access:** External classes interact with these variables only through public methods like `takeDamage()`, `heal()`, and `spendMana()`.
+<br/>
 
-- `💡 Abstraction` - The `GameCharacter` class defines the abstract method: public abstract void attack(GameCharacter target);<br/>
-  This forces all child classes to define their own attack styles.<br/>
+- `💡 Abstraction` 
+    - **Implementation:** `GameCharacter` is an `abstract` class. It cannot be instantiated directly, forcing developers to create specific types of characters (like `Player` or `Goblin`) to implement the `abstract void attack()` method.
+  <br/>
 
-- `🧬 Inheritance` - Player, Enemy, and Enemy_Lich all inherit from GameCharacter.<br/>
-   Enemy_Lich also extends Enemy, forming a multi-level inheritance structure.<br/>
+- `🧬 Inheritance`
+  The project uses a hierarchical structure to share code and define specific behaviors, reducing redundancy.
+    - **Implementation:** `GameCharacter` serves as the superclass. `Player` and `Enemy` inherit from it. Specific enemies like `Goblin`, `Skeleton`, and `Lich` further inherit from `Enemy`, creating a deep inheritance tree (Grandparent $\to$ Parent $\to$ Child).
+  <br/>
    
 - `🎭 Polymorphism` -  The attack() method behaves differently based on the object:<br/>
-  Player → user choices & skills<br/>
-  Enemy → random attacks<br/>
-  Enemy_Lich → summoning minions + passive damage<br/>
-  Dynamic method dispatch is used at runtime.<br/>
+- **Implementation:** The `attack()` method is defined abstractly in the parent.
+    - `Player`: Overrides it to show a skills menu.
+    - `Enemy`: Overrides it to perform standard attacks.
+    - `GoblinKing`: Overrides it to trigger a "Rage" buff before attacking (Infinite Scaling).
+    - `Lich`: Overrides it to implement complex boss logic (summoning minions).
+- **Dynamic Usage:** The `GameMain` loop treats all opponents as generic `Enemy` objects, but they behave like specific monsters during execution.
 
 ## ‧₊˚ ┊ Enemy Phases
 
@@ -161,7 +209,7 @@ Current HP: 12/140
 
 ```
 
-## ‧₊˚ ┊ Contributors
+## ‧₊˚ ┊ Authors and Acknowledgement
 <table>
 <tr>
 <th> Name </th>
@@ -178,7 +226,7 @@ Current HP: 12/140
 </table>
 
 
-## ‧₊˚ ┊ Acknowledgement
+# Acknowledgement: 
 First of all, we would like to express our sincere gratitude to
 our OOP teacher, Ma'am Fatima Marie Agdon, for teaching us and
 providing the knowledge we needed to build this project. Through

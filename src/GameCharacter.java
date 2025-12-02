@@ -19,8 +19,7 @@ public abstract class GameCharacter {
         this.mana = 75;      // Start with some mana
     }
 
-    // ABSTRACTION: This method is abstract. We know characters attack,
-    // but we don't know HOW they attack yet. The children must decide.
+    // ABSTRACTION: We know characters attack, but we don't know HOW they attack yet. The children must decide.
     public abstract void attack(GameCharacter target);
 
     // Getters and Setters (Controlled access)
