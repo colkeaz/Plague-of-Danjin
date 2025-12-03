@@ -59,7 +59,7 @@ public class GameMain {
                 numEnemies = 1; // Easy: 1 Enemy
             }
 
-            // 3. ARRAY MANAGEMENT (Requirement: Using Arrays)
+            // 3. ARRAY MANAGEMENT 
             // We use an Array (waveEnemies) to manage multiple objects in a single turn.
             // This allows us to scale up to 100 enemies if we wanted to, without changing variable names.
             Enemy[] waveEnemies = new Enemy[numEnemies];
