@@ -214,6 +214,7 @@ public class SaveManager {
         // Permanent skill flags
         data.setSpellCostReductionBonus(player.getSpellCostReductionBonus());
         data.setPlagueBearerActive(player.isPlagueBearerActive());
+        data.setImmortalStandActive(player.isImmortalStandActive());
 
         return data;
     }

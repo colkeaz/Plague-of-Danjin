@@ -28,6 +28,7 @@ public class SaveData {
     private String characterClass;
     private int spellCostReductionBonus;
     private boolean plagueBearerActive;
+    private boolean immortalStandActive;
 
     public SaveData() {
         this.equippedItemNames = new ArrayList<>();
@@ -95,6 +96,9 @@ public class SaveData {
     public boolean isPlagueBearerActive() { return plagueBearerActive; }
     public void setPlagueBearerActive(boolean plagueBearerActive) { this.plagueBearerActive = plagueBearerActive; }
 
+    public boolean isImmortalStandActive() { return immortalStandActive; }
+    public void setImmortalStandActive(boolean immortalStandActive) { this.immortalStandActive = immortalStandActive; }
+
     /**
      * Serializes this SaveData to a JSON string using manual StringBuilder construction.
      */
@@ -119,7 +123,8 @@ public class SaveData {
         sb.append("  \"permanentDamagePerTurn\": ").append(permanentDamagePerTurn).append(",\n");
         sb.append("  \"characterClass\": ").append(escapeJsonString(characterClass)).append(",\n");
         sb.append("  \"spellCostReductionBonus\": ").append(spellCostReductionBonus).append(",\n");
-        sb.append("  \"plagueBearerActive\": ").append(plagueBearerActive).append("\n");
+        sb.append("  \"plagueBearerActive\": ").append(plagueBearerActive).append(",\n");
+        sb.append("  \"immortalStandActive\": ").append(immortalStandActive).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -153,6 +158,7 @@ public class SaveData {
         data.characterClass = parseStringField(json, "characterClass");
         data.spellCostReductionBonus = parseIntField(json, "spellCostReductionBonus");
         data.plagueBearerActive = parseBooleanField(json, "plagueBearerActive");
+        data.immortalStandActive = parseBooleanField(json, "immortalStandActive");
         return data;
     }
 

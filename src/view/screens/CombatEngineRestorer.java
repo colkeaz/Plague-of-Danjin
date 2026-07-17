@@ -127,6 +127,9 @@ class CombatEngineRestorer {
         if (saveData.isPlagueBearerActive()) {
             player.setPlagueBearerActive(true);
         }
+        if (saveData.isImmortalStandActive()) {
+            player.setImmortalStandActive(true);
+        }
 
         // Restore wave - advance to the saved wave
         engine.restoreToWave(saveData.getWaveNumber());

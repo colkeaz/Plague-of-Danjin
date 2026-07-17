@@ -142,6 +142,20 @@ public class Player extends GameCharacter {
     }
 
     /**
+     * Returns whether the Immortal Stand passive is currently active.
+     */
+    public boolean isImmortalStandActive() {
+        return immortalStandActive;
+    }
+
+    /**
+     * Sets the Immortal Stand active state (for save restoration).
+     */
+    public void setImmortalStandActive(boolean active) {
+        this.immortalStandActive = active;
+    }
+
+    /**
      * Returns the permanent spell cost reduction bonus (from Arcane Mastery).
      */
     public int getSpellCostReductionBonus() {
@@ -524,8 +538,11 @@ public class Player extends GameCharacter {
             case IMMORTAL_STAND:
                 // Passive: when HP drops below 20%, auto-heal to 50% (once per fight)
                 // This just activates the passive flag; actual trigger is in checkImmortalStand()
-                this.immortalStandUsed = false;
-                this.immortalStandActive = true;
+                // Only allow activation once - cannot re-arm after trigger
+                if (!this.immortalStandActive) {
+                    this.immortalStandUsed = false;
+                    this.immortalStandActive = true;
+                }
                 break;
 
             case HP_COST_DAMAGE:
@@ -551,8 +568,10 @@ public class Player extends GameCharacter {
                 break;
 
             case PASSIVE_COST_REDUCTION:
-                // Arcane Mastery: permanently reduce all spell costs by 5
-                this.spellCostReductionBonus += 5;
+                // Arcane Mastery: permanently reduce all spell costs by 5 (one-time only)
+                if (this.spellCostReductionBonus == 0) {
+                    this.spellCostReductionBonus += 5;
+                }
                 break;
 
             case MANA_SINGULARITY:
