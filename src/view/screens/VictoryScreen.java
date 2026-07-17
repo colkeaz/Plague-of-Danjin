@@ -346,7 +346,7 @@ public class VictoryScreen extends InputAdapter implements Screen {
     @Override
     public boolean keyDown(int keycode) {
         if (keycode == Input.Keys.ENTER) {
-            game.setScreen(new IntroScreen(game));
+            game.setScreen(new MainMenuScreen(game));
             return true;
         }
         return false;

@@ -2,22 +2,27 @@ package view;
 
 import com.badlogic.gdx.Game;
 
+import controller.MetaProgression;
+import controller.SaveManager;
 import view.assets.AssetLoader;
 import view.audio.MusicManager;
 import view.audio.SFXManager;
 import view.rendering.PixelRenderer;
-import view.screens.IntroScreen;
+import view.screens.MainMenuScreen;
 
 /**
  * Main game class extending com.badlogic.gdx.Game (not ApplicationAdapter).
  * Manages screen transitions. On create(), initializes AssetLoader,
- * audio managers, and sets IntroScreen as first screen. dispose() cleans up assets.
+ * audio managers, SaveManager, MetaProgression, and sets MainMenuScreen as first screen.
+ * dispose() cleans up assets.
  */
 public class PlagueOfDanjinGame extends Game {
     private AssetLoader assetLoader;
     private PixelRenderer renderer;
     private SFXManager sfxManager;
     private MusicManager musicManager;
+    private SaveManager saveManager;
+    private MetaProgression metaProgression;
 
     @Override
     public void create() {
@@ -29,7 +34,11 @@ public class PlagueOfDanjinGame extends Game {
         sfxManager = new SFXManager();
         musicManager = new MusicManager();
 
-        setScreen(new IntroScreen(this));
+        // Initialize save and meta-progression system
+        saveManager = new SaveManager();
+        metaProgression = saveManager.loadMetaProgression();
+
+        setScreen(new MainMenuScreen(this));
     }
 
     /**
@@ -58,6 +67,20 @@ public class PlagueOfDanjinGame extends Game {
      */
     public MusicManager getMusicManager() {
         return musicManager;
+    }
+
+    /**
+     * Returns the shared SaveManager instance.
+     */
+    public SaveManager getSaveManager() {
+        return saveManager;
+    }
+
+    /**
+     * Returns the shared MetaProgression instance.
+     */
+    public MetaProgression getMetaProgression() {
+        return metaProgression;
     }
 
     @Override

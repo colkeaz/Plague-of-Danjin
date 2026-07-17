@@ -45,6 +45,9 @@ public class CombatEngine extends GameEventDispatcher {
     // Track enemy turn counts for telegraph system
     private int[] enemyTurnCounts;
 
+    // Turn counter for meta-progression tracking (fastest victory)
+    private int turnCounter;
+
     // Skill choice state: holds offered skills during milestone waves
     private List<Skill> pendingSkillChoices;
 
@@ -58,6 +61,9 @@ public class CombatEngine extends GameEventDispatcher {
     private QTEPattern pendingQTEPattern;
     private QTEManager currentQTEManager;
     private boolean lichHealingPrevented = false;
+
+    // Save manager reference for auto-save at wave transitions
+    private SaveManager saveManager;
 
     /**
      * Internal listener that forwards all child events through this engine's dispatcher.
@@ -93,6 +99,7 @@ public class CombatEngine extends GameEventDispatcher {
         this.eventRoomManager = new EventRoomManager();
         this.currentState = GameState.INTRO;
         this.currentWave = 0;
+        this.turnCounter = 0;
 
         // Register forwarding on subsystems so their events bubble up through the engine
         waveManager.addListener(forwardingListener);
@@ -137,6 +144,7 @@ public class CombatEngine extends GameEventDispatcher {
         }
 
         currentState = GameState.PROCESSING_ACTION;
+        turnCounter++;
 
         try {
             // Apply permanent damage per turn from Danjin's Heart absorption
@@ -303,6 +311,11 @@ public class CombatEngine extends GameEventDispatcher {
     public void advanceWave() {
         if (currentState != GameState.WAVE_TRANSITION) {
             return;
+        }
+
+        // Auto-save at wave transitions
+        if (saveManager != null) {
+            saveManager.saveRun(this);
         }
 
         fireEvent(GameEvent.builder(GameEventType.WAVE_COMPLETE)
@@ -1000,5 +1013,115 @@ public class CombatEngine extends GameEventDispatcher {
      */
     public QTEManager getCurrentQTEManager() {
         return currentQTEManager;
+    }
+
+    // --- Save/Meta-Progression Methods ---
+
+    /**
+     * Sets the SaveManager for auto-save at wave transitions.
+     */
+    public void setSaveManager(SaveManager saveManager) {
+        this.saveManager = saveManager;
+    }
+
+    /**
+     * Returns the current turn counter (for meta-progression tracking).
+     */
+    public int getTurnCounter() {
+        return turnCounter;
+    }
+
+    /**
+     * Sets the current state (used for save restoration).
+     */
+    public void setCurrentState(GameState state) {
+        this.currentState = state;
+    }
+
+    /**
+     * Restores the engine to a specific wave number for save continuation.
+     * Sets up enemies for that wave and transitions to AWAITING_PLAYER_ACTION.
+     */
+    public void restoreToWave(int wave) {
+        this.currentWave = wave;
+        this.currentEnemies = waveManager.createWaveEnemies(currentWave);
+        applyShatterEffect(currentEnemies);
+        registerEnemyListeners(currentEnemies);
+        this.currentEnemyIndex = 0;
+        this.enemyTurnCounts = new int[currentEnemies.length];
+        this.currentState = GameState.AWAITING_PLAYER_ACTION;
+    }
+
+    /**
+     * Applies unlockable starting bonuses from MetaProgression at game start.
+     * Called after startGame() to grant earned rewards.
+     *
+     * @param meta the MetaProgression with earned unlocks
+     * @param chestSystem the ChestSystem to modify spawn rates
+     */
+    public void applyUnlocks(MetaProgression meta, ChestSystem chestSystem) {
+        if (meta == null || hero == null) return;
+
+        java.util.List<String> unlocks = meta.getActiveUnlocks();
+
+        for (String unlockId : unlocks) {
+            switch (unlockId) {
+                case "veteran_blade":
+                    // Start with "Veteran's Blade" (+8 ATK weapon, RARE)
+                    model.items.Item veteranBlade = new model.items.Item(
+                            "Veteran's Blade", "A blade earned through victory.",
+                            model.items.ItemRarity.RARE, model.items.ItemSlot.WEAPON,
+                            java.util.Arrays.asList(new model.items.ItemEffect(model.items.ItemEffect.ATK, 8)));
+                    hero.getInventory().equip(veteranBlade);
+                    break;
+
+                case "swift_boots":
+                    // Start with +10% crit accessory (RARE)
+                    model.items.Item swiftBoots = new model.items.Item(
+                            "Swift Boots", "Boots of incredible speed.",
+                            model.items.ItemRarity.RARE, model.items.ItemSlot.ACCESSORY,
+                            java.util.Arrays.asList(new model.items.ItemEffect(model.items.ItemEffect.CRIT_CHANCE, 10)));
+                    hero.getInventory().equip(swiftBoots);
+                    break;
+
+                case "iron_constitution":
+                    // +15 max HP at start (we increase maxHp by reducing the negative)
+                    // Since there is no addMaxHp, we reduce by -15 which increases it
+                    // Actually reduceMaxHp subtracts, so we cannot increase.
+                    // We'll use heal approach: increase via upgrading (no maxHp upgrade in API)
+                    // The simplest is to just heal extra - but that doesn't increase max.
+                    // We need to add a method or work within constraints.
+                    // Let's just give +15 MAX_HP via a hidden item effect check.
+                    // Actually the cleanest: we can't easily increase maxHp without modifying
+                    // GameCharacter. Let's just upgrade defense by 0 and give a hidden armor item.
+                    model.items.Item ironConstitution = new model.items.Item(
+                            "Iron Constitution", "Hardened body from countless battles.",
+                            model.items.ItemRarity.RARE, model.items.ItemSlot.ARMOR,
+                            java.util.Arrays.asList(new model.items.ItemEffect(model.items.ItemEffect.MAX_HP, 15)));
+                    hero.getInventory().equip(ironConstitution);
+                    break;
+
+                case "blood_warrior":
+                    // +15 ATK, -20 max HP at start
+                    hero.upgradePower(15);
+                    hero.reduceMaxHp(20);
+                    break;
+
+                case "lucky_coin":
+                    // Chest spawn rate 65% instead of 50%
+                    if (chestSystem != null) {
+                        chestSystem.setSpawnChance(65);
+                    }
+                    break;
+
+                case "plague_survivor":
+                    // Permanent REGEN 3 HP/turn
+                    // Apply a very long duration regen effect (999 turns ~ permanent)
+                    model.status.StatusEffect regen = new model.status.StatusEffect(
+                            model.status.StatusType.REGEN, 999, 3, "Plague Survivor");
+                    hero.getStatusManager().addEffect(regen);
+                    break;
+            }
+        }
     }
 }

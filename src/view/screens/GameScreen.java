@@ -14,6 +14,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import controller.CombatEngine;
 import controller.GameState;
+import controller.MetaProgression;
+import controller.SaveManager;
 import model.PlayerAction;
 import model.events.GameEvent;
 import model.events.GameEventListener;
@@ -119,6 +121,15 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         // Register SFX manager for audio feedback on game events
         engine.addListener(sfxManager);
+
+        // Ensure SaveManager is set on engine for auto-save at wave transitions
+        engine.setSaveManager(game.getSaveManager());
+
+        // Register MetaProgression as listener if not already registered
+        MetaProgression meta = game.getMetaProgression();
+        if (meta != null) {
+            engine.addListener(meta);
+        }
 
         // Start combat music
         musicManager.play("combat_theme");
@@ -395,10 +406,12 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
                 break;
 
             case VICTORY:
+                handleRunEnd(true);
                 game.setScreen(new VictoryScreen(game, engine));
                 break;
 
             case GAME_OVER:
+                handleRunEnd(false);
                 showingGameOver = true;
                 break;
 
@@ -408,6 +421,37 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
             default:
                 break;
+        }
+    }
+
+    /**
+     * Handles end-of-run operations: updates MetaProgression, saves it, and deletes run save.
+     */
+    private boolean runEndHandled = false;
+
+    private void handleRunEnd(boolean victory) {
+        if (runEndHandled) return;
+        runEndHandled = true;
+
+        MetaProgression meta = game.getMetaProgression();
+        SaveManager saveManager = game.getSaveManager();
+
+        if (meta != null) {
+            meta.recordRunEnd(victory, engine.getCurrentWave(), engine.getTurnCounter());
+
+            // Check unlock conditions
+            boolean danjinAbsorbed = engine.getRunModifiers().isDanjinHeartAbsorbed();
+            boolean danjinShattered = engine.getRunModifiers().isDanjinHeartShattered();
+            // Victory implies Lich was defeated (wave 20 boss)
+            boolean defeatedLich = victory;
+            meta.checkAndAwardUnlocks(danjinAbsorbed, danjinShattered, defeatedLich);
+        }
+
+        if (saveManager != null) {
+            if (meta != null) {
+                saveManager.saveMetaProgression(meta);
+            }
+            saveManager.deleteSave();
         }
     }
 
@@ -464,7 +508,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         // Game over - restart
         if (showingGameOver && keycode == Input.Keys.ENTER) {
-            game.setScreen(new IntroScreen(game));
+            game.setScreen(new MainMenuScreen(game));
             return true;
         }
 
@@ -580,7 +624,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         // Game over - restart
         if (showingGameOver) {
-            game.setScreen(new IntroScreen(game));
+            game.setScreen(new MainMenuScreen(game));
             return true;
         }
 
@@ -630,6 +674,10 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         engine.removeListener(messageLog);
         engine.removeListener(this);
         engine.removeListener(sfxManager);
+        MetaProgression meta = game.getMetaProgression();
+        if (meta != null) {
+            engine.removeListener(meta);
+        }
     }
 
     @Override
@@ -638,5 +686,9 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         engine.removeListener(messageLog);
         engine.removeListener(this);
         engine.removeListener(sfxManager);
+        MetaProgression meta = game.getMetaProgression();
+        if (meta != null) {
+            engine.removeListener(meta);
+        }
     }
 }
