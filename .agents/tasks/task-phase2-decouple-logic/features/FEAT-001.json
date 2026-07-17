@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "refactor",
   "description": "Create the event system and refactor all model classes (GameCharacter, Player, Enemy, Goblin, Skeleton, GoblinKing, Lich) into a clean model/ package with zero I/O. Create event classes in model/events/ for all game occurrences. Refactor Player to remove Scanner and accept actions programmatically. Refactor all enemies to emit events instead of printing.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Step 1: Create branch 'phase2-decouple-logic' from main.",
     "Step 2: Create directory structure: src/model/, src/model/events/, src/controller/.",
@@ -40,5 +40,5 @@
     "Run: grep -r 'Scanner' src/model/ and confirm zero results"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All model classes created and compile cleanly with javac -d out $(find src/model -name '*.java'). Zero System.out/Scanner references verified. Old src/*.java files remain untouched and compile independently. GameEventDispatcher uses protected fireEvent() so subclasses can dispatch events. GameCharacter extends GameEventDispatcher (inheritance approach, not composition). Player.attack() calls regenMana(10) then executeAction(BASIC_ATTACK) for backward compatibility."
 }
