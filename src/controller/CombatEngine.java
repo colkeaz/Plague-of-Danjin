@@ -65,6 +65,9 @@ public class CombatEngine extends GameEventDispatcher {
     // Save manager reference for auto-save at wave transitions
     private SaveManager saveManager;
 
+    // MetaProgression reference for periodic persistence at wave transitions
+    private MetaProgression metaProgression;
+
     /**
      * Internal listener that forwards all child events through this engine's dispatcher.
      */
@@ -316,6 +319,10 @@ public class CombatEngine extends GameEventDispatcher {
         // Auto-save at wave transitions
         if (saveManager != null) {
             saveManager.saveRun(this);
+            // Also persist MetaProgression at wave transitions to avoid data loss on crash
+            if (metaProgression != null) {
+                saveManager.saveMetaProgression(metaProgression);
+            }
         }
 
         fireEvent(GameEvent.builder(GameEventType.WAVE_COMPLETE)
@@ -790,40 +797,50 @@ public class CombatEngine extends GameEventDispatcher {
     /**
      * Determines if the enemy has crossed an HP threshold that warrants a QTE.
      * Returns the appropriate QTEPattern or null if no threshold was crossed.
+     * Thresholds are computed as percentages of the enemy's actual max HP,
+     * so they remain correct even when Shatter reduces boss max HP by 20%.
      */
     private QTEPattern getQTEPatternForThreshold(Enemy enemy) {
         int currentHp = enemy.getHp();
+        int maxHp = enemy.getMaxHp();
 
         if (enemy instanceof GoblinChieftain) {
-            // 50% of 120 = 60
-            if (currentHp <= 60 && !triggeredQTEThresholds.contains("GoblinChieftain_50")) {
+            // 50% threshold
+            int threshold50 = (int)(maxHp * 0.50f);
+            if (currentHp <= threshold50 && !triggeredQTEThresholds.contains("GoblinChieftain_50")) {
                 return QTEPattern.goblinChieftain50();
             }
         } else if (enemy instanceof GoblinKing) {
-            // 25% of 150 = 37 (check lower threshold first to avoid conflicts)
-            if (currentHp <= 37 && !triggeredQTEThresholds.contains("GoblinKing_25")) {
+            // 25% threshold (check lower first to avoid conflicts)
+            int threshold25 = (int)(maxHp * 0.25f);
+            if (currentHp <= threshold25 && !triggeredQTEThresholds.contains("GoblinKing_25")) {
                 return QTEPattern.goblinKing25();
             }
-            // 50% of 150 = 75
-            if (currentHp <= 75 && !triggeredQTEThresholds.contains("GoblinKing_50")) {
+            // 50% threshold
+            int threshold50 = (int)(maxHp * 0.50f);
+            if (currentHp <= threshold50 && !triggeredQTEThresholds.contains("GoblinKing_50")) {
                 return QTEPattern.goblinKing50();
             }
         } else if (enemy instanceof BoneColossus) {
-            // 50% of 200 = 100
-            if (currentHp <= 100 && !triggeredQTEThresholds.contains("BoneColossus_50")) {
+            // 50% threshold
+            int threshold50 = (int)(maxHp * 0.50f);
+            if (currentHp <= threshold50 && !triggeredQTEThresholds.contains("BoneColossus_50")) {
                 return QTEPattern.boneColossus50();
             }
         } else if (enemy instanceof Lich) {
-            // 25% of 300 = 75 (check lowest first)
-            if (currentHp <= 75 && !triggeredQTEThresholds.contains("Lich_25")) {
+            // 25% threshold (check lowest first)
+            int threshold25 = (int)(maxHp * 0.25f);
+            if (currentHp <= threshold25 && !triggeredQTEThresholds.contains("Lich_25")) {
                 return QTEPattern.lich25();
             }
-            // 50% of 300 = 150
-            if (currentHp <= 150 && !triggeredQTEThresholds.contains("Lich_50")) {
+            // 50% threshold
+            int threshold50 = (int)(maxHp * 0.50f);
+            if (currentHp <= threshold50 && !triggeredQTEThresholds.contains("Lich_50")) {
                 return QTEPattern.lich50();
             }
-            // 75% of 300 = 225
-            if (currentHp <= 225 && !triggeredQTEThresholds.contains("Lich_75")) {
+            // 75% threshold
+            int threshold75 = (int)(maxHp * 0.75f);
+            if (currentHp <= threshold75 && !triggeredQTEThresholds.contains("Lich_75")) {
                 return QTEPattern.lich75();
             }
         }
@@ -1022,6 +1039,14 @@ public class CombatEngine extends GameEventDispatcher {
      */
     public void setSaveManager(SaveManager saveManager) {
         this.saveManager = saveManager;
+    }
+
+    /**
+     * Sets the MetaProgression reference for periodic persistence at wave transitions.
+     * This ensures stats are not lost on abnormal exit (crash, force quit, etc.).
+     */
+    public void setMetaProgression(MetaProgression metaProgression) {
+        this.metaProgression = metaProgression;
     }
 
     /**

@@ -183,6 +183,16 @@ public abstract class GameCharacter extends GameEventDispatcher {
     }
 
     /**
+     * Sets current HP directly to the given value, clamped between 0 and maxHp.
+     * Used by save restoration to accurately restore player HP below max.
+     */
+    public void setHp(int value) {
+        this.hp = value;
+        if (this.hp > this.maxHp) this.hp = this.maxHp;
+        if (this.hp < 0) this.hp = 0;
+    }
+
+    /**
      * Permanently reduces max HP by the given amount. Clamps to minimum 1.
      * If current HP exceeds the new max, it is also clamped.
      */

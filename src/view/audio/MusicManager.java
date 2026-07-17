@@ -12,6 +12,12 @@ import view.audio.SoundGenerator.WaveType;
  * Manages background chiptune music loops. Generates 5 tracks procedurally.
  * Supports crossfading between tracks (0.5s fade out, fade in new track).
  * Uses libGDX Sound objects with looping playback.
+ *
+ * NOTE: libGDX's OpenAL backend (LWJGL3) buffers Sound objects fully in memory.
+ * Some platforms cap Sound duration at approximately 10 seconds. The current tracks
+ * are 3-5 seconds which is safe, but extending track duration beyond 10 seconds
+ * may result in silent truncation on certain backends. If longer music is needed,
+ * consider splitting into multiple Sound segments or switching to a streaming approach.
  */
 public class MusicManager {
     private final Map<String, Sound> tracks;

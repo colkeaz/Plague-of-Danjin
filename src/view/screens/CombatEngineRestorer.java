@@ -49,25 +49,9 @@ class CombatEngineRestorer {
             player.reduceMaxHp(maxHpDiff);
         }
 
-        // Set HP: heal to max, then take damage to reach target HP
+        // Set HP directly using setHp() to accurately restore saved HP (even below max)
         player.fullRestore();
-        int hpDiff = player.getHp() - saveData.getHp();
-        if (hpDiff > 0) {
-            // Use direct damage (bypasses defense by using takeDamage which applies defense)
-            // We need raw HP reduction. Let's heal to full first, then reduce.
-            // Since fullRestore sets hp to maxHp, we need to bring it down.
-            // Unfortunately there's no setHp. We can take a large amount of damage
-            // but defense reduction applies. Instead, reduce max mana first then restore.
-            // Actually, the simplest approach: call reduceMaxHp then restore maxHp.
-            // Let's just set the hp field indirectly - not possible.
-            // Best approach: temporarily reduce maxHp, then restore it.
-            // Actually we can't easily. Let's just accept approximate restoration.
-            // The player was already full-restored to saveData.maxHp so:
-            // player.hp = saveData.maxHp, we need player.hp = saveData.hp
-            // Take raw damage - but takeDamage applies defense reduction!
-            // We can work around by doing multiple small heals/damages
-            // For simplicity, we'll accept this limitation for save restoration.
-        }
+        player.setHp(saveData.getHp());
 
         // Restore equipped items by name
         List<String> itemNames = saveData.getEquippedItemNames();

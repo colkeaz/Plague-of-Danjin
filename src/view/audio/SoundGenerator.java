@@ -213,6 +213,8 @@ public class SoundGenerator {
     /**
      * Converts PCM short[] data to a libGDX Sound object by writing a WAV file
      * to local storage and loading it.
+     * Uses try-finally to ensure the temporary file is always cleaned up,
+     * even if Gdx.audio.newSound() throws an exception.
      * @param samples PCM 16-bit signed data
      * @return libGDX Sound object, or null if creation fails
      */
@@ -221,17 +223,21 @@ public class SoundGenerator {
             return null;
         }
 
+        String fileName = "sfx_temp_" + (tempFileCounter++) + ".wav";
+        FileHandle file = null;
         try {
             byte[] wavData = createWavBytes(samples);
-            String fileName = "sfx_temp_" + (tempFileCounter++) + ".wav";
-            FileHandle file = Gdx.files.local(fileName);
+            file = Gdx.files.local(fileName);
             file.writeBytes(wavData, false);
             Sound sound = Gdx.audio.newSound(file);
-            // Delete temp file after loading
-            file.delete();
             return sound;
         } catch (Exception e) {
             return null;
+        } finally {
+            // Always clean up the temp file, whether loading succeeded or failed
+            if (file != null && file.exists()) {
+                file.delete();
+            }
         }
     }
 

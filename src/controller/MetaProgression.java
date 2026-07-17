@@ -78,6 +78,7 @@ public class MetaProgression implements GameEventListener {
                 if ("Holy Light".equals(spellName)) {
                     usedHolyLightThisRun = true;
                 }
+                currentRunTurns++;
                 break;
             case PLAYER_BASIC_ATTACK:
                 currentRunTurns++;
@@ -364,7 +365,9 @@ public class MetaProgression implements GameEventListener {
 
         int bracketStart = json.indexOf('[', colonIndex);
         if (bracketStart < 0) return result;
-        int bracketEnd = json.indexOf(']', bracketStart);
+
+        // Use balanced-bracket counting to find the matching ']'
+        int bracketEnd = findMatchingBracket(json, bracketStart);
         if (bracketEnd < 0) return result;
 
         String arrayContent = json.substring(bracketStart + 1, bracketEnd).trim();
@@ -401,5 +404,37 @@ public class MetaProgression implements GameEventListener {
         }
 
         return result;
+    }
+
+    /**
+     * Finds the matching closing bracket for an opening '[' at the given index.
+     * Properly handles nested brackets and quoted strings containing brackets.
+     * Returns the index of the matching ']', or -1 if not found.
+     */
+    private static int findMatchingBracket(String json, int openIndex) {
+        int depth = 0;
+        boolean inString = false;
+        for (int i = openIndex; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (inString) {
+                if (c == '\\' && i + 1 < json.length()) {
+                    i++; // skip escaped character
+                } else if (c == '"') {
+                    inString = false;
+                }
+            } else {
+                if (c == '"') {
+                    inString = true;
+                } else if (c == '[') {
+                    depth++;
+                } else if (c == ']') {
+                    depth--;
+                    if (depth == 0) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 }

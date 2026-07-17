@@ -125,8 +125,11 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         // Ensure SaveManager is set on engine for auto-save at wave transitions
         engine.setSaveManager(game.getSaveManager());
 
-        // Register MetaProgression as listener if not already registered
+        // Set MetaProgression on engine for periodic persistence at wave transitions
         MetaProgression meta = game.getMetaProgression();
+        engine.setMetaProgression(meta);
+
+        // Register MetaProgression as listener if not already registered
         if (meta != null) {
             engine.addListener(meta);
         }
