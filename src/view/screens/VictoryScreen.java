@@ -28,6 +28,7 @@ import view.sprites.ColorPalette;
 /**
  * Implements Screen. Renders victory celebration with sparkle particles,
  * player victory pose sprite, and credits scroll with pixel font styling.
+ * In story mode, shows epilogue with multiple endings based on choices.
  */
 public class VictoryScreen extends InputAdapter implements Screen {
     private final PlagueOfDanjinGame game;
@@ -37,7 +38,37 @@ public class VictoryScreen extends InputAdapter implements Screen {
 
     private float creditsScrollY;
     private static final float SCROLL_SPEED = 18f;
-    private static final String[] CREDITS = {
+    private final String[] credits;
+
+    // Victory celebration particles
+    private final List<Particle> sparkleParticles;
+    private float sparkleTimer;
+    private float burstTimer;
+
+    // Victory player sprite (raised sword pose)
+    private Texture victoryPoseTexture;
+    private TextureRegion victoryPoseRegion;
+
+    public VictoryScreen(PlagueOfDanjinGame game, CombatEngine engine) {
+        this.game = game;
+        this.renderer = game.getRenderer();
+        this.assets = game.getAssetLoader();
+        this.engine = engine;
+        this.creditsScrollY = 0f;
+        this.sparkleParticles = new ArrayList<>();
+        this.sparkleTimer = 0f;
+        this.burstTimer = 0f;
+
+        if (engine.isStoryMode()) {
+            this.credits = buildStoryEpilogue();
+        } else {
+            this.credits = CLASSIC_CREDITS;
+        }
+
+        generateVictoryPose();
+    }
+
+    private static final String[] CLASSIC_CREDITS = {
             "VICTORY!",
             "",
             "The Plague of Danjin has been vanquished!",
@@ -59,26 +90,128 @@ public class VictoryScreen extends InputAdapter implements Screen {
             "Press Enter to play again"
     };
 
-    // Victory celebration particles
-    private final List<Particle> sparkleParticles;
-    private float sparkleTimer;
-    private float burstTimer;
+    /**
+     * Builds an epilogue based on the player's story mode choices.
+     * Determines ending: Pure Hero, Corrupted Victor, or Pragmatic Survivor.
+     */
+    private String[] buildStoryEpilogue() {
+        List<String> lines = new ArrayList<>();
+        lines.add("VICTORY!");
+        lines.add("");
 
-    // Victory player sprite (raised sword pose)
-    private Texture victoryPoseTexture;
-    private TextureRegion victoryPoseRegion;
+        String playerName = engine.getPlayer() != null ? engine.getPlayer().getName() : "Hero";
+        String className = engine.getCharacterClass() != null ? engine.getCharacterClass().getDisplayName() : "Warrior";
 
-    public VictoryScreen(PlagueOfDanjinGame game, CombatEngine engine) {
-        this.game = game;
-        this.renderer = game.getRenderer();
-        this.assets = game.getAssetLoader();
-        this.engine = engine;
-        this.creditsScrollY = 0f;
-        this.sparkleParticles = new ArrayList<>();
-        this.sparkleTimer = 0f;
-        this.burstTimer = 0f;
+        lines.add(playerName + " the " + className);
+        lines.add("has conquered the Dungeon of Danjin!");
+        lines.add("");
 
-        generateVictoryPose();
+        // Determine ending based on choices
+        boolean absorbed = engine.getRunModifiers().isDanjinHeartAbsorbed();
+        boolean shattered = engine.getRunModifiers().isDanjinHeartShattered();
+
+        controller.WorldManager wm = engine.getWorldManager();
+        int corruptChoices = 0;
+        int pureChoices = 0;
+
+        if (wm != null) {
+            model.world.WorldState ws = wm.getWorldState();
+            java.util.Map<String, Integer> choices = ws.getEventChoices();
+
+            // Goblin Prisoner: 0=free (pure), 1=leave (neutral)
+            Integer goblinChoice = choices.get("Goblin Prisoner");
+            if (goblinChoice != null && goblinChoice == 0) pureChoices++;
+
+            // Fallen Paladin: 0=blessing (pure), 1=item (pragmatic)
+            Integer paladinChoice = choices.get("Fallen Paladin's Spirit");
+            if (paladinChoice != null && paladinChoice == 0) pureChoices++;
+
+            // Corrupted Tree: 0=purify (pure), 1=absorb (corrupt)
+            Integer treeChoice = choices.get("The Corrupted Tree");
+            if (treeChoice != null && treeChoice == 1) corruptChoices++;
+            else if (treeChoice != null && treeChoice == 0) pureChoices++;
+
+            // Lich's Offer: 0=accept (corrupt), 1=refuse (pure)
+            Integer lichChoice = choices.get("The Lich's Offer");
+            if (lichChoice != null && lichChoice == 0) corruptChoices++;
+            else if (lichChoice != null && lichChoice == 1) pureChoices++;
+        }
+
+        if (absorbed) corruptChoices += 2;
+        if (shattered) pureChoices++;
+
+        // Determine ending variant
+        String ending;
+        if (corruptChoices >= 2) {
+            ending = "CORRUPTED_VICTOR";
+        } else if (pureChoices >= 3) {
+            ending = "PURE_HERO";
+        } else {
+            ending = "PRAGMATIC_SURVIVOR";
+        }
+
+        lines.add("--- EPILOGUE ---");
+        lines.add("");
+
+        switch (ending) {
+            case "PURE_HERO":
+                lines.add("With unwavering resolve, " + playerName);
+                lines.add("resisted every temptation the dungeon");
+                lines.add("offered. The Lich fell to a warrior whose");
+                lines.add("spirit remained untainted by darkness.");
+                lines.add("");
+                lines.add("The plague recedes from Morthga. The land");
+                lines.add("begins to heal, and the people whisper of");
+                lines.add("a hero whose light could not be dimmed.");
+                lines.add("");
+                lines.add("ENDING: The Pure Hero");
+                break;
+
+            case "CORRUPTED_VICTOR":
+                lines.add("Power has a price, and " + playerName);
+                lines.add("paid it willingly. The dark energies");
+                lines.add("absorbed from Danjin's depths course");
+                lines.add("through veins that once held only blood.");
+                lines.add("");
+                lines.add("The Lich is destroyed, but as " + playerName);
+                lines.add("sits upon the throne of black iron, one");
+                lines.add("wonders: has the plague truly ended, or");
+                lines.add("merely found a new host?");
+                lines.add("");
+                lines.add("ENDING: The Corrupted Victor");
+                break;
+
+            default: // PRAGMATIC_SURVIVOR
+                lines.add(playerName + " made choices as the dungeon");
+                lines.add("demanded: some merciful, others ruthless.");
+                lines.add("Survival required flexibility, not rigid");
+                lines.add("adherence to any single creed.");
+                lines.add("");
+                lines.add("The Lich is slain. The plague weakens.");
+                lines.add("Morthga may recover in time, though the");
+                lines.add("scars of Danjin will never fully fade.");
+                lines.add(playerName + " walks away, neither saint");
+                lines.add("nor villain, but alive.");
+                lines.add("");
+                lines.add("ENDING: The Pragmatic Survivor");
+                break;
+        }
+
+        lines.add("");
+        lines.add("--- Credits ---");
+        lines.add("");
+        lines.add("Plague of Danjin");
+        lines.add("A Roguelike Dungeon Crawler");
+        lines.add("");
+        lines.add("Programmatic Pixel Art");
+        lines.add("Generated at Runtime");
+        lines.add("");
+        lines.add("Thank you for playing!");
+        lines.add("");
+        lines.add("");
+        lines.add("Press Enter to play again");
+
+        return lines.toArray(new String[0]);
     }
 
     /**
@@ -222,28 +355,30 @@ public class VictoryScreen extends InputAdapter implements Screen {
         float startY = 20f + creditsScrollY;
         float lineHeight = 14f;
 
-        for (int i = 0; i < CREDITS.length; i++) {
-            float yPos = startY + (CREDITS.length - i) * lineHeight;
+        for (int i = 0; i < credits.length; i++) {
+            float yPos = startY + (credits.length - i) * lineHeight;
 
             if (yPos < -20f || yPos > 260f) continue;
 
             if (i == 0) {
                 // VICTORY! in gold
                 font.setColor(ColorPalette.HOLY_GOLD);
-            } else if (CREDITS[i].startsWith("---")) {
+            } else if (credits[i].startsWith("---")) {
                 font.setColor(ColorPalette.FIRE_ORANGE);
-            } else if (CREDITS[i].startsWith("Press")) {
+            } else if (credits[i].startsWith("Press")) {
                 font.setColor(ColorPalette.HEAL_GREEN);
-            } else if (CREDITS[i].startsWith("Plague of Danjin")) {
+            } else if (credits[i].startsWith("Plague of Danjin")) {
                 font.setColor(ColorPalette.HOLY_GOLD);
+            } else if (credits[i].startsWith("ENDING:")) {
+                font.setColor(ColorPalette.CRIT_YELLOW);
             } else {
                 font.setColor(ColorPalette.TEXT_WHITE);
             }
 
             // Center text roughly
-            float textWidth = CREDITS[i].length() * 4.5f;
+            float textWidth = credits[i].length() * 4.5f;
             float textX = (PixelRenderer.VIRTUAL_WIDTH - textWidth) / 2f;
-            font.draw(batch, CREDITS[i], textX, yPos);
+            font.draw(batch, credits[i], textX, yPos);
         }
 
         font.setColor(Color.WHITE);

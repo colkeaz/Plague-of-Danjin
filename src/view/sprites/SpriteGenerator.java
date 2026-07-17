@@ -38,6 +38,8 @@ public class SpriteGenerator implements Disposable {
         generateGoblinChieftainSprite();
         generateBoneColossusSprite();
         generateLichSprite();
+        generatePlagueElementalSprite();
+        generateThornmotherSprite();
         generateHpBarFrame();
         generateMpBarFrame();
         generateStatusIcons();
@@ -47,6 +49,7 @@ public class SpriteGenerator implements Disposable {
         generateElementIcons();
         generateBackgroundTile();
         generateParticleTextures();
+        generateWorldMapNodes();
     }
 
     public TextureRegion[][] getEntitySprites(String entityName) {
@@ -1349,6 +1352,178 @@ public class SpriteGenerator implements Disposable {
         pm.setColor(Color.WHITE);
         pm.fillRectangle(0, 0, 4, 4);
         uiSprites.put("particle_physical", createRegionFromPixmap(pm));
+    }
+
+    // ===== PLAGUE ELEMENTAL (16x16 green/purple swirling entity) =====
+    private void generatePlagueElementalSprite() {
+        TextureRegion[][] frames = new TextureRegion[5][];
+        frames[0] = new TextureRegion[2];
+        frames[1] = generateAttackFrames(16, 16, ColorPalette.POISON_GREEN, ColorPalette.DARK_PURPLE);
+        frames[2] = generateHurtFrames(16, 16, ColorPalette.POISON_GREEN);
+        frames[3] = generateDeathFrames(16, 16, ColorPalette.POISON_GREEN);
+        frames[4] = generateCastFrames(16, 16, ColorPalette.POISON_GREEN);
+
+        for (int i = 0; i < 2; i++) {
+            Pixmap pm = createPixmap(16, 16);
+            drawPlagueElementalBody(pm, i);
+            frames[0][i] = createRegionFromPixmap(pm);
+        }
+        entitySprites.put("plague_elemental", frames);
+    }
+
+    private void drawPlagueElementalBody(Pixmap pm, int frame) {
+        Color green = ColorPalette.POISON_GREEN;
+        Color purple = ColorPalette.DARK_PURPLE;
+        Color dark = ColorPalette.POISON_DARK;
+
+        // Swirling body (shifts slightly between frames)
+        int shift = frame;
+
+        // Core body
+        for (int x = 5; x <= 10; x++) {
+            for (int y = 3 + shift; y <= 10 + shift; y++) {
+                if (y < 16) setPixel(pm, x, y, green);
+            }
+        }
+
+        // Purple swirl accents
+        setPixel(pm, 4, 5 + shift, purple); setPixel(pm, 11, 5 + shift, purple);
+        setPixel(pm, 3, 7 + shift, purple); setPixel(pm, 12, 7 + shift, purple);
+        setPixel(pm, 4, 9 + shift, purple); setPixel(pm, 11, 9 + shift, purple);
+
+        // Eyes (glowing)
+        setPixel(pm, 6, 5 + shift, dark); setPixel(pm, 9, 5 + shift, dark);
+
+        // Wispy top tendrils
+        setPixel(pm, 7, 2 + shift, green); setPixel(pm, 8, 1 + shift, green);
+        setPixel(pm, 6, 2 + shift, purple);
+
+        // Dripping bottom
+        setPixel(pm, 6, 11 + shift, dark);
+        setPixel(pm, 8, 12 + shift, dark);
+        setPixel(pm, 7, 13 + shift, green);
+
+        // Toxic aura particles
+        setPixel(pm, 3, 4 + shift, green);
+        setPixel(pm, 12, 8 + shift, green);
+        setPixel(pm, 2, 9 + shift, purple);
+    }
+
+    // ===== THORNMOTHER (24x24 vine-covered boss) =====
+    private void generateThornmotherSprite() {
+        TextureRegion[][] frames = new TextureRegion[5][];
+        frames[0] = new TextureRegion[2];
+        frames[1] = generateAttackFrames(24, 24, ColorPalette.POISON_GREEN, ColorPalette.GOBLIN_GREEN);
+        frames[2] = generateHurtFrames(24, 24, ColorPalette.POISON_GREEN);
+        frames[3] = generateDeathFrames(24, 24, ColorPalette.POISON_GREEN);
+        frames[4] = generateCastFrames(24, 24, ColorPalette.POISON_GREEN);
+
+        for (int i = 0; i < 2; i++) {
+            Pixmap pm = createPixmap(24, 24);
+            drawThornmotherBody(pm, i);
+            frames[0][i] = createRegionFromPixmap(pm);
+        }
+        entitySprites.put("thornmother", frames);
+    }
+
+    private void drawThornmotherBody(Pixmap pm, int frame) {
+        Color green = ColorPalette.GOBLIN_GREEN;
+        Color darkGreen = ColorPalette.POISON_DARK;
+        Color vine = ColorPalette.POISON_GREEN;
+        Color thorn = ColorPalette.GOBLIN_BROWN;
+        Color eye = ColorPalette.LICH_EYES;
+
+        // Main body (large trunk-like mass)
+        for (int x = 8; x <= 16; x++) {
+            for (int y = 5; y <= 18; y++) {
+                setPixel(pm, x, y, green);
+            }
+        }
+
+        // Darker bark texture
+        for (int y = 6; y <= 17; y += 3) {
+            setPixel(pm, 9, y, darkGreen);
+            setPixel(pm, 14, y + 1, darkGreen);
+        }
+
+        // Head/crown with thorns
+        for (int x = 9; x <= 15; x++) setPixel(pm, x, 4, green);
+        for (int x = 10; x <= 14; x++) setPixel(pm, x, 3, green);
+        setPixel(pm, 11, 2, thorn); setPixel(pm, 13, 2, thorn);
+        setPixel(pm, 10, 1 + frame, thorn); setPixel(pm, 14, 1 + frame, thorn);
+
+        // Glowing eyes
+        setPixel(pm, 10, 6, eye); setPixel(pm, 14, 6, eye);
+
+        // Vine arms (extend outward)
+        // Left arm
+        for (int x = 3; x <= 8; x++) setPixel(pm, x, 10 + frame, vine);
+        for (int x = 2; x <= 4; x++) setPixel(pm, x, 11 + frame, vine);
+        setPixel(pm, 2, 9 + frame, thorn); setPixel(pm, 3, 12 + frame, thorn);
+
+        // Right arm
+        for (int x = 16; x <= 21; x++) setPixel(pm, x, 10 + frame, vine);
+        for (int x = 20; x <= 22; x++) setPixel(pm, x, 11 + frame, vine);
+        setPixel(pm, 22, 9 + frame, thorn); setPixel(pm, 21, 12 + frame, thorn);
+
+        // Root base
+        for (int x = 6; x <= 18; x++) setPixel(pm, x, 19, darkGreen);
+        for (int x = 5; x <= 19; x++) setPixel(pm, x, 20, darkGreen);
+        setPixel(pm, 4, 21, vine); setPixel(pm, 7, 21, vine);
+        setPixel(pm, 17, 21, vine); setPixel(pm, 20, 21, vine);
+
+        // Thorns on body
+        setPixel(pm, 7, 8, thorn); setPixel(pm, 17, 12, thorn);
+        setPixel(pm, 7, 15, thorn); setPixel(pm, 17, 7, thorn);
+    }
+
+    // ===== WORLD MAP NODE SPRITES (16x16 in different colors) =====
+    private void generateWorldMapNodes() {
+        // Generate 5 node sprites for different area states
+        Color[] nodeColors = {
+            ColorPalette.TEXT_WHITE,     // available
+            ColorPalette.HEAL_GREEN,     // completed
+            ColorPalette.CRIT_YELLOW,    // in-progress
+            ColorPalette.DAMAGE_RED,     // locked
+            ColorPalette.HOLY_GOLD       // current
+        };
+        String[] nodeKeys = {
+            "map_node_available", "map_node_completed", "map_node_progress",
+            "map_node_locked", "map_node_current"
+        };
+
+        for (int n = 0; n < nodeColors.length; n++) {
+            Pixmap pm = createPixmap(16, 16);
+            Color color = nodeColors[n];
+
+            // Draw circular node
+            pm.setColor(color);
+            for (int x = 5; x <= 10; x++) setPixel(pm, x, 3, color);
+            for (int x = 4; x <= 11; x++) setPixel(pm, x, 4, color);
+            for (int x = 3; x <= 12; x++) {
+                for (int y = 5; y <= 10; y++) {
+                    setPixel(pm, x, y, color);
+                }
+            }
+            for (int x = 4; x <= 11; x++) setPixel(pm, x, 11, color);
+            for (int x = 5; x <= 10; x++) setPixel(pm, x, 12, color);
+
+            // Inner dark circle
+            Color inner = ColorPalette.BACKGROUND;
+            for (int x = 6; x <= 9; x++) {
+                for (int y = 6; y <= 9; y++) {
+                    setPixel(pm, x, y, inner);
+                }
+            }
+
+            // Center highlight
+            setPixel(pm, 7, 7, color);
+            setPixel(pm, 8, 7, color);
+            setPixel(pm, 7, 8, color);
+            setPixel(pm, 8, 8, color);
+
+            uiSprites.put(nodeKeys[n], createRegionFromPixmap(pm));
+        }
     }
 
     @Override

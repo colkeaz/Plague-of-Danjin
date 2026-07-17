@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Create the view layer: WorldMapScreen, AreaScreen, RestShrineScreen. Update MainMenuScreen to offer Story Mode vs Classic Mode. Update ClassSelectionScreen to route to WorldMapScreen in story mode. Update GameScreen to return to AreaScreen/WorldMapScreen after combat in story mode. Add world-map-related sprites to SpriteGenerator and area-specific music to MusicManager. Wire PlagueOfDanjinGame for new screen routing. Implement VictoryScreen epilogue with multiple endings based on choices.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/view/screens/WorldMapScreen.java - Implements Screen + InputAdapter. Shows the dungeon hub layout matching the spec's ASCII diagram (320x240). Area nodes colored by status (green=completed, yellow=in-progress, red=locked, white=available). Shows key count, class name, connection lines between nodes. Input: number keys 1-4 to select area, R for rest shrine. Transitions to AreaScreen on area select. Uses Pixmap-generated background and particles.",
     "Create src/view/screens/AreaScreen.java - Implements Screen + InputAdapter. Shows current area name, description, encounter list (nodes colored by status), area-specific flavor text. Input: Enter to start next encounter, Escape to retreat to hub. Has typewriter intro text on first entry. Transitions to GameScreen for combat encounters, EventRoomScreen for event encounters.",

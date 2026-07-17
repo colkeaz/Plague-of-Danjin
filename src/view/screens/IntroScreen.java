@@ -33,6 +33,7 @@ public class IntroScreen extends InputAdapter implements Screen {
     private final PlagueOfDanjinGame game;
     private final PixelRenderer renderer;
     private final AssetLoader assets;
+    private final boolean storyMode;
 
     private static final String STORY_TEXT =
             "A dark plague has spread across the land of Danjin. " +
@@ -68,10 +69,11 @@ public class IntroScreen extends InputAdapter implements Screen {
     private final List<Particle> ambientParticles;
     private float particleSpawnTimer;
 
-    public IntroScreen(PlagueOfDanjinGame game) {
+    public IntroScreen(PlagueOfDanjinGame game, boolean storyMode) {
         this.game = game;
         this.renderer = game.getRenderer();
         this.assets = game.getAssetLoader();
+        this.storyMode = storyMode;
         this.state = IntroState.SHOWING_TITLE;
         this.playerName = new StringBuilder();
         this.typewriterTimer = 0f;
@@ -428,7 +430,7 @@ public class IntroScreen extends InputAdapter implements Screen {
     }
 
     private void startGame() {
-        game.setScreen(new ClassSelectionScreen(game, playerName.toString()));
+        game.setScreen(new ClassSelectionScreen(game, playerName.toString(), storyMode));
     }
 
     @Override

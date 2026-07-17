@@ -38,6 +38,7 @@ public class ClassSelectionScreen extends InputAdapter implements Screen {
     private final PixelRenderer renderer;
     private final AssetLoader assets;
     private final String playerName;
+    private final boolean storyMode;
 
     private int selectedIndex;
     private float bgScrollY;
@@ -59,11 +60,12 @@ public class ClassSelectionScreen extends InputAdapter implements Screen {
         "Keen Edge: 25% crit, 2.5x crit dmg"
     };
 
-    public ClassSelectionScreen(PlagueOfDanjinGame game, String playerName) {
+    public ClassSelectionScreen(PlagueOfDanjinGame game, String playerName, boolean storyMode) {
         this.game = game;
         this.renderer = game.getRenderer();
         this.assets = game.getAssetLoader();
         this.playerName = playerName;
+        this.storyMode = storyMode;
         this.selectedIndex = 0;
         this.bgScrollY = 0f;
         this.blinkTimer = 0f;
@@ -349,11 +351,16 @@ public class ClassSelectionScreen extends InputAdapter implements Screen {
         CharacterClass selectedClass = CLASSES[index];
 
         CombatEngine engine = new CombatEngine();
-        engine.startGame(playerName, selectedClass);
 
         // Apply unlockable starting bonuses from meta-progression
         controller.MetaProgression meta = game.getMetaProgression();
         controller.SaveManager saveManager = game.getSaveManager();
+
+        if (storyMode) {
+            engine.startStoryMode(playerName, selectedClass);
+        } else {
+            engine.startGame(playerName, selectedClass);
+        }
 
         engine.setSaveManager(saveManager);
         engine.applyUnlocks(meta, engine.getChestSystem());
@@ -364,7 +371,11 @@ public class ClassSelectionScreen extends InputAdapter implements Screen {
         // Save initial run state
         saveManager.saveRun(engine);
 
-        game.setScreen(new GameScreen(game, engine));
+        if (storyMode) {
+            game.setScreen(new WorldMapScreen(game, engine));
+        } else {
+            game.setScreen(new GameScreen(game, engine));
+        }
     }
 
     @Override

@@ -402,6 +402,16 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
                 }
                 break;
 
+            case AREA_NAVIGATION:
+                // Story mode: combat encounter complete, return to AreaScreen
+                game.setScreen(new AreaScreen(game, engine));
+                break;
+
+            case WORLD_MAP:
+                // Story mode: area complete, return to WorldMapScreen
+                game.setScreen(new WorldMapScreen(game, engine));
+                break;
+
             case SKILL_CHOICE:
                 game.setScreen(new SkillChoiceScreen(game, engine));
                 break;

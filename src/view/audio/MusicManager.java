@@ -64,6 +64,12 @@ public class MusicManager {
 
         // victory_theme: triumphant fanfare loop
         tracks.put("victory_theme", createVictoryTheme());
+
+        // world_map_theme: ambient, mysterious, slower
+        tracks.put("world_map_theme", createWorldMapTheme());
+
+        // plague_gardens_theme: toxic, dissonant
+        tracks.put("plague_gardens_theme", createPlagueGardensTheme());
     }
 
     private Sound createDungeonTheme() {
@@ -194,6 +200,57 @@ public class MusicManager {
             new Note(NoteSequencer.E5, 0.4f, WaveType.SQUARE, 0.55f),
             new Note(NoteSequencer.C5, 0.3f, WaveType.TRIANGLE, 0.45f),
             Note.rest(0.2f)
+        };
+        short[] samples = NoteSequencer.sequenceToSamples(melody);
+        SoundGenerator.applyEnvelope(samples, 10f, 10f);
+        return SoundGenerator.createSound(samples);
+    }
+
+    private Sound createWorldMapTheme() {
+        // Ambient, mysterious, slower than dungeon_theme
+        Note[] melody = new Note[] {
+            new Note(NoteSequencer.E3, 0.5f, WaveType.TRIANGLE, 0.2f),
+            Note.rest(0.2f),
+            new Note(NoteSequencer.G3, 0.4f, WaveType.TRIANGLE, 0.2f),
+            new Note(NoteSequencer.A3, 0.3f, WaveType.TRIANGLE, 0.2f),
+            Note.rest(0.3f),
+            new Note(NoteSequencer.B3, 0.5f, WaveType.TRIANGLE, 0.25f),
+            Note.rest(0.2f),
+            new Note(NoteSequencer.G3, 0.4f, WaveType.TRIANGLE, 0.2f),
+            new Note(NoteSequencer.E3, 0.6f, WaveType.TRIANGLE, 0.2f),
+            Note.rest(0.3f),
+            new Note(NoteSequencer.D3, 0.4f, WaveType.SQUARE, 0.15f),
+            new Note(NoteSequencer.E3, 0.4f, WaveType.TRIANGLE, 0.2f),
+            new Note(NoteSequencer.G3, 0.5f, WaveType.TRIANGLE, 0.2f),
+            Note.rest(0.4f),
+            new Note(NoteSequencer.A3, 0.3f, WaveType.TRIANGLE, 0.2f),
+            new Note(NoteSequencer.E3, 0.6f, WaveType.TRIANGLE, 0.2f),
+            Note.rest(0.3f)
+        };
+        short[] samples = NoteSequencer.sequenceToSamples(melody);
+        SoundGenerator.applyEnvelope(samples, 10f, 10f);
+        return SoundGenerator.createSound(samples);
+    }
+
+    private Sound createPlagueGardensTheme() {
+        // Toxic, dissonant - uses minor seconds and tritones
+        Note[] melody = new Note[] {
+            new Note(NoteSequencer.E3, 0.3f, WaveType.SAWTOOTH, 0.3f),
+            new Note(NoteSequencer.F3, 0.3f, WaveType.SAWTOOTH, 0.25f),
+            Note.rest(0.1f),
+            new Note(NoteSequencer.E3, 0.2f, WaveType.SQUARE, 0.3f),
+            new Note(NoteSequencer.B3, 0.4f, WaveType.SAWTOOTH, 0.3f),
+            Note.rest(0.15f),
+            new Note(NoteSequencer.C3, 0.3f, WaveType.SAWTOOTH, 0.25f),
+            new Note(NoteSequencer.F3, 0.4f, WaveType.TRIANGLE, 0.3f),
+            Note.rest(0.2f),
+            new Note(NoteSequencer.E3, 0.3f, WaveType.SAWTOOTH, 0.3f),
+            new Note(NoteSequencer.D3, 0.3f, WaveType.SAWTOOTH, 0.25f),
+            new Note(NoteSequencer.C3, 0.5f, WaveType.TRIANGLE, 0.3f),
+            Note.rest(0.2f),
+            new Note(NoteSequencer.F3, 0.2f, WaveType.SQUARE, 0.25f),
+            new Note(NoteSequencer.E3, 0.5f, WaveType.SAWTOOTH, 0.3f),
+            Note.rest(0.3f)
         };
         short[] samples = NoteSequencer.sequenceToSamples(melody);
         SoundGenerator.applyEnvelope(samples, 10f, 10f);

@@ -39,7 +39,7 @@ public class MainMenuScreen extends InputAdapter implements Screen {
     private final SaveManager saveManager;
     private final MetaProgression metaProgression;
 
-    private static final String[] MENU_OPTIONS = {"New Game", "Continue", "Stats", "Unlocks"};
+    private static final String[] MENU_OPTIONS = {"Story Mode", "Classic Mode", "Continue", "Stats", "Unlocks"};
     private int selectedIndex = 0;
     private boolean hasSaveFile;
     private String savedClassDisplay;
@@ -84,16 +84,18 @@ public class MainMenuScreen extends InputAdapter implements Screen {
         model.SaveData saveData = saveManager.loadRun();
         if (saveData == null) return "";
         String className = saveData.getCharacterClass();
+        String gameMode = saveData.getGameMode();
         int wave = saveData.getWaveNumber();
+        String modePrefix = "STORY".equals(gameMode) ? "Story" : "Classic";
         if (className != null && !className.isEmpty()) {
             try {
                 model.CharacterClass cc = model.CharacterClass.valueOf(className);
-                return cc.getDisplayName() + " - Wave " + wave;
+                return modePrefix + " - " + cc.getDisplayName();
             } catch (IllegalArgumentException e) {
-                return "Wave " + wave;
+                return modePrefix + " - Wave " + wave;
             }
         }
-        return "Wave " + wave;
+        return modePrefix + " - Wave " + wave;
     }
 
     private void generateTitleLogo() {
@@ -235,13 +237,13 @@ public class MainMenuScreen extends InputAdapter implements Screen {
             float y = startY - i * lineHeight;
             String prefix = (i == selectedIndex && cursorVisible) ? "> " : "  ";
             String label;
-            if (i == 1 && hasSaveFile && !savedClassDisplay.isEmpty()) {
+            if (i == 2 && hasSaveFile && !savedClassDisplay.isEmpty()) {
                 label = prefix + (i + 1) + ". " + MENU_OPTIONS[i] + " (" + savedClassDisplay + ")";
             } else {
                 label = prefix + (i + 1) + ". " + MENU_OPTIONS[i];
             }
 
-            if (i == 1 && !hasSaveFile) {
+            if (i == 2 && !hasSaveFile) {
                 // Continue is grayed out
                 font.setColor(0.4f, 0.4f, 0.4f, 1f);
             } else if (i == selectedIndex) {
@@ -255,7 +257,7 @@ public class MainMenuScreen extends InputAdapter implements Screen {
 
         // Footer
         font.setColor(ColorPalette.HEAL_GREEN);
-        font.draw(batch, "Arrow keys + Enter or 1-4", 70f, 30f);
+        font.draw(batch, "Arrow keys + Enter or 1-5", 70f, 30f);
         font.setColor(Color.WHITE);
     }
 
@@ -420,6 +422,10 @@ public class MainMenuScreen extends InputAdapter implements Screen {
             case Input.Keys.NUM_4:
                 selectOption(3);
                 return true;
+
+            case Input.Keys.NUM_5:
+                selectOption(4);
+                return true;
         }
 
         return false;
@@ -427,21 +433,25 @@ public class MainMenuScreen extends InputAdapter implements Screen {
 
     private void selectOption(int index) {
         switch (index) {
-            case 0: // New Game
-                game.setScreen(new IntroScreen(game));
+            case 0: // Story Mode
+                game.setScreen(new IntroScreen(game, true));
                 break;
 
-            case 1: // Continue
+            case 1: // Classic Mode
+                game.setScreen(new IntroScreen(game, false));
+                break;
+
+            case 2: // Continue
                 if (hasSaveFile) {
                     loadAndContinue();
                 }
                 break;
 
-            case 2: // Stats
+            case 3: // Stats
                 showingStats = true;
                 break;
 
-            case 3: // Unlocks
+            case 4: // Unlocks
                 showingUnlocks = true;
                 break;
         }
@@ -457,7 +467,11 @@ public class MainMenuScreen extends InputAdapter implements Screen {
         CombatEngineRestorer restorer = new CombatEngineRestorer();
         controller.CombatEngine engine = restorer.restoreFromSave(saveData, metaProgression);
         if (engine != null) {
-            game.setScreen(new GameScreen(game, engine));
+            if (engine.isStoryMode()) {
+                game.setScreen(new WorldMapScreen(game, engine));
+            } else {
+                game.setScreen(new GameScreen(game, engine));
+            }
         }
     }
 
