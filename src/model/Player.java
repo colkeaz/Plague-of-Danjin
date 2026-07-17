@@ -4,6 +4,7 @@ import java.util.Random;
 
 import model.events.GameEvent;
 import model.events.GameEventType;
+import model.skills.Element;
 
 public class Player extends GameCharacter {
     private final Random rand = new Random();
@@ -11,6 +12,7 @@ public class Player extends GameCharacter {
     public Player(String name) {
         // Start with fixed stats: 100 HP, 30 Attack, 15 Defense
         super(name, 100, 30, 15);
+        setElement(Element.PHYSICAL);
     }
 
     /**

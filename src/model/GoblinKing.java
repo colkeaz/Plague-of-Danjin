@@ -2,11 +2,12 @@ package model;
 
 import model.events.GameEvent;
 import model.events.GameEventType;
+import model.skills.Element;
 
 public class GoblinKing extends Enemy {
 
     public GoblinKing() {
-        super("Goblin King", 150, 20, 15);
+        super("Goblin King", 150, 20, 15, Element.PHYSICAL);
     }
 
     @Override

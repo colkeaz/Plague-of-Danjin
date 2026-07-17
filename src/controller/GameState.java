@@ -8,5 +8,8 @@ public enum GameState {
     WAVE_TRANSITION,
     CHEST_RESULT,
     GAME_OVER,
-    VICTORY
+    VICTORY,
+    SKILL_CHOICE,
+    EVENT_ROOM,
+    EQUIP_SCREEN
 }

@@ -3,6 +3,9 @@ package model;
 import model.events.GameEvent;
 import model.events.GameEventDispatcher;
 import model.events.GameEventType;
+import model.skills.Element;
+import model.status.StatusManager;
+import model.status.StatusType;
 
 public abstract class GameCharacter extends GameEventDispatcher {
     private String name;
@@ -12,6 +15,8 @@ public abstract class GameCharacter extends GameEventDispatcher {
     private int defense;
     private int mana;
     private int maxMana;
+    private Element element;
+    private final StatusManager statusManager;
 
     public GameCharacter(String name, int maxHp, int attackPower, int defense) {
         this.name = name;
@@ -19,6 +24,8 @@ public abstract class GameCharacter extends GameEventDispatcher {
         this.hp = maxHp;
         this.attackPower = attackPower;
         this.defense = defense;
+        this.element = Element.PHYSICAL;
+        this.statusManager = new StatusManager();
 
         this.maxMana = 100;
         this.mana = 75;
@@ -41,11 +48,43 @@ public abstract class GameCharacter extends GameEventDispatcher {
 
     public int getMaxMana() { return maxMana; }
 
+    public Element getElement() { return element; }
+
+    public StatusManager getStatusManager() { return statusManager; }
+
+    protected void setElement(Element element) { this.element = element; }
+
     public boolean isAlive() {
         return this.hp > 0;
     }
 
+    /**
+     * Takes damage with an elemental component. Applies the elemental multiplier
+     * based on the attack element vs this character's element, then delegates
+     * to the standard takeDamage logic (which handles defense reduction and SHIELD).
+     */
+    public void takeDamage(int damage, Element attackElement) {
+        double multiplier = Element.getMultiplier(attackElement, this.element);
+        int modifiedDamage = (int)(damage * multiplier);
+        takeDamage(modifiedDamage);
+    }
+
     public void takeDamage(int damage) {
+        // Check for SHIELD status - if active, block damage completely
+        if (statusManager.hasEffect(StatusType.SHIELD)) {
+            fireEvent(GameEvent.builder(GameEventType.SHIELD_BLOCKED)
+                    .put("targetName", this.name)
+                    .put("blockedDamage", damage)
+                    .build());
+
+            statusManager.removeEffect(StatusType.SHIELD);
+
+            fireEvent(GameEvent.builder(GameEventType.SHIELD_BROKEN)
+                    .put("targetName", this.name)
+                    .build());
+            return;
+        }
+
         // 1. Calculate reduction (e.g., 15 becomes 0.15)
         double reductionPercentage = this.defense / 100.0;
 

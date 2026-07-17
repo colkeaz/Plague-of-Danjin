@@ -27,5 +27,39 @@ public enum GameEventType {
     CHEST_COMMON,
     CHEST_MIMIC,
     GAME_VICTORY,
-    FLAVOR_TEXT
+    FLAVOR_TEXT,
+
+    // Item system events
+    ITEM_EQUIPPED,
+    ITEM_UNEQUIPPED,
+    ITEM_DROPPED,
+
+    // Status effect events
+    STATUS_APPLIED,
+    STATUS_TICKED,
+    STATUS_EXPIRED,
+
+    // Enemy ability events
+    ENEMY_TELEGRAPH,
+    ENEMY_ABILITY_FIRED,
+
+    // Skill system events
+    SKILL_UNLOCKED,
+    SKILL_CHOICE_OFFERED,
+    SKILL_ON_COOLDOWN,
+
+    // Event room events
+    EVENT_ROOM_ENTERED,
+    EVENT_ROOM_CHOICE_MADE,
+
+    // Run modifier events
+    CURSE_APPLIED,
+    RUN_MODIFIER_APPLIED,
+
+    // Shield events
+    SHIELD_BLOCKED,
+    SHIELD_BROKEN,
+
+    // Enemy formation events
+    ENEMY_FORMATION_SPAWNED
 }

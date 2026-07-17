@@ -2,13 +2,14 @@ package model;
 
 import model.events.GameEvent;
 import model.events.GameEventType;
+import model.skills.Element;
 
 public class Lich extends Enemy {
     private int turnCounter = 0;
     private int minionsActive = 0;
 
     public Lich() {
-        super("The Necromancer Lich", 300, 25, 20);
+        super("The Necromancer Lich", 300, 25, 20, Element.DARK);
     }
 
     public int getTurnCounter() {

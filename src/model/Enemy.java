@@ -4,12 +4,18 @@ import java.util.Random;
 
 import model.events.GameEvent;
 import model.events.GameEventType;
+import model.skills.Element;
 
 public class Enemy extends GameCharacter {
     private final Random rand = new Random();
 
     public Enemy(String name, int hp, int attackPower, int defense) {
         super(name, hp, attackPower, defense);
+    }
+
+    public Enemy(String name, int hp, int attackPower, int defense, Element element) {
+        super(name, hp, attackPower, defense);
+        setElement(element);
     }
 
     @Override
