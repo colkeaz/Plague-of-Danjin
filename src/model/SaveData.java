@@ -26,6 +26,8 @@ public class SaveData {
     private boolean danjinHeartShattered;
     private int permanentDamagePerTurn;
     private String characterClass;
+    private int spellCostReductionBonus;
+    private boolean plagueBearerActive;
 
     public SaveData() {
         this.equippedItemNames = new ArrayList<>();
@@ -87,6 +89,12 @@ public class SaveData {
     public String getCharacterClass() { return characterClass; }
     public void setCharacterClass(String characterClass) { this.characterClass = characterClass; }
 
+    public int getSpellCostReductionBonus() { return spellCostReductionBonus; }
+    public void setSpellCostReductionBonus(int spellCostReductionBonus) { this.spellCostReductionBonus = spellCostReductionBonus; }
+
+    public boolean isPlagueBearerActive() { return plagueBearerActive; }
+    public void setPlagueBearerActive(boolean plagueBearerActive) { this.plagueBearerActive = plagueBearerActive; }
+
     /**
      * Serializes this SaveData to a JSON string using manual StringBuilder construction.
      */
@@ -109,7 +117,9 @@ public class SaveData {
         sb.append("  \"danjinHeartAbsorbed\": ").append(danjinHeartAbsorbed).append(",\n");
         sb.append("  \"danjinHeartShattered\": ").append(danjinHeartShattered).append(",\n");
         sb.append("  \"permanentDamagePerTurn\": ").append(permanentDamagePerTurn).append(",\n");
-        sb.append("  \"characterClass\": ").append(escapeJsonString(characterClass)).append("\n");
+        sb.append("  \"characterClass\": ").append(escapeJsonString(characterClass)).append(",\n");
+        sb.append("  \"spellCostReductionBonus\": ").append(spellCostReductionBonus).append(",\n");
+        sb.append("  \"plagueBearerActive\": ").append(plagueBearerActive).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -141,6 +151,8 @@ public class SaveData {
         data.danjinHeartShattered = parseBooleanField(json, "danjinHeartShattered");
         data.permanentDamagePerTurn = parseIntField(json, "permanentDamagePerTurn");
         data.characterClass = parseStringField(json, "characterClass");
+        data.spellCostReductionBonus = parseIntField(json, "spellCostReductionBonus");
+        data.plagueBearerActive = parseBooleanField(json, "plagueBearerActive");
         return data;
     }
 

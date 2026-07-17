@@ -120,6 +120,14 @@ class CombatEngineRestorer {
         engine.getRunModifiers().setDanjinHeartShattered(saveData.isDanjinHeartShattered());
         engine.getRunModifiers().setPermanentDamagePerTurn(saveData.getPermanentDamagePerTurn());
 
+        // Restore permanent skill flags
+        if (saveData.getSpellCostReductionBonus() > 0) {
+            player.setSpellCostReductionBonus(saveData.getSpellCostReductionBonus());
+        }
+        if (saveData.isPlagueBearerActive()) {
+            player.setPlagueBearerActive(true);
+        }
+
         // Restore wave - advance to the saved wave
         engine.restoreToWave(saveData.getWaveNumber());
 

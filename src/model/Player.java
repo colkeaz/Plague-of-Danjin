@@ -26,6 +26,7 @@ public class Player extends GameCharacter {
     private boolean dodgeNextAttack = false;
     private boolean guaranteeCrit = false;
     private boolean immortalStandUsed = false;
+    private boolean immortalStandActive = false;
     private int spellCostReductionBonus = 0;
     private boolean plagueBearerActive = false;
 
@@ -148,10 +149,24 @@ public class Player extends GameCharacter {
     }
 
     /**
+     * Sets the permanent spell cost reduction bonus (for save restoration).
+     */
+    public void setSpellCostReductionBonus(int bonus) {
+        this.spellCostReductionBonus = bonus;
+    }
+
+    /**
      * Returns whether Plague Bearer passive is active (double poison damage).
      */
     public boolean isPlagueBearerActive() {
         return plagueBearerActive;
+    }
+
+    /**
+     * Sets the Plague Bearer active state (for save restoration).
+     */
+    public void setPlagueBearerActive(boolean active) {
+        this.plagueBearerActive = active;
     }
 
     /**
@@ -448,8 +463,11 @@ public class Player extends GameCharacter {
                 break;
 
             case BUFF_DEF_TEMP:
-                // Fortress/Taunt: apply +10 DEF for 3 turns (via upgrade that persists)
-                this.upgradeDefense(10);
+                // Fortress/Taunt: apply +10 DEF for 3 turns (reverts on expiry)
+                int defBoost = 10;
+                this.upgradeDefense(defBoost);
+                this.getStatusManager().addEffect(
+                        new StatusEffect(StatusType.DEF_BUFF, 3, defBoost, getName()));
                 break;
 
             case SHIELD_SINGLE:
@@ -496,16 +514,18 @@ public class Player extends GameCharacter {
                 break;
 
             case SACRIFICE_BUFF:
-                // Warlord's Fury: HP cost already deducted, +50% ATK for 3 turns
+                // Warlord's Fury: HP cost already deducted, +50% ATK for 3 turns (reverts on expiry)
                 int atkBoost = getTotalAttackPower() / 2;
                 this.upgradePower(atkBoost);
+                this.getStatusManager().addEffect(
+                        new StatusEffect(StatusType.ATK_BUFF, 3, atkBoost, getName()));
                 break;
 
             case IMMORTAL_STAND:
                 // Passive: when HP drops below 20%, auto-heal to 50% (once per fight)
-                // This just activates the passive flag; actual trigger is in CombatEngine
+                // This just activates the passive flag; actual trigger is in checkImmortalStand()
                 this.immortalStandUsed = false;
-                this.autoReviveActive = true;
+                this.immortalStandActive = true;
                 break;
 
             case HP_COST_DAMAGE:
@@ -521,8 +541,13 @@ public class Player extends GameCharacter {
                 break;
 
             case TIME_WARP:
-                // Time Warp: the extra turn logic is handled by CombatEngine
-                // For now, just mark the state (CombatEngine checks for this)
+                // Time Warp: grants an extra turn by skipping the next enemy turn.
+                // The actual skip logic is handled by CombatEngine after detecting this skill was used.
+                fireEvent(GameEvent.builder(GameEventType.SKILL_UNLOCKED)
+                        .put("skillName", "Time Warp")
+                        .put("skillId", "time_warp")
+                        .put("element", skill.getElement().name())
+                        .build());
                 break;
 
             case PASSIVE_COST_REDUCTION:
@@ -708,9 +733,10 @@ public class Player extends GameCharacter {
 
     /**
      * Checks and triggers Immortal Stand if HP dropped below 20%.
+     * Uses a dedicated flag separate from autoReviveActive (Resurrection).
      */
     private void checkImmortalStand() {
-        if (!immortalStandUsed && autoReviveActive && characterClass == CharacterClass.KNIGHT) {
+        if (!immortalStandUsed && immortalStandActive && characterClass == CharacterClass.KNIGHT) {
             if (isAlive() && getHp() < getMaxHp() * 0.2) {
                 immortalStandUsed = true;
                 int healTo = getMaxHp() / 2;

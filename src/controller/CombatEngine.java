@@ -58,6 +58,9 @@ public class CombatEngine extends GameEventDispatcher {
     private int enrageDefReduction = 0;
     private boolean enrageActive = false;
 
+    // Time Warp: grants an extra player turn (skips next enemy turn)
+    private boolean timeWarpActive = false;
+
     // QTE system fields
     private final Set<String> triggeredQTEThresholds = new HashSet<>();
     private QTEPattern pendingQTEPattern;
@@ -279,6 +282,14 @@ public class CombatEngine extends GameEventDispatcher {
                 handleEnemyDefeated();
             } else {
                 // Enemy still alive, proceed to enemy turn
+                // Check if the action used TIME_WARP - if so, grant extra turn (skip enemy)
+                int actionSkillIndex = action.getSkillIndex();
+                if (actionSkillIndex > 0) {
+                    Skill usedSkill = hero.getSkillTree().getSkillByIndex(actionSkillIndex);
+                    if (usedSkill != null && usedSkill.getSkillEffect() == SkillEffect.TIME_WARP) {
+                        timeWarpActive = true;
+                    }
+                }
                 currentState = GameState.ENEMY_TURN;
             }
         } catch (RuntimeException e) {
@@ -292,9 +303,17 @@ public class CombatEngine extends GameEventDispatcher {
      * Processes the current enemy's turn attacking the player.
      * Ticks enemy status effects, checks stun, handles telegraph system.
      * Transitions to AWAITING_PLAYER_ACTION or GAME_OVER.
+     * If Time Warp is active, the enemy turn is skipped entirely.
      */
     public void processEnemyTurn() {
         if (currentState != GameState.ENEMY_TURN) {
+            return;
+        }
+
+        // Time Warp: skip enemy turn and grant player an extra turn
+        if (timeWarpActive) {
+            timeWarpActive = false;
+            currentState = GameState.AWAITING_PLAYER_ACTION;
             return;
         }
 
@@ -579,16 +598,22 @@ public class CombatEngine extends GameEventDispatcher {
 
     /**
      * Checks if a player action uses a multi-target skill.
+     * Recognizes MULTI_TARGET, STUN_MULTI_TARGET, and POISON_MULTI_TARGET effects.
      */
     private boolean isMultiTargetAction(PlayerAction action) {
         int skillIndex = action.getSkillIndex();
         if (skillIndex < 0) return false;
         Skill skill = hero.getSkillTree().getSkillByIndex(skillIndex);
-        return skill != null && skill.getSkillEffect() == SkillEffect.MULTI_TARGET;
+        if (skill == null) return false;
+        SkillEffect effect = skill.getSkillEffect();
+        return effect == SkillEffect.MULTI_TARGET
+                || effect == SkillEffect.STUN_MULTI_TARGET
+                || effect == SkillEffect.POISON_MULTI_TARGET;
     }
 
     /**
      * Processes a multi-target action - applies damage to all alive enemies.
+     * Handles MULTI_TARGET, STUN_MULTI_TARGET, and POISON_MULTI_TARGET effects.
      * Returns true if the skill was successfully cast, false otherwise.
      */
     private boolean processMultiTargetAction(PlayerAction action) {
@@ -604,8 +629,13 @@ public class CombatEngine extends GameEventDispatcher {
             return false;
         }
 
+        // Apply full spell cost reduction: items + Arcane Affinity + Arcane Mastery
         int spellCostReduction = hero.getInventory().getTotalStatBonus(
                 model.items.ItemEffect.SPELL_COST_REDUCTION);
+        if (hero.getClassAbility() == ClassAbility.ARCANE_AFFINITY) {
+            spellCostReduction += 3;
+        }
+        spellCostReduction += hero.getSpellCostReductionBonus();
         int effectiveCost = skill.getEffectiveCost(spellCostReduction);
 
         if (effectiveCost > 0 && !hero.spendMana(effectiveCost)) {
@@ -620,11 +650,21 @@ public class CombatEngine extends GameEventDispatcher {
                 .put("manaCost", effectiveCost)
                 .build());
 
-        // Apply damage to ALL alive enemies
+        // Apply damage to ALL alive enemies, plus secondary effects based on skill type
         int damage = (int)(hero.getTotalAttackPower() * skill.getDamageMultiplier());
+        SkillEffect effect = skill.getSkillEffect();
         for (Enemy enemy : currentEnemies) {
             if (enemy.isAlive()) {
                 enemy.takeDamage(damage, skill.getElement());
+                // Apply secondary effects per enemy
+                if (effect == SkillEffect.STUN_MULTI_TARGET) {
+                    enemy.getStatusManager().addEffect(
+                            new StatusEffect(StatusType.STUN, 1, 0, hero.getName()));
+                } else if (effect == SkillEffect.POISON_MULTI_TARGET) {
+                    int poisonPotency = hero.isPlagueBearerActive() ? 10 : 5;
+                    enemy.getStatusManager().addEffect(
+                            new StatusEffect(StatusType.POISON, 3, poisonPotency, hero.getName()));
+                }
             }
         }
 
@@ -646,6 +686,7 @@ public class CombatEngine extends GameEventDispatcher {
                 }
             } else if (event.getType() == GameEventType.STATUS_EXPIRED) {
                 String statusType = event.getString("statusType");
+                int potency = event.getInt("potency");
                 if ("ENRAGE".equals(statusType) && enrageActive) {
                     // Revert enrage stat modifications
                     hero.upgradePower(-enrageAtkBonus);
@@ -653,6 +694,12 @@ public class CombatEngine extends GameEventDispatcher {
                     enrageAtkBonus = 0;
                     enrageDefReduction = 0;
                     enrageActive = false;
+                } else if ("DEF_BUFF".equals(statusType)) {
+                    // Revert temporary DEF buff
+                    hero.upgradeDefense(-potency);
+                } else if ("ATK_BUFF".equals(statusType)) {
+                    // Revert temporary ATK buff
+                    hero.upgradePower(-potency);
                 }
             }
         }

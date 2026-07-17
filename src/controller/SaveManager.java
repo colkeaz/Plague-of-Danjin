@@ -211,6 +211,10 @@ public class SaveManager {
             data.setCharacterClass(engine.getCharacterClass().name());
         }
 
+        // Permanent skill flags
+        data.setSpellCostReductionBonus(player.getSpellCostReductionBonus());
+        data.setPlagueBearerActive(player.isPlagueBearerActive());
+
         return data;
     }
 

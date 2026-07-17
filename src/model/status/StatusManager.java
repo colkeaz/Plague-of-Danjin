@@ -71,6 +71,7 @@ public class StatusManager extends GameEventDispatcher {
             if (effect.isExpired()) {
                 GameEvent expiredEvent = GameEvent.builder(GameEventType.STATUS_EXPIRED)
                         .put("statusType", effect.getType().name())
+                        .put("potency", effect.getPotency())
                         .put("sourceName", effect.getSourceName())
                         .build();
                 events.add(expiredEvent);
