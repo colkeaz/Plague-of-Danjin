@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Create the sprite generation system (SpriteGenerator.java) and animation state machine (SpriteAnimator.java, AnimationState.java). Generate all entity sprites (Player, Goblin, PlagueGoblin, Skeleton, ShieldedSkeleton, GoblinKing, GoblinChieftain, BoneColossus, Lich) with animation frames (IDLE 2 frames, ATTACK 2-3 frames, HURT 1-2 frames, DEATH 2-3 frames). Also generate all UI sprites: HP/MP bar frames, status effect icons (Poison, Shield, Stun, Regen, Enrage, Curse), chest sprites (3 frames), menu frame border, wave banner, element icons, background tiles, and particle effect textures. Then create a ColorPalette.java utility with the specified NES-style 16-32 color palette constants.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/view/sprites/ColorPalette.java with all the hex color constants specified in the requirements (background #0D0D1A, dungeon walls #2A2A3A, player steel blue #4A6FA5, goblins forest green #2D8B2D, skeletons bone white #E8E8D0, lich deep purple #4A0080, fire orange #FF6600, holy gold #FFD700, poison toxic green #00CC44, dark purple #8B00FF, HP red #CC0000, MP blue #0066CC, UI borders warm gray #8B8B7A, text off-white #E8E8E8, damage text red #FF3333, heal text green #33FF33, crit text yellow #FFFF00, etc.)",
     "Create src/view/sprites/AnimationState.java as an enum with values: IDLE, ATTACKING, HURT, DYING, CASTING, DEAD",
@@ -22,5 +22,5 @@
     "Run ./gradlew classes and confirm BUILD SUCCESSFUL with no errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 4 source files created and compile successfully. SpriteGenerator uses pixel-by-pixel Pixmap drawing for detailed entity sprites (Player knight with helmet/sword, Goblin with pointy ears, Skeleton with ribcage, Lich with hood/staff, etc.) plus generic attack/hurt/death frame generators for consistency. All textures use TextureFilter.Nearest. BUILD SUCCESSFUL verified."
 }
