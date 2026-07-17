@@ -18,7 +18,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import controller.CombatEngine;
 import view.PlagueOfDanjinGame;
 import view.assets.AssetLoader;
 import view.effects.Particle;
@@ -429,23 +428,7 @@ public class IntroScreen extends InputAdapter implements Screen {
     }
 
     private void startGame() {
-        CombatEngine engine = new CombatEngine();
-        engine.startGame(playerName.toString());
-
-        // Apply unlockable starting bonuses from meta-progression
-        controller.MetaProgression meta = game.getMetaProgression();
-        controller.SaveManager saveManager = game.getSaveManager();
-
-        engine.setSaveManager(saveManager);
-        engine.applyUnlocks(meta, engine.getChestSystem());
-
-        // Record run start
-        meta.recordRunStart();
-
-        // Save initial run state
-        saveManager.saveRun(engine);
-
-        game.setScreen(new GameScreen(game, engine));
+        game.setScreen(new ClassSelectionScreen(game, playerName.toString()));
     }
 
     @Override

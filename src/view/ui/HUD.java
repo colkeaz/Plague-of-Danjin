@@ -52,6 +52,7 @@ public class HUD {
 
     // Player mini-sprite animation
     private float playerSpriteTimer;
+    private String playerSpriteKey;
 
     public HUD(CombatMenu combatMenu, MessageLog messageLog) {
         this.enemyDisplay = new EnemyDisplay();
@@ -63,6 +64,7 @@ public class HUD {
         this.displayedMp = -1f;
         this.lerpInitialized = false;
         this.playerSpriteTimer = 0f;
+        this.playerSpriteKey = "player";
     }
 
     /**
@@ -271,7 +273,11 @@ public class HUD {
      * Renders a small player sprite in the bottom-left corner.
      */
     private void renderPlayerMiniSprite(SpriteBatch batch, AssetLoader assets) {
-        TextureRegion[] playerFrames = assets.getEntityFrames("player", AnimationState.IDLE);
+        TextureRegion[] playerFrames = assets.getEntityFrames(playerSpriteKey, AnimationState.IDLE);
+        if (playerFrames == null || playerFrames.length == 0) {
+            // Fallback to generic player sprite
+            playerFrames = assets.getEntityFrames("player", AnimationState.IDLE);
+        }
         if (playerFrames == null || playerFrames.length == 0) return;
 
         // Pick frame based on timer for idle animation
@@ -327,6 +333,16 @@ public class HUD {
 
     public EnemyDisplay getEnemyDisplay() {
         return enemyDisplay;
+    }
+
+    /**
+     * Sets the sprite key used for the player mini-sprite in the HUD.
+     * Should be called based on the player's CharacterClass.
+     */
+    public void setPlayerSpriteKey(String key) {
+        if (key != null && !key.isEmpty()) {
+            this.playerSpriteKey = key;
+        }
     }
 
     public CombatMenu getCombatMenu() {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import model.CharacterClass;
 import model.events.GameEvent;
 import model.events.GameEventListener;
 import model.events.GameEventType;
@@ -32,6 +33,11 @@ public class MetaProgression implements GameEventListener {
     private int fastestVictoryTurns; // -1 means no victory yet
     private List<String> earnedUnlockIds;
 
+    // Per-class victory tracking
+    private int knightVictories;
+    private int mageVictories;
+    private int rogueVictories;
+
     // Tracking flags for current run (not persisted)
     private transient boolean usedHolyLightThisRun;
     private transient boolean currentRunVictory;
@@ -46,6 +52,9 @@ public class MetaProgression implements GameEventListener {
         this.totalDamageTaken = 0;
         this.fastestVictoryTurns = -1;
         this.earnedUnlockIds = new ArrayList<>();
+        this.knightVictories = 0;
+        this.mageVictories = 0;
+        this.rogueVictories = 0;
         this.usedHolyLightThisRun = false;
         this.currentRunVictory = false;
         this.currentRunTurns = 0;
@@ -117,6 +126,25 @@ public class MetaProgression implements GameEventListener {
         }
         currentRunVictory = victory;
         currentRunTurns = turns;
+    }
+
+    /**
+     * Called when a run ends with character class info for per-class tracking.
+     *
+     * @param victory true if the player won
+     * @param wave the wave reached
+     * @param turns the number of turns taken
+     * @param characterClass the class used this run (may be null for legacy)
+     */
+    public void recordRunEnd(boolean victory, int wave, int turns, CharacterClass characterClass) {
+        recordRunEnd(victory, wave, turns);
+        if (victory && characterClass != null) {
+            switch (characterClass) {
+                case KNIGHT: knightVictories++; break;
+                case MAGE: mageVictories++; break;
+                case ROGUE: rogueVictories++; break;
+            }
+        }
     }
 
     /**
@@ -209,6 +237,9 @@ public class MetaProgression implements GameEventListener {
     public int getFastestVictoryTurns() { return fastestVictoryTurns; }
     public int getCurrentRunTurns() { return currentRunTurns; }
     public boolean hasUsedHolyLightThisRun() { return usedHolyLightThisRun; }
+    public int getKnightVictories() { return knightVictories; }
+    public int getMageVictories() { return mageVictories; }
+    public int getRogueVictories() { return rogueVictories; }
 
     /**
      * Returns unlockable description for display.
@@ -278,6 +309,9 @@ public class MetaProgression implements GameEventListener {
         sb.append("  \"totalDamageDealt\": ").append(totalDamageDealt).append(",\n");
         sb.append("  \"totalDamageTaken\": ").append(totalDamageTaken).append(",\n");
         sb.append("  \"fastestVictoryTurns\": ").append(fastestVictoryTurns).append(",\n");
+        sb.append("  \"knightVictories\": ").append(knightVictories).append(",\n");
+        sb.append("  \"mageVictories\": ").append(mageVictories).append(",\n");
+        sb.append("  \"rogueVictories\": ").append(rogueVictories).append(",\n");
         sb.append("  \"earnedUnlockIds\": ").append(listToJson(earnedUnlockIds)).append("\n");
         sb.append("}");
         return sb.toString();
@@ -299,6 +333,9 @@ public class MetaProgression implements GameEventListener {
         meta.totalDamageDealt = parseIntField(json, "totalDamageDealt");
         meta.totalDamageTaken = parseIntField(json, "totalDamageTaken");
         meta.fastestVictoryTurns = parseIntField(json, "fastestVictoryTurns");
+        meta.knightVictories = parseIntField(json, "knightVictories");
+        meta.mageVictories = parseIntField(json, "mageVictories");
+        meta.rogueVictories = parseIntField(json, "rogueVictories");
         meta.earnedUnlockIds = parseStringList(json, "earnedUnlockIds");
         return meta;
     }

@@ -42,6 +42,7 @@ public class MainMenuScreen extends InputAdapter implements Screen {
     private static final String[] MENU_OPTIONS = {"New Game", "Continue", "Stats", "Unlocks"};
     private int selectedIndex = 0;
     private boolean hasSaveFile;
+    private String savedClassDisplay;
 
     // Overlay states
     private boolean showingStats;
@@ -66,6 +67,7 @@ public class MainMenuScreen extends InputAdapter implements Screen {
         this.saveManager = game.getSaveManager();
         this.metaProgression = game.getMetaProgression();
         this.hasSaveFile = saveManager.hasSave();
+        this.savedClassDisplay = loadSavedClassDisplay();
         this.showingStats = false;
         this.showingUnlocks = false;
         this.blinkTimer = 0f;
@@ -75,6 +77,23 @@ public class MainMenuScreen extends InputAdapter implements Screen {
         this.particleSpawnTimer = 0f;
 
         generateTitleLogo();
+    }
+
+    private String loadSavedClassDisplay() {
+        if (!hasSaveFile) return "";
+        model.SaveData saveData = saveManager.loadRun();
+        if (saveData == null) return "";
+        String className = saveData.getCharacterClass();
+        int wave = saveData.getWaveNumber();
+        if (className != null && !className.isEmpty()) {
+            try {
+                model.CharacterClass cc = model.CharacterClass.valueOf(className);
+                return cc.getDisplayName() + " - Wave " + wave;
+            } catch (IllegalArgumentException e) {
+                return "Wave " + wave;
+            }
+        }
+        return "Wave " + wave;
     }
 
     private void generateTitleLogo() {
@@ -162,6 +181,7 @@ public class MainMenuScreen extends InputAdapter implements Screen {
     public void show() {
         Gdx.input.setInputProcessor(this);
         hasSaveFile = saveManager.hasSave();
+        savedClassDisplay = loadSavedClassDisplay();
     }
 
     @Override
@@ -214,7 +234,12 @@ public class MainMenuScreen extends InputAdapter implements Screen {
         for (int i = 0; i < MENU_OPTIONS.length; i++) {
             float y = startY - i * lineHeight;
             String prefix = (i == selectedIndex && cursorVisible) ? "> " : "  ";
-            String label = prefix + (i + 1) + ". " + MENU_OPTIONS[i];
+            String label;
+            if (i == 1 && hasSaveFile && !savedClassDisplay.isEmpty()) {
+                label = prefix + (i + 1) + ". " + MENU_OPTIONS[i] + " (" + savedClassDisplay + ")";
+            } else {
+                label = prefix + (i + 1) + ". " + MENU_OPTIONS[i];
+            }
 
             if (i == 1 && !hasSaveFile) {
                 // Continue is grayed out

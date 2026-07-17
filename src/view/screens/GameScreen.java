@@ -113,6 +113,12 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         // Set up UI
         combatMenu.setPlayer(engine.getPlayer());
 
+        // Set class-specific player sprite key for HUD
+        model.CharacterClass charClass = engine.getCharacterClass();
+        if (charClass != null) {
+            hud.setPlayerSpriteKey("player_" + charClass.name().toLowerCase());
+        }
+
         // Register message log as event listener on the engine
         engine.addListener(messageLog);
 

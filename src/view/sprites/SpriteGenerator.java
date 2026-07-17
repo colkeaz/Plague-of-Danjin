@@ -27,6 +27,9 @@ public class SpriteGenerator implements Disposable {
 
     public void generateAll() {
         generatePlayerSprite();
+        generateKnightSprite();
+        generateMageSprite();
+        generateRogueSprite();
         generateGoblinSprite();
         generatePlagueGoblinSprite();
         generateSkeletonSprite();
@@ -228,6 +231,324 @@ public class SpriteGenerator implements Disposable {
             // Collapsed on ground
             for (int x = 5; x <= 18; x++) { setPixel(pm, x, 26, armor); setPixel(pm, x, 27, blue); }
         }
+    }
+
+    // ===== KNIGHT CLASS SPRITE (24x32 heavy plate armor with shield) =====
+    private void generateKnightSprite() {
+        TextureRegion[][] frames = new TextureRegion[5][];
+        frames[0] = new TextureRegion[2]; // IDLE
+        frames[1] = new TextureRegion[3]; // ATTACKING
+        frames[2] = new TextureRegion[2]; // HURT
+        frames[3] = new TextureRegion[3]; // DYING
+        frames[4] = new TextureRegion[2]; // CASTING
+
+        // IDLE frames
+        for (int i = 0; i < 2; i++) {
+            Pixmap pm = createPixmap(24, 32);
+            drawKnightBase(pm, i);
+            frames[0][i] = createRegionFromPixmap(pm);
+        }
+
+        // ATTACK frames
+        for (int f = 0; f < 3; f++) {
+            Pixmap pm = createPixmap(24, 32);
+            drawKnightBase(pm, 0);
+            Color silver = ColorPalette.KNIGHT_SILVER;
+            // Sword extends further each frame
+            int swordX = 19 + f * 2;
+            for (int y = 5; y <= 13; y++) {
+                if (swordX < 24) setPixel(pm, swordX, y, silver);
+                if (swordX + 1 < 24) setPixel(pm, swordX + 1, y, silver);
+            }
+            frames[1][f] = createRegionFromPixmap(pm);
+        }
+
+        // HURT frames
+        Pixmap pm = createPixmap(24, 32);
+        for (int x = 7; x <= 16; x++) for (int y = 2; y <= 21; y++) setPixel(pm, x, y, ColorPalette.HOLY_WHITE);
+        frames[2][0] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        drawKnightBase(pm, 0);
+        frames[2][1] = createRegionFromPixmap(pm);
+
+        // DYING frames
+        pm = createPixmap(24, 32);
+        drawKnightBase(pm, 0);
+        frames[3][0] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        Color kBlue = ColorPalette.KNIGHT_BLUE;
+        for (int x = 7; x <= 16; x++) for (int y = 10; y <= 22; y++) setPixel(pm, x, y, kBlue);
+        for (int x = 8; x <= 14; x++) setPixel(pm, x, 9, ColorPalette.KNIGHT_SILVER);
+        frames[3][1] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        for (int x = 5; x <= 18; x++) { setPixel(pm, x, 26, ColorPalette.KNIGHT_SILVER); setPixel(pm, x, 27, kBlue); }
+        frames[3][2] = createRegionFromPixmap(pm);
+
+        // CASTING frames
+        for (int i = 0; i < 2; i++) {
+            pm = createPixmap(24, 32);
+            drawKnightBase(pm, i);
+            frames[4][i] = createRegionFromPixmap(pm);
+        }
+
+        entitySprites.put("player_knight", frames);
+    }
+
+    private void drawKnightBase(Pixmap pm, int yOff) {
+        Color blue = ColorPalette.KNIGHT_BLUE;
+        Color silver = ColorPalette.KNIGHT_SILVER;
+        Color dark = ColorPalette.BONE_DARK;
+        // Helmet (full plate helm)
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 2+yOff, silver);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 3+yOff, silver);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 4+yOff, silver);
+        // Visor slit
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 5+yOff, dark);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 6+yOff, silver);
+        // Crest on top
+        setPixel(pm, 11, 1+yOff, blue); setPixel(pm, 12, 1+yOff, blue);
+        // Neck guard
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 7+yOff, silver);
+        // Pauldrons (large shoulder plates)
+        for (int x = 5; x <= 7; x++) { setPixel(pm, x, 8+yOff, silver); setPixel(pm, x, 9+yOff, silver); }
+        for (int x = 16; x <= 18; x++) { setPixel(pm, x, 8+yOff, silver); setPixel(pm, x, 9+yOff, silver); }
+        // Chest plate
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 8+yOff, silver);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 9+yOff, silver);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 10+yOff, blue);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 11+yOff, blue);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 12+yOff, blue);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 13+yOff, blue);
+        // Belt
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 14+yOff, dark);
+        // Tassets (plate skirt)
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 15+yOff, silver);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 16+yOff, silver);
+        // Legs (plate greaves)
+        for (int x = 9; x <= 11; x++) for (int y = 17; y <= 19; y++) setPixel(pm, x, y+yOff, blue);
+        for (int x = 12; x <= 14; x++) for (int y = 17; y <= 19; y++) setPixel(pm, x, y+yOff, blue);
+        // Boots
+        for (int x = 8; x <= 11; x++) setPixel(pm, x, 20+yOff, dark);
+        for (int x = 12; x <= 15; x++) setPixel(pm, x, 20+yOff, dark);
+        // Shield (left side)
+        for (int y = 9; y <= 15; y++) { setPixel(pm, 4, y+yOff, silver); setPixel(pm, 5, y+yOff, blue); setPixel(pm, 6, y+yOff, blue); }
+        setPixel(pm, 5, 12+yOff, silver); // Shield emblem center
+        // Sword (right side)
+        for (int y = 7; y <= 14; y++) setPixel(pm, 18, y+yOff, silver);
+        setPixel(pm, 17, 8+yOff, dark); setPixel(pm, 19, 8+yOff, dark); // crossguard
+    }
+
+    // ===== MAGE CLASS SPRITE (24x32 robes with staff) =====
+    private void generateMageSprite() {
+        TextureRegion[][] frames = new TextureRegion[5][];
+        frames[0] = new TextureRegion[2]; // IDLE
+        frames[1] = new TextureRegion[3]; // ATTACKING
+        frames[2] = new TextureRegion[2]; // HURT
+        frames[3] = new TextureRegion[3]; // DYING
+        frames[4] = new TextureRegion[2]; // CASTING
+
+        // IDLE frames
+        for (int i = 0; i < 2; i++) {
+            Pixmap pm = createPixmap(24, 32);
+            drawMageBase(pm, i);
+            frames[0][i] = createRegionFromPixmap(pm);
+        }
+
+        // ATTACK frames (staff glows)
+        for (int f = 0; f < 3; f++) {
+            Pixmap pm = createPixmap(24, 32);
+            drawMageBase(pm, 0);
+            // Staff orb glows more intensely
+            Color glow = (f == 1) ? ColorPalette.HOLY_GOLD : ColorPalette.MAGE_GOLD;
+            setPixel(pm, 19, 2, glow); setPixel(pm, 20, 2, glow);
+            setPixel(pm, 19, 3, glow); setPixel(pm, 20, 3, glow);
+            if (f == 2) { setPixel(pm, 18, 2, glow); setPixel(pm, 21, 2, glow); }
+            frames[1][f] = createRegionFromPixmap(pm);
+        }
+
+        // HURT frames
+        Pixmap pm = createPixmap(24, 32);
+        for (int x = 7; x <= 16; x++) for (int y = 2; y <= 24; y++) setPixel(pm, x, y, ColorPalette.HOLY_WHITE);
+        frames[2][0] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        drawMageBase(pm, 0);
+        frames[2][1] = createRegionFromPixmap(pm);
+
+        // DYING frames
+        pm = createPixmap(24, 32);
+        drawMageBase(pm, 0);
+        frames[3][0] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        Color mPurple = ColorPalette.MAGE_PURPLE;
+        for (int x = 7; x <= 16; x++) for (int y = 10; y <= 24; y++) setPixel(pm, x, y, mPurple);
+        frames[3][1] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        for (int x = 5; x <= 18; x++) { setPixel(pm, x, 27, mPurple); setPixel(pm, x, 28, mPurple); }
+        frames[3][2] = createRegionFromPixmap(pm);
+
+        // CASTING frames (arms raised, orb bright)
+        for (int i = 0; i < 2; i++) {
+            pm = createPixmap(24, 32);
+            drawMageBase(pm, i);
+            Color glow = (i == 0) ? ColorPalette.MAGE_GOLD : ColorPalette.FIRE_YELLOW;
+            setPixel(pm, 19, 1, glow); setPixel(pm, 20, 1, glow);
+            setPixel(pm, 18, 2, glow); setPixel(pm, 21, 2, glow);
+            setPixel(pm, 19, 2, glow); setPixel(pm, 20, 2, glow);
+            frames[4][i] = createRegionFromPixmap(pm);
+        }
+
+        entitySprites.put("player_mage", frames);
+    }
+
+    private void drawMageBase(Pixmap pm, int yOff) {
+        Color purple = ColorPalette.MAGE_PURPLE;
+        Color gold = ColorPalette.MAGE_GOLD;
+        Color dark = ColorPalette.BONE_DARK;
+        Color skin = ColorPalette.BONE_WHITE;
+        // Hood
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 2+yOff, purple);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 3+yOff, purple);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 4+yOff, purple);
+        // Face inside hood
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 5+yOff, dark);
+        setPixel(pm, 10, 5+yOff, skin); setPixel(pm, 13, 5+yOff, skin); // eyes visible
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 6+yOff, purple);
+        // Collar with gold trim
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 7+yOff, gold);
+        // Robe body (flowing, wider at bottom)
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 8+yOff, purple);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 9+yOff, purple);
+        for (int x = 7; x <= 16; x++) setPixel(pm, x, 10+yOff, purple);
+        for (int x = 7; x <= 16; x++) setPixel(pm, x, 11+yOff, purple);
+        // Gold belt/sash
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 12+yOff, gold);
+        // Lower robe (flowing wider)
+        for (int x = 7; x <= 16; x++) setPixel(pm, x, 13+yOff, purple);
+        for (int x = 6; x <= 17; x++) setPixel(pm, x, 14+yOff, purple);
+        for (int x = 6; x <= 17; x++) setPixel(pm, x, 15+yOff, purple);
+        for (int x = 6; x <= 17; x++) setPixel(pm, x, 16+yOff, purple);
+        for (int x = 6; x <= 17; x++) setPixel(pm, x, 17+yOff, purple);
+        for (int x = 6; x <= 17; x++) setPixel(pm, x, 18+yOff, purple);
+        for (int x = 6; x <= 17; x++) setPixel(pm, x, 19+yOff, purple);
+        // Robe bottom hem with gold trim
+        for (int x = 6; x <= 17; x++) setPixel(pm, x, 20+yOff, gold);
+        // Sleeves (wide)
+        for (int y = 9; y <= 12; y++) { setPixel(pm, 5, y+yOff, purple); setPixel(pm, 6, y+yOff, purple); }
+        for (int y = 9; y <= 12; y++) { setPixel(pm, 17, y+yOff, purple); setPixel(pm, 18, y+yOff, purple); }
+        // Staff (right side, tall)
+        for (int y = 3; y <= 20; y++) setPixel(pm, 20, y+yOff, dark);
+        // Staff orb at top
+        setPixel(pm, 19, 3+yOff, gold); setPixel(pm, 20, 2+yOff, gold); setPixel(pm, 21, 3+yOff, gold);
+        setPixel(pm, 20, 4+yOff, gold);
+    }
+
+    // ===== ROGUE CLASS SPRITE (24x32 hooded cloak with daggers) =====
+    private void generateRogueSprite() {
+        TextureRegion[][] frames = new TextureRegion[5][];
+        frames[0] = new TextureRegion[2]; // IDLE
+        frames[1] = new TextureRegion[3]; // ATTACKING
+        frames[2] = new TextureRegion[2]; // HURT
+        frames[3] = new TextureRegion[3]; // DYING
+        frames[4] = new TextureRegion[2]; // CASTING
+
+        // IDLE frames
+        for (int i = 0; i < 2; i++) {
+            Pixmap pm = createPixmap(24, 32);
+            drawRogueBase(pm, i);
+            frames[0][i] = createRegionFromPixmap(pm);
+        }
+
+        // ATTACK frames (daggers slash outward)
+        for (int f = 0; f < 3; f++) {
+            Pixmap pm = createPixmap(24, 32);
+            drawRogueBase(pm, 0);
+            Color crimson = ColorPalette.ROGUE_CRIMSON;
+            // Dagger slash arcs outward each frame
+            int offset = f * 2;
+            setPixel(pm, 19 + offset, 9, crimson);
+            setPixel(pm, 19 + offset, 10, crimson);
+            setPixel(pm, 19 + offset, 11, crimson);
+            if (4 - offset >= 0) {
+                setPixel(pm, 4 - offset, 9, crimson);
+                setPixel(pm, 4 - offset, 10, crimson);
+                setPixel(pm, 4 - offset, 11, crimson);
+            }
+            frames[1][f] = createRegionFromPixmap(pm);
+        }
+
+        // HURT frames
+        Pixmap pm = createPixmap(24, 32);
+        for (int x = 7; x <= 16; x++) for (int y = 2; y <= 21; y++) setPixel(pm, x, y, ColorPalette.HOLY_WHITE);
+        frames[2][0] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        drawRogueBase(pm, 0);
+        frames[2][1] = createRegionFromPixmap(pm);
+
+        // DYING frames
+        pm = createPixmap(24, 32);
+        drawRogueBase(pm, 0);
+        frames[3][0] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        Color rGreen = ColorPalette.ROGUE_GREEN;
+        for (int x = 7; x <= 16; x++) for (int y = 10; y <= 22; y++) setPixel(pm, x, y, rGreen);
+        frames[3][1] = createRegionFromPixmap(pm);
+        pm = createPixmap(24, 32);
+        for (int x = 5; x <= 18; x++) { setPixel(pm, x, 26, rGreen); setPixel(pm, x, 27, ColorPalette.ROGUE_CRIMSON); }
+        frames[3][2] = createRegionFromPixmap(pm);
+
+        // CASTING frames
+        for (int i = 0; i < 2; i++) {
+            pm = createPixmap(24, 32);
+            drawRogueBase(pm, i);
+            frames[4][i] = createRegionFromPixmap(pm);
+        }
+
+        entitySprites.put("player_rogue", frames);
+    }
+
+    private void drawRogueBase(Pixmap pm, int yOff) {
+        Color green = ColorPalette.ROGUE_GREEN;
+        Color crimson = ColorPalette.ROGUE_CRIMSON;
+        Color dark = ColorPalette.BONE_DARK;
+        Color skin = ColorPalette.BONE_WHITE;
+        // Hood (pointed)
+        setPixel(pm, 11, 1+yOff, green); setPixel(pm, 12, 1+yOff, green);
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 2+yOff, green);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 3+yOff, green);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 4+yOff, green);
+        // Face (shadowed, eyes visible as crimson dots)
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 5+yOff, dark);
+        setPixel(pm, 10, 5+yOff, crimson); setPixel(pm, 13, 5+yOff, crimson); // glowing eyes
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 6+yOff, green);
+        // Scarf/bandana
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 7+yOff, crimson);
+        // Cloak/body (slim silhouette)
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 8+yOff, green);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 9+yOff, green);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 10+yOff, green);
+        for (int x = 8; x <= 15; x++) setPixel(pm, x, 11+yOff, green);
+        // Belt with crimson accent
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 12+yOff, crimson);
+        // Lower body (tight, agile)
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 13+yOff, dark);
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 14+yOff, dark);
+        for (int x = 9; x <= 14; x++) setPixel(pm, x, 15+yOff, dark);
+        // Cloak tails (flowing behind)
+        setPixel(pm, 7, 10+yOff, green); setPixel(pm, 7, 11+yOff, green);
+        setPixel(pm, 6, 12+yOff, green); setPixel(pm, 6, 13+yOff, green);
+        setPixel(pm, 16, 10+yOff, green); setPixel(pm, 16, 11+yOff, green);
+        setPixel(pm, 17, 12+yOff, green); setPixel(pm, 17, 13+yOff, green);
+        // Legs (lean)
+        for (int x = 9; x <= 11; x++) for (int y = 16; y <= 19; y++) setPixel(pm, x, y+yOff, dark);
+        for (int x = 12; x <= 14; x++) for (int y = 16; y <= 19; y++) setPixel(pm, x, y+yOff, dark);
+        // Boots (slim)
+        for (int x = 9; x <= 11; x++) setPixel(pm, x, 20+yOff, crimson);
+        for (int x = 12; x <= 14; x++) setPixel(pm, x, 20+yOff, crimson);
+        // Twin daggers (one each side)
+        setPixel(pm, 5, 9+yOff, skin); setPixel(pm, 5, 10+yOff, skin); setPixel(pm, 5, 11+yOff, skin);
+        setPixel(pm, 18, 9+yOff, skin); setPixel(pm, 18, 10+yOff, skin); setPixel(pm, 18, 11+yOff, skin);
+        // Dagger handles
+        setPixel(pm, 5, 12+yOff, crimson); setPixel(pm, 18, 12+yOff, crimson);
     }
 
     // ===== GOBLIN SPRITE (16x16 small green creature) =====

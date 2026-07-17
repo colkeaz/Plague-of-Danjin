@@ -61,6 +61,14 @@ public final class ColorPalette {
     public static final Color HEAL_GREEN = fromHex(0x33FF33FF);
     public static final Color CRIT_YELLOW = fromHex(0xFFFF00FF);
 
+    // --- Character Class Colors ---
+    public static final Color KNIGHT_BLUE = fromHex(0x4A7FB5FF);
+    public static final Color KNIGHT_SILVER = fromHex(0xC8D0D8FF);
+    public static final Color MAGE_PURPLE = fromHex(0x7B2FBEFF);
+    public static final Color MAGE_GOLD = fromHex(0xFFD700FF);
+    public static final Color ROGUE_GREEN = fromHex(0x2D5A27FF);
+    public static final Color ROGUE_CRIMSON = fromHex(0x8B1A1AFF);
+
     // --- Additional utility colors ---
     public static final Color SHIELD_BLUE = fromHex(0x3399FFFF);
     public static final Color STUN_YELLOW = fromHex(0xFFDD00FF);
