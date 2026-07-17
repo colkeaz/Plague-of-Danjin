@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-001",
+  "type": "refactor",
+  "description": "Create the event system and refactor all model classes (GameCharacter, Player, Enemy, Goblin, Skeleton, GoblinKing, Lich) into a clean model/ package with zero I/O. Create event classes in model/events/ for all game occurrences. Refactor Player to remove Scanner and accept actions programmatically. Refactor all enemies to emit events instead of printing.",
+  "status": "in_progress",
+  "steps": [
+    "Step 1: Create branch 'phase2-decouple-logic' from main.",
+    "Step 2: Create directory structure: src/model/, src/model/events/, src/controller/.",
+    "Step 3: Create src/model/events/GameEvent.java - base interface or abstract class for all events. Include a GameEventType enum covering: DAMAGE_DEALT, DAMAGE_BLOCKED, HEAL, MANA_SPENT, MANA_INSUFFICIENT, MANA_REGEN, POWER_UPGRADED, DEFENSE_UPGRADED, CRITICAL_HIT, PLAYER_BASIC_ATTACK, SPELL_CAST, ENEMY_ATTACK, GOBLIN_KING_RAGE, LICH_SUMMON_MINION, LICH_MINION_ATTACK, ENEMY_DEFEATED, PLAYER_DEFEATED, WAVE_START, WAVE_COMPLETE, CHEST_FOUND, CHEST_LEGENDARY, CHEST_EPIC, CHEST_RARE, CHEST_COMMON, CHEST_MIMIC, GAME_VICTORY, FLAVOR_TEXT.",
+    "Step 4: Create src/model/events/GameEventListener.java - observer interface with void onEvent(GameEvent event).",
+    "Step 5: Create src/model/events/GameEventDispatcher.java - mixin/class that holds List<GameEventListener> and provides addListener(), removeListener(), fireEvent() methods.",
+    "Step 6: Refactor src/model/GameCharacter.java - Remove ALL System.out.println calls. Make the class extend or include GameEventDispatcher. The takeDamage() method should fire a DAMAGE_DEALT event with fields: targetName, rawDamage, blockedAmount, finalDamage, currentHp, maxHp. The heal() method should fire HEAL event with: targetName, amount, currentHp, maxHp. The upgradePower() method fires POWER_UPGRADED. The upgradeDefense() fires DEFENSE_UPGRADED. The spendMana() fires MANA_SPENT or MANA_INSUFFICIENT. Keep all game logic EXACTLY the same (defense formula: reduction = defense/100.0, blocked = damage*reduction; defense cap at 75; mana starts 75/100).",
+    "Step 7: Create src/model/PlayerAction.java - an enum with values: BASIC_ATTACK, FIREBALL, HOLY_LIGHT, IRON_WILL. This replaces the Scanner menu.",
+    "Step 8: Refactor src/model/Player.java - Remove Scanner and all System.out. Remove the menu loop. Change attack(GameCharacter target) to executeAction(PlayerAction action, GameCharacter target). The method takes a PlayerAction and executes it directly without blocking. BASIC_ATTACK: compute damage, 15% crit chance (fire CRITICAL_HIT event if crit), fire PLAYER_BASIC_ATTACK event, call target.takeDamage(). FIREBALL: if spendMana(20) succeeds, fire SPELL_CAST event, target.takeDamage(attackPower*3). HOLY_LIGHT: if spendMana(15), fire SPELL_CAST, this.heal(30). IRON_WILL: if spendMana(10), fire SPELL_CAST, this.upgradeDefense(5). Retain regenMana(10) call. Return a boolean or result indicating if the action succeeded (for mana failures). Keep the abstract attack() method implementation that calls executeAction with BASIC_ATTACK as default for AI compatibility.",
+    "Step 9: Refactor src/model/Enemy.java - Remove all System.out. The attack() method should fire ENEMY_ATTACK event with: attackerName, damage, targetName. Keep the random variation logic (rand.nextInt(6) added to attackPower). Add package model;",
+    "Step 10: Refactor src/model/Goblin.java - Add package model; Keep scaling constructor exactly: super('Goblin Grunt', 40 + (wave * 10), 8 + (wave * 2), 0).",
+    "Step 11: Refactor src/model/Skeleton.java - Add package model; Keep scaling exactly: super('Skeleton Warrior', 80 + ((wave-10)*12), 15 + ((wave-10)*3), 5 + ((wave-10)*1)).",
+    "Step 12: Refactor src/model/GoblinKing.java - Remove all System.out. Fire GOBLIN_KING_RAGE event before calling upgradePower(2). Then call super.attack(target). Keep constructor: super('Goblin King', 150, 20, 15).",
+    "Step 13: Refactor src/model/Lich.java - Remove all System.out. Fire LICH_SUMMON_MINION event on summon turns (turnCounter % 3 == 0). Fire LICH_MINION_ATTACK event for passive minion damage. Keep exact mechanics: 300 HP, 25 ATK, 20 DEF, summon every 3 turns, 8 damage per minion. Note: on summon turns the Lich does NOT do a normal attack (only minions attack).",
+    "Step 14: Ensure all model classes have correct package declarations (package model; or package model.events;) and proper imports."
+  ],
+  "acceptance_criteria": [
+    "All files in src/model/ have 'package model;' declaration",
+    "All files in src/model/events/ have 'package model.events;' declaration",
+    "Zero System.out.println, System.out.print, or Scanner references in any file under src/model/",
+    "GameCharacter.takeDamage() uses exact formula: reductionPercentage = defense/100.0, blockedAmount = damage*reductionPercentage, finalDamage = (int)(damage - blockedAmount), cap at 0 minimum",
+    "Defense cap remains at 75 in upgradeDefense()",
+    "Player starts with 100 HP, 30 ATK, 15 DEF, 75/100 mana",
+    "Player.executeAction() handles all 4 actions with correct mana costs (20/15/10) and effects (3x/heal30/+5def)",
+    "Critical hit is 15% chance for 2x damage on basic attack",
+    "Goblin scaling: 40+(wave*10) HP, 8+(wave*2) ATK, 0 DEF",
+    "Skeleton scaling: 80+((wave-10)*12) HP, 15+((wave-10)*3) ATK, 5+((wave-10)*1) DEF",
+    "GoblinKing: 150 HP, 20 ATK, 15 DEF, +2 ATK per turn",
+    "Lich: 300 HP, 25 ATK, 20 DEF, summon every 3 turns, 8 dmg per minion",
+    "Events are emitted for all significant game actions"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/Plague-of-Danjin && javac -d out $(find src/model -name '*.java') and confirm zero compilation errors",
+    "Run: grep -r 'System.out' src/model/ and confirm zero results",
+    "Run: grep -r 'Scanner' src/model/ and confirm zero results"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
