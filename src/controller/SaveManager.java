@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 
 import model.Player;
+import model.CharacterClass;
 import model.SaveData;
 import model.items.Item;
 import model.items.ItemSlot;
@@ -204,6 +205,11 @@ public class SaveManager {
         data.setDanjinHeartAbsorbed(mods.isDanjinHeartAbsorbed());
         data.setDanjinHeartShattered(mods.isDanjinHeartShattered());
         data.setPermanentDamagePerTurn(mods.getPermanentDamagePerTurn());
+
+        // Character class
+        if (engine.getCharacterClass() != null) {
+            data.setCharacterClass(engine.getCharacterClass().name());
+        }
 
         return data;
     }

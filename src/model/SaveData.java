@@ -25,6 +25,7 @@ public class SaveData {
     private boolean danjinHeartAbsorbed;
     private boolean danjinHeartShattered;
     private int permanentDamagePerTurn;
+    private String characterClass;
 
     public SaveData() {
         this.equippedItemNames = new ArrayList<>();
@@ -83,6 +84,9 @@ public class SaveData {
     public int getPermanentDamagePerTurn() { return permanentDamagePerTurn; }
     public void setPermanentDamagePerTurn(int permanentDamagePerTurn) { this.permanentDamagePerTurn = permanentDamagePerTurn; }
 
+    public String getCharacterClass() { return characterClass; }
+    public void setCharacterClass(String characterClass) { this.characterClass = characterClass; }
+
     /**
      * Serializes this SaveData to a JSON string using manual StringBuilder construction.
      */
@@ -104,7 +108,8 @@ public class SaveData {
         sb.append("  \"appliedRunModifiers\": ").append(listToJson(appliedRunModifiers)).append(",\n");
         sb.append("  \"danjinHeartAbsorbed\": ").append(danjinHeartAbsorbed).append(",\n");
         sb.append("  \"danjinHeartShattered\": ").append(danjinHeartShattered).append(",\n");
-        sb.append("  \"permanentDamagePerTurn\": ").append(permanentDamagePerTurn).append("\n");
+        sb.append("  \"permanentDamagePerTurn\": ").append(permanentDamagePerTurn).append(",\n");
+        sb.append("  \"characterClass\": ").append(escapeJsonString(characterClass)).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -135,6 +140,7 @@ public class SaveData {
         data.danjinHeartAbsorbed = parseBooleanField(json, "danjinHeartAbsorbed");
         data.danjinHeartShattered = parseBooleanField(json, "danjinHeartShattered");
         data.permanentDamagePerTurn = parseIntField(json, "permanentDamagePerTurn");
+        data.characterClass = parseStringField(json, "characterClass");
         return data;
     }
 

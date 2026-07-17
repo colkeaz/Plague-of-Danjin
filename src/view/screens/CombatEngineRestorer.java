@@ -4,6 +4,8 @@ import java.util.List;
 
 import controller.CombatEngine;
 import controller.MetaProgression;
+import model.CharacterClass;
+import model.ClassSkillTree;
 import model.Player;
 import model.SaveData;
 import model.items.Item;
@@ -28,7 +30,14 @@ class CombatEngineRestorer {
         if (saveData == null) return null;
 
         CombatEngine engine = new CombatEngine();
-        engine.startGame(saveData.getPlayerName());
+
+        // Start game with class if available in save data
+        CharacterClass characterClass = parseCharacterClass(saveData.getCharacterClass());
+        if (characterClass != null) {
+            engine.startGame(saveData.getPlayerName(), characterClass);
+        } else {
+            engine.startGame(saveData.getPlayerName());
+        }
 
         // Apply unlocks before restoring stats so unlock items (Veteran's Blade,
         // Iron Constitution, Swift Boots) are equipped and their effects are active.
@@ -150,10 +159,10 @@ class CombatEngineRestorer {
     }
 
     /**
-     * Finds a skill by ID using the SkillTree milestone choices.
+     * Finds a skill by ID using the SkillTree milestone choices and class skill trees.
      */
     private Skill findSkillById(String skillId) {
-        // Check wave 5 milestone skills
+        // First check generic milestone skills
         SkillTree tempTree = new SkillTree();
         List<Skill> wave5 = tempTree.getChoicesForMilestone(5);
         for (Skill s : wave5) {
@@ -167,7 +176,24 @@ class CombatEngineRestorer {
         for (Skill s : wave15) {
             if (s.getId().equals(skillId)) return s;
         }
+
+        // Then check class-specific skills
+        Skill classSkill = ClassSkillTree.findSkillById(skillId);
+        if (classSkill != null) return classSkill;
+
         return null;
+    }
+
+    /**
+     * Parses a CharacterClass from a string name. Returns null if invalid or null.
+     */
+    private CharacterClass parseCharacterClass(String className) {
+        if (className == null || className.isEmpty()) return null;
+        try {
+            return CharacterClass.valueOf(className);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**

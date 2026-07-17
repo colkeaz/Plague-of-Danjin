@@ -1,0 +1,7 @@
+{
+  "task_id": "task-character-classes",
+  "task_description": "Implement Phase 6 - Character Classes for Plague of Danjin. Add 3 playable classes (Knight, Mage, Rogue) with distinct stats, skill trees, passives, starting equipment, sprites, and class selection UI.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

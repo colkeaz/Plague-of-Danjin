@@ -7,6 +7,8 @@ import java.util.Set;
 import model.Enemy;
 import model.GoblinKing;
 import model.Lich;
+import model.CharacterClass;
+import model.ClassAbility;
 import model.Player;
 import model.PlayerAction;
 import model.enemies.BoneColossus;
@@ -67,6 +69,9 @@ public class CombatEngine extends GameEventDispatcher {
 
     // MetaProgression reference for periodic persistence at wave transitions
     private MetaProgression metaProgression;
+
+    // Character class for the current run (null for legacy runs)
+    private CharacterClass characterClass;
 
     /**
      * Internal listener that forwards all child events through this engine's dispatcher.
@@ -136,6 +141,42 @@ public class CombatEngine extends GameEventDispatcher {
     }
 
     /**
+     * Starts a new game with the given player name and character class.
+     * Creates a class-specific Player with appropriate starting stats, skills, and equipment.
+     */
+    public void startGame(String playerName, CharacterClass characterClass) {
+        this.characterClass = characterClass;
+        if (characterClass == null) {
+            startGame(playerName);
+            return;
+        }
+        this.hero = new Player(playerName, characterClass);
+        // Forward player events through the engine
+        hero.addListener(forwardingListener);
+        // Forward inventory and skill tree events through the engine
+        hero.getInventory().addListener(forwardingListener);
+        hero.getSkillTree().addListener(forwardingListener);
+
+        this.currentWave = 1;
+        this.currentEnemies = waveManager.createWaveEnemies(currentWave);
+        applyShatterEffect(currentEnemies);
+        registerEnemyListeners(currentEnemies);
+        this.currentEnemyIndex = 0;
+        this.enemyTurnCounts = new int[currentEnemies.length];
+        this.currentState = GameState.AWAITING_PLAYER_ACTION;
+
+        // Apply wave modifiers for wave 1
+        runModifiers.applyWaveModifiers(currentWave, hero);
+    }
+
+    /**
+     * Returns the CharacterClass for the current run, or null for legacy/classless runs.
+     */
+    public CharacterClass getCharacterClass() {
+        return characterClass;
+    }
+
+    /**
      * Processes a player action against the current enemy.
      * Ticks status effects at the start of the player's turn, checks stun,
      * applies mana regen, then executes the action.
@@ -184,7 +225,12 @@ public class CombatEngine extends GameEventDispatcher {
             }
 
             // Regen mana at the start of each player turn
-            hero.regenMana(10);
+            // Mage with ARCANE_AFFINITY passive gets 15 mana regen instead of 10
+            int manaRegenAmount = 10;
+            if (hero.getClassAbility() == ClassAbility.ARCANE_AFFINITY) {
+                manaRegenAmount = 15;
+            }
+            hero.regenMana(manaRegenAmount);
 
             // Handle multi-target skills specially
             if (isMultiTargetAction(action)) {

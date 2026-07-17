@@ -17,6 +17,8 @@ public abstract class GameCharacter extends GameEventDispatcher {
     private int maxMana;
     private Element element;
     private final StatusManager statusManager;
+    private float baseCritChance = 0.15f;
+    private float critDamageMultiplier = 2.0f;
 
     public GameCharacter(String name, int maxHp, int attackPower, int defense) {
         this.name = name;
@@ -53,6 +55,14 @@ public abstract class GameCharacter extends GameEventDispatcher {
     public StatusManager getStatusManager() { return statusManager; }
 
     protected void setElement(Element element) { this.element = element; }
+
+    public float getBaseCritChance() { return baseCritChance; }
+
+    public void setBaseCritChance(float baseCritChance) { this.baseCritChance = baseCritChance; }
+
+    public float getCritDamageMultiplier() { return critDamageMultiplier; }
+
+    public void setCritDamageMultiplier(float critDamageMultiplier) { this.critDamageMultiplier = critDamageMultiplier; }
 
     public boolean isAlive() {
         return this.hp > 0;
@@ -240,5 +250,22 @@ public abstract class GameCharacter extends GameEventDispatcher {
         this.maxHp -= reduction;
         if (this.maxHp < 1) this.maxHp = 1;
         if (this.hp > this.maxHp) this.hp = this.maxHp;
+    }
+
+    /**
+     * Sets the max mana directly. Used by class constructors to set class-specific mana pools.
+     */
+    protected void setMaxManaRaw(int value) {
+        this.maxMana = value;
+        if (this.mana > this.maxMana) this.mana = this.maxMana;
+    }
+
+    /**
+     * Sets the current mana directly. Used by class constructors to set class-specific starting mana.
+     */
+    protected void setManaRaw(int value) {
+        this.mana = value;
+        if (this.mana > this.maxMana) this.mana = this.maxMana;
+        if (this.mana < 0) this.mana = 0;
     }
 }
