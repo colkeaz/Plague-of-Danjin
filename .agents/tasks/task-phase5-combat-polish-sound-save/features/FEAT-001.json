@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "QTE Boss Events System - Create the Quick-Time Event system that triggers during boss fights at HP thresholds. This includes the controller logic (QTEManager, QTEPattern), the view screen (QTEScreen), adding QTE_EVENT to GameState, new event types for QTE_SUCCESS/QTE_FAILURE, and integrating with CombatEngine to check boss HP thresholds after damage.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Add QTE_EVENT to the GameState enum in src/controller/GameState.java",
     "Add QTE_SUCCESS, QTE_FAILURE, and QTE_TRIGGERED event types to src/model/events/GameEventType.java",
@@ -27,5 +27,5 @@
     "Run ./gradlew classes and confirm BUILD SUCCESSFUL"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 7 QTE patterns implemented as static factory methods on QTEPattern. Added clearMinions()/addMinions() to Lich since it only had a getter for minionsActive. Used lichHealingPrevented boolean flag on CombatEngine to block Lich healing via REGEN status effects. The QTEScreen transitions back to a new GameScreen instance (same pattern as SkillChoiceScreen). Build successful with ./gradlew classes."
 }
