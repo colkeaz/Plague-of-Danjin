@@ -203,11 +203,14 @@ public class MusicManager {
     /**
      * Plays the named track, crossfading from the current track.
      * If the same track is already playing, does nothing.
+     * If a crossfade is already targeting this track, does nothing.
      * @param trackName one of: dungeon_theme, combat_theme, boss_theme, event_room_theme, victory_theme
      */
     public void play(String trackName) {
         if (trackName == null) return;
         if (trackName.equals(currentTrack) && !crossfading) return;
+        // Prevent spawning new loops if crossfade is already targeting this track
+        if (crossfading && trackName.equals(targetTrack)) return;
 
         Sound track = tracks.get(trackName);
         if (track == null) return;
@@ -218,6 +221,16 @@ public class MusicManager {
             currentPlayId = track.loop(musicVolume);
             currentFadeVolume = 1f;
         } else {
+            // If we're already crossfading, cancel the in-progress crossfade first
+            if (crossfading) {
+                // Stop the old target that was fading in
+                if (targetTrack != null && targetPlayId != -1) {
+                    Sound oldTarget = tracks.get(targetTrack);
+                    if (oldTarget != null) {
+                        oldTarget.stop();
+                    }
+                }
+            }
             // Start crossfade
             targetTrack = trackName;
             targetPlayId = track.loop(0f);

@@ -3,6 +3,7 @@ package view.screens;
 import java.util.List;
 
 import controller.CombatEngine;
+import controller.MetaProgression;
 import model.Player;
 import model.SaveData;
 import model.items.Item;
@@ -21,17 +22,28 @@ class CombatEngineRestorer {
     /**
      * Creates a new CombatEngine and restores its state from the given SaveData.
      * The engine will be at the start of the saved wave in AWAITING_PLAYER_ACTION state.
+     * MetaProgression is applied before stat restoration so unlock items are available.
      */
-    public CombatEngine restoreFromSave(SaveData saveData) {
+    public CombatEngine restoreFromSave(SaveData saveData, MetaProgression meta) {
         if (saveData == null) return null;
 
         CombatEngine engine = new CombatEngine();
         engine.startGame(saveData.getPlayerName());
 
+        // Apply unlocks before restoring stats so unlock items (Veteran's Blade,
+        // Iron Constitution, Swift Boots) are equipped and their effects are active.
+        // This ensures findItemByName() is not needed for unlock items since they are
+        // already equipped via applyUnlocks().
+        if (meta != null) {
+            engine.applyUnlocks(meta, engine.getChestSystem());
+        }
+
         Player player = engine.getPlayer();
 
-        // Restore player stats by adjusting from defaults
-        // Player starts with: 100 HP, 30 ATK, 15 DEF, 75 mana, 100 maxMana
+        // Restore max HP first using setMaxHp to handle both increases and decreases
+        player.setMaxHp(saveData.getMaxHp());
+
+        // Restore player stats by adjusting from current values (post-unlock)
         int atkDiff = saveData.getAtk() - player.getAttackPower();
         if (atkDiff != 0) {
             player.upgradePower(atkDiff);
@@ -42,22 +54,16 @@ class CombatEngineRestorer {
             player.upgradeDefense(defDiff);
         }
 
-        // Reduce max HP if needed (cannot increase max HP via reduceMaxHp with negative)
-        // We handle this by reducing by the difference
-        int maxHpDiff = player.getMaxHp() - saveData.getMaxHp();
-        if (maxHpDiff > 0) {
-            player.reduceMaxHp(maxHpDiff);
-        }
-
         // Set HP directly using setHp() to accurately restore saved HP (even below max)
-        player.fullRestore();
         player.setHp(saveData.getHp());
 
-        // Restore equipped items by name
+        // Restore equipped items by name (skip items already equipped by applyUnlocks)
         List<String> itemNames = saveData.getEquippedItemNames();
         if (itemNames != null) {
             for (String name : itemNames) {
                 if (name != null && !name.isEmpty()) {
+                    // Skip if this item is already equipped (from applyUnlocks)
+                    if (isAlreadyEquipped(player, name)) continue;
                     Item item = findItemByName(name);
                     if (item != null) {
                         player.getInventory().equip(item);
@@ -109,6 +115,26 @@ class CombatEngineRestorer {
         engine.restoreToWave(saveData.getWaveNumber());
 
         return engine;
+    }
+
+    /**
+     * Backwards-compatible overload for callers that don't have MetaProgression.
+     */
+    public CombatEngine restoreFromSave(SaveData saveData) {
+        return restoreFromSave(saveData, null);
+    }
+
+    /**
+     * Checks if an item with the given name is already equipped on the player.
+     */
+    private boolean isAlreadyEquipped(Player player, String itemName) {
+        for (model.items.ItemSlot slot : model.items.ItemSlot.values()) {
+            Item equipped = player.getInventory().getEquipped(slot);
+            if (equipped != null && equipped.getName().equals(itemName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

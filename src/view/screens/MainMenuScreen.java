@@ -430,10 +430,8 @@ public class MainMenuScreen extends InputAdapter implements Screen {
         }
 
         CombatEngineRestorer restorer = new CombatEngineRestorer();
-        controller.CombatEngine engine = restorer.restoreFromSave(saveData);
+        controller.CombatEngine engine = restorer.restoreFromSave(saveData, metaProgression);
         if (engine != null) {
-            // Register meta progression as listener
-            engine.addListener(metaProgression);
             game.setScreen(new GameScreen(game, engine));
         }
     }

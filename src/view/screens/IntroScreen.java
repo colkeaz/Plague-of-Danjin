@@ -439,9 +439,6 @@ public class IntroScreen extends InputAdapter implements Screen {
         engine.setSaveManager(saveManager);
         engine.applyUnlocks(meta, engine.getChestSystem());
 
-        // Register meta progression as event listener for real-time stat tracking
-        engine.addListener(meta);
-
         // Record run start
         meta.recordRunStart();
 
