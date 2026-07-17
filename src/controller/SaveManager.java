@@ -2,6 +2,7 @@ package controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -13,6 +14,8 @@ import model.items.Item;
 import model.items.ItemSlot;
 import model.skills.Skill;
 import model.status.StatusEffect;
+import model.world.Area;
+import model.world.WorldState;
 
 /**
  * Handles file I/O for save data, meta-progression, and settings.
@@ -215,6 +218,52 @@ public class SaveManager {
         data.setSpellCostReductionBonus(player.getSpellCostReductionBonus());
         data.setPlagueBearerActive(player.isPlagueBearerActive());
         data.setImmortalStandActive(player.isImmortalStandActive());
+
+        // Game mode and world state
+        if (engine.isStoryMode()) {
+            data.setGameMode("STORY");
+            WorldManager worldManager = engine.getWorldManager();
+            if (worldManager != null) {
+                WorldState worldState = worldManager.getWorldState();
+
+                // Current area
+                Area current = worldState.getCurrentArea();
+                data.setCurrentArea(current != null ? current.name() : null);
+
+                // Completed areas
+                List<String> completedAreaNames = new ArrayList<>();
+                for (Area area : worldState.getCompletedAreas()) {
+                    completedAreaNames.add(area.name());
+                }
+                data.setCompletedAreas(completedAreaNames);
+
+                // Keys collected
+                data.setKeysCollected(new ArrayList<>(worldState.getKeysCollected()));
+
+                // Encounter progress (format: "AREA:index")
+                List<String> progressEntries = new ArrayList<>();
+                for (Map.Entry<Area, Integer> entry : worldState.getEncounterProgress().entrySet()) {
+                    progressEntries.add(entry.getKey().name() + ":" + entry.getValue());
+                }
+                data.setEncounterProgress(progressEntries);
+
+                // Rest shrine
+                data.setRestShrineUsed(worldState.isRestShrineUsed());
+
+                // Event choices (format: "eventName:choiceIndex")
+                List<String> choiceEntries = new ArrayList<>();
+                for (Map.Entry<String, Integer> entry : worldState.getEventChoices().entrySet()) {
+                    choiceEntries.add(entry.getKey() + ":" + entry.getValue());
+                }
+                data.setEventChoices(choiceEntries);
+            }
+
+            // Area mechanic flags
+            data.setToxicAtmospherePurified(engine.isToxicAtmospherePurified());
+            data.setConsecratedGroundBlessing(engine.isConsecratedGroundBlessing());
+        } else {
+            data.setGameMode("CLASSIC");
+        }
 
         return data;
     }

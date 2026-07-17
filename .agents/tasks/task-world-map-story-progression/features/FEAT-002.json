@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Create the world controller layer: WorldManager (central world navigation controller) and AreaEncounterGenerator (generates enemy compositions for each area). Wire WorldManager into CombatEngine to support area-based combat alongside the existing wave system. Update SaveData and SaveManager to persist WorldState.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/controller/WorldManager.java - Central controller that: (1) initializes all AreaData with encounter definitions per the spec (Goblin Warrens: 5 encounters + boss, Bone Cathedral: 5 + boss, Plague Gardens: 5 + boss, Lich's Throne: 3 + final boss, Danjin's Core: 2-3 patrols), (2) manages WorldState, (3) provides methods: getAvailableAreas(), enterArea(Area), getNextEncounter(), retreatToHub(), isAreaComplete(Area), applyAreaMechanic() for toxic atmosphere/consecrated ground/void instability, (4) generates area-specific events with choices matching the spec.",
     "Create src/controller/AreaEncounterGenerator.java - Generates Enemy[] arrays for each encounter. Follows exact spec: Goblin Warrens encounters 1-5 + GoblinKing boss; Bone Cathedral encounters 1-5 + BoneColossus boss; Plague Gardens encounters 1-5 + Thornmother boss; Lich's Throne 3 elite + Lich final boss. Uses PlagueElemental and Thornmother from FEAT-001.",

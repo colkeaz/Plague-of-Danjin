@@ -22,6 +22,8 @@ import model.skills.SkillEffect;
 import model.skills.SkillTree;
 import model.status.StatusEffect;
 import model.status.StatusType;
+import model.world.Area;
+import model.world.Encounter;
 
 /**
  * Main game controller that orchestrates combat flow.
@@ -75,6 +77,16 @@ public class CombatEngine extends GameEventDispatcher {
 
     // Character class for the current run (null for legacy runs)
     private CharacterClass characterClass;
+
+    // Story mode fields
+    private boolean storyMode = false;
+    private WorldManager worldManager;
+
+    // Track whether toxic atmosphere has been purified in Plague Gardens
+    private boolean toxicAtmospherePurified = false;
+
+    // Track whether consecrated ground blessing is active in Bone Cathedral
+    private boolean consecratedGroundBlessing = false;
 
     /**
      * Internal listener that forwards all child events through this engine's dispatcher.
@@ -180,6 +192,144 @@ public class CombatEngine extends GameEventDispatcher {
     }
 
     /**
+     * Returns whether this engine is running in story mode (world-based progression).
+     */
+    public boolean isStoryMode() {
+        return storyMode;
+    }
+
+    /**
+     * Returns the WorldManager for story mode, or null if in classic mode.
+     */
+    public WorldManager getWorldManager() {
+        return worldManager;
+    }
+
+    /**
+     * Sets the WorldManager (used for save restoration).
+     */
+    public void setWorldManager(WorldManager worldManager) {
+        this.worldManager = worldManager;
+        this.storyMode = (worldManager != null);
+    }
+
+    /**
+     * Starts a new game in Story Mode with the given player name and character class.
+     * Initializes the WorldManager and transitions to WORLD_MAP state.
+     */
+    public void startStoryMode(String playerName, CharacterClass characterClass) {
+        this.characterClass = characterClass;
+        this.storyMode = true;
+        this.worldManager = new WorldManager();
+
+        if (characterClass != null) {
+            this.hero = new Player(playerName, characterClass);
+        } else {
+            this.hero = new Player(playerName);
+        }
+        // Forward player events through the engine
+        hero.addListener(forwardingListener);
+        hero.getInventory().addListener(forwardingListener);
+        hero.getSkillTree().addListener(forwardingListener);
+
+        this.currentWave = 0;
+        this.currentState = GameState.WORLD_MAP;
+    }
+
+    /**
+     * Starts an encounter in the current area during story mode.
+     * Uses AreaEncounterGenerator to create enemies and transitions to AWAITING_PLAYER_ACTION.
+     *
+     * @param area the area the encounter takes place in
+     * @param encounterIndex the index of the encounter within the area
+     */
+    public void startEncounter(Area area, int encounterIndex) {
+        if (!storyMode || worldManager == null) return;
+
+        Enemy[] enemies = worldManager.generateCurrentEncounterEnemies();
+        if (enemies == null || enemies.length == 0) return;
+
+        this.currentEnemies = enemies;
+        applyShatterEffect(currentEnemies);
+        registerEnemyListeners(currentEnemies);
+        this.currentEnemyIndex = 0;
+        this.enemyTurnCounts = new int[currentEnemies.length];
+        this.currentState = GameState.AWAITING_PLAYER_ACTION;
+
+        // Apply wave modifiers (story mode uses encounter index as wave equivalent)
+        runModifiers.applyWaveModifiers(encounterIndex + 1, hero);
+    }
+
+    /**
+     * Applies area-specific per-turn mechanics during combat.
+     * Called at the start of each turn in processPlayerAction when in story mode.
+     * - TOXIC_ATMOSPHERE: 3 poison damage to all entities
+     * - CONSECRATED_GROUND: No per-turn effect (bonus is applied in damage calculation)
+     * - VOID_INSTABILITY: Random effect (simplified as minor damage)
+     */
+    public void processAreaMechanic() {
+        if (!storyMode || worldManager == null) return;
+
+        String mechanic = worldManager.getActiveAreaMechanic();
+        if (mechanic == null) return;
+
+        switch (mechanic) {
+            case "TOXIC_ATMOSPHERE":
+                if (!toxicAtmospherePurified) {
+                    // 3 damage to player
+                    hero.takeDamage(3);
+                    // 3 damage to all alive enemies
+                    if (currentEnemies != null) {
+                        for (Enemy enemy : currentEnemies) {
+                            if (enemy.isAlive()) {
+                                enemy.takeDamage(3);
+                            }
+                        }
+                    }
+                }
+                break;
+            case "VOID_INSTABILITY":
+                // Random minor damage (2) to player representing instability
+                hero.takeDamage(2);
+                break;
+            case "CONSECRATED_GROUND":
+                // Passive bonus; no per-turn damage
+                break;
+            case "GOBLIN_AMBUSH":
+                // Handled at encounter start (ambush flag), no per-turn effect
+                break;
+        }
+    }
+
+    /**
+     * Returns whether the toxic atmosphere has been purified.
+     */
+    public boolean isToxicAtmospherePurified() {
+        return toxicAtmospherePurified;
+    }
+
+    /**
+     * Sets whether the toxic atmosphere has been purified (from event choice).
+     */
+    public void setToxicAtmospherePurified(boolean purified) {
+        this.toxicAtmospherePurified = purified;
+    }
+
+    /**
+     * Returns whether the consecrated ground blessing is active.
+     */
+    public boolean isConsecratedGroundBlessing() {
+        return consecratedGroundBlessing;
+    }
+
+    /**
+     * Sets whether the consecrated ground blessing is active (from event choice).
+     */
+    public void setConsecratedGroundBlessing(boolean active) {
+        this.consecratedGroundBlessing = active;
+    }
+
+    /**
      * Processes a player action against the current enemy.
      * Ticks status effects at the start of the player's turn, checks stun,
      * applies mana regen, then executes the action.
@@ -197,6 +347,19 @@ public class CombatEngine extends GameEventDispatcher {
             // Apply permanent damage per turn from Danjin's Heart absorption
             if (runModifiers.isDanjinHeartAbsorbed() && runModifiers.getPermanentDamagePerTurn() > 0) {
                 runModifiers.applyPermanentDamagePerTurn(hero, runModifiers.getPermanentDamagePerTurn());
+                if (isPlayerDeadAfterReviveCheck()) {
+                    currentState = GameState.GAME_OVER;
+                    fireEvent(GameEvent.builder(GameEventType.PLAYER_DEFEATED)
+                            .put("playerName", hero.getName())
+                            .put("waveNumber", currentWave)
+                            .build());
+                    return;
+                }
+            }
+
+            // Apply area-specific mechanics in story mode (toxic atmosphere, void instability)
+            if (storyMode) {
+                processAreaMechanic();
                 if (isPlayerDeadAfterReviveCheck()) {
                     currentState = GameState.GAME_OVER;
                     fireEvent(GameEvent.builder(GameEventType.PLAYER_DEFEATED)
@@ -554,13 +717,54 @@ public class CombatEngine extends GameEventDispatcher {
             // More enemies in this wave
             currentState = GameState.AWAITING_PLAYER_ACTION;
         } else {
-            // All enemies in wave defeated, transition to next wave
-            currentState = GameState.WAVE_TRANSITION;
+            // All enemies in wave defeated
+            if (storyMode) {
+                handleStoryModeEncounterComplete();
+            } else {
+                currentState = GameState.WAVE_TRANSITION;
+            }
         }
     }
 
     private void handleAllEnemiesDefeated() {
-        currentState = GameState.WAVE_TRANSITION;
+        if (storyMode) {
+            handleStoryModeEncounterComplete();
+        } else {
+            currentState = GameState.WAVE_TRANSITION;
+        }
+    }
+
+    /**
+     * Handles the completion of an encounter in story mode.
+     * Advances encounter progress and transitions to AREA_NAVIGATION or WORLD_MAP.
+     */
+    private void handleStoryModeEncounterComplete() {
+        if (worldManager == null) {
+            currentState = GameState.WORLD_MAP;
+            return;
+        }
+
+        worldManager.advanceAfterEncounter();
+
+        Area current = worldManager.getWorldState().getCurrentArea();
+        if (worldManager.isAreaComplete(current)) {
+            // Area is fully complete, return to world map
+            currentState = GameState.WORLD_MAP;
+            fireEvent(GameEvent.builder(GameEventType.WAVE_COMPLETE)
+                    .put("waveNumber", 0)
+                    .build());
+        } else {
+            // More encounters in this area
+            currentState = GameState.AREA_NAVIGATION;
+        }
+
+        // Auto-save at encounter transitions
+        if (saveManager != null) {
+            saveManager.saveRun(this);
+            if (metaProgression != null) {
+                saveManager.saveMetaProgression(metaProgression);
+            }
+        }
     }
 
     /**

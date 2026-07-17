@@ -1,9 +1,12 @@
 package view.screens;
 
 import java.util.List;
+import java.util.Map;
 
 import controller.CombatEngine;
+import controller.GameState;
 import controller.MetaProgression;
+import controller.WorldManager;
 import model.CharacterClass;
 import model.ClassSkillTree;
 import model.Player;
@@ -14,6 +17,8 @@ import model.skills.Skill;
 import model.skills.SkillTree;
 import model.status.StatusEffect;
 import model.status.StatusType;
+import model.world.Area;
+import model.world.WorldState;
 
 /**
  * Utility class that restores a CombatEngine state from a SaveData object.
@@ -131,8 +136,99 @@ class CombatEngineRestorer {
             player.setImmortalStandActive(true);
         }
 
-        // Restore wave - advance to the saved wave
-        engine.restoreToWave(saveData.getWaveNumber());
+        // Restore game mode: story vs classic
+        String gameMode = saveData.getGameMode();
+        if ("STORY".equals(gameMode)) {
+            // Restore WorldState
+            WorldState worldState = new WorldState();
+
+            // Restore current area
+            String currentAreaStr = saveData.getCurrentArea();
+            if (currentAreaStr != null && !currentAreaStr.isEmpty()) {
+                try {
+                    worldState.setCurrentArea(Area.valueOf(currentAreaStr));
+                } catch (IllegalArgumentException e) {
+                    // Keep default (DANJINS_CORE)
+                }
+            }
+
+            // Restore completed areas
+            List<String> completedAreas = saveData.getCompletedAreas();
+            if (completedAreas != null) {
+                for (String areaName : completedAreas) {
+                    try {
+                        worldState.completeArea(Area.valueOf(areaName));
+                    } catch (IllegalArgumentException e) {
+                        // Skip invalid area names
+                    }
+                }
+            }
+
+            // Restore keys collected
+            List<String> keys = saveData.getKeysCollected();
+            if (keys != null) {
+                for (String key : keys) {
+                    worldState.collectKey(key);
+                }
+            }
+
+            // Restore encounter progress (format: "AREA:index")
+            List<String> progressEntries = saveData.getEncounterProgress();
+            if (progressEntries != null) {
+                for (String entry : progressEntries) {
+                    int colonIdx = entry.lastIndexOf(':');
+                    if (colonIdx > 0) {
+                        String areaName = entry.substring(0, colonIdx);
+                        String indexStr = entry.substring(colonIdx + 1);
+                        try {
+                            Area area = Area.valueOf(areaName);
+                            int index = Integer.parseInt(indexStr);
+                            // Set encounter progress by advancing to the saved index
+                            for (int i = 0; i < index; i++) {
+                                worldState.advanceEncounter(area);
+                            }
+                        } catch (Exception e) {
+                            // Skip invalid entries
+                        }
+                    }
+                }
+            }
+
+            // Restore rest shrine
+            worldState.setRestShrineUsed(saveData.isRestShrineUsed());
+
+            // Restore event choices (format: "eventName:choiceIndex")
+            List<String> choiceEntries = saveData.getEventChoices();
+            if (choiceEntries != null) {
+                for (String entry : choiceEntries) {
+                    int colonIdx = entry.lastIndexOf(':');
+                    if (colonIdx > 0) {
+                        String eventName = entry.substring(0, colonIdx);
+                        String choiceStr = entry.substring(colonIdx + 1);
+                        try {
+                            int choiceIndex = Integer.parseInt(choiceStr);
+                            worldState.recordEventChoice(eventName, choiceIndex);
+                        } catch (NumberFormatException e) {
+                            // Skip invalid entries
+                        }
+                    }
+                }
+            }
+
+            // Create WorldManager with restored state and set it on the engine
+            WorldManager worldManager = new WorldManager(worldState);
+            engine.setWorldManager(worldManager);
+
+            // Restore area mechanic flags
+            engine.setToxicAtmospherePurified(saveData.isToxicAtmospherePurified());
+            engine.setConsecratedGroundBlessing(saveData.isConsecratedGroundBlessing());
+
+            // Set state to WORLD_MAP (player resumes at map)
+            engine.setCurrentState(GameState.WORLD_MAP);
+        } else {
+            // Classic mode - restore wave
+            engine.restoreToWave(saveData.getWaveNumber());
+        }
 
         return engine;
     }

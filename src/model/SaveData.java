@@ -30,11 +30,26 @@ public class SaveData {
     private boolean plagueBearerActive;
     private boolean immortalStandActive;
 
+    // Story mode world state fields
+    private String gameMode; // "CLASSIC" or "STORY"
+    private String currentArea; // Area enum name
+    private List<String> completedAreas;
+    private List<String> keysCollected;
+    private List<String> encounterProgress; // format: "AREA:index"
+    private boolean restShrineUsed;
+    private List<String> eventChoices; // format: "eventName:choiceIndex"
+    private boolean toxicAtmospherePurified;
+    private boolean consecratedGroundBlessing;
+
     public SaveData() {
         this.equippedItemNames = new ArrayList<>();
         this.unlockedSkillIds = new ArrayList<>();
         this.activeStatusEffects = new ArrayList<>();
         this.appliedRunModifiers = new ArrayList<>();
+        this.completedAreas = new ArrayList<>();
+        this.keysCollected = new ArrayList<>();
+        this.encounterProgress = new ArrayList<>();
+        this.eventChoices = new ArrayList<>();
     }
 
     // Getters and Setters
@@ -99,6 +114,35 @@ public class SaveData {
     public boolean isImmortalStandActive() { return immortalStandActive; }
     public void setImmortalStandActive(boolean immortalStandActive) { this.immortalStandActive = immortalStandActive; }
 
+    // Story mode world state getters/setters
+
+    public String getGameMode() { return gameMode; }
+    public void setGameMode(String gameMode) { this.gameMode = gameMode; }
+
+    public String getCurrentArea() { return currentArea; }
+    public void setCurrentArea(String currentArea) { this.currentArea = currentArea; }
+
+    public List<String> getCompletedAreas() { return completedAreas; }
+    public void setCompletedAreas(List<String> completedAreas) { this.completedAreas = completedAreas; }
+
+    public List<String> getKeysCollected() { return keysCollected; }
+    public void setKeysCollected(List<String> keysCollected) { this.keysCollected = keysCollected; }
+
+    public List<String> getEncounterProgress() { return encounterProgress; }
+    public void setEncounterProgress(List<String> encounterProgress) { this.encounterProgress = encounterProgress; }
+
+    public boolean isRestShrineUsed() { return restShrineUsed; }
+    public void setRestShrineUsed(boolean restShrineUsed) { this.restShrineUsed = restShrineUsed; }
+
+    public List<String> getEventChoices() { return eventChoices; }
+    public void setEventChoices(List<String> eventChoices) { this.eventChoices = eventChoices; }
+
+    public boolean isToxicAtmospherePurified() { return toxicAtmospherePurified; }
+    public void setToxicAtmospherePurified(boolean toxicAtmospherePurified) { this.toxicAtmospherePurified = toxicAtmospherePurified; }
+
+    public boolean isConsecratedGroundBlessing() { return consecratedGroundBlessing; }
+    public void setConsecratedGroundBlessing(boolean consecratedGroundBlessing) { this.consecratedGroundBlessing = consecratedGroundBlessing; }
+
     /**
      * Serializes this SaveData to a JSON string using manual StringBuilder construction.
      */
@@ -124,7 +168,16 @@ public class SaveData {
         sb.append("  \"characterClass\": ").append(escapeJsonString(characterClass)).append(",\n");
         sb.append("  \"spellCostReductionBonus\": ").append(spellCostReductionBonus).append(",\n");
         sb.append("  \"plagueBearerActive\": ").append(plagueBearerActive).append(",\n");
-        sb.append("  \"immortalStandActive\": ").append(immortalStandActive).append("\n");
+        sb.append("  \"immortalStandActive\": ").append(immortalStandActive).append(",\n");
+        sb.append("  \"gameMode\": ").append(escapeJsonString(gameMode)).append(",\n");
+        sb.append("  \"currentArea\": ").append(escapeJsonString(currentArea)).append(",\n");
+        sb.append("  \"completedAreas\": ").append(listToJson(completedAreas)).append(",\n");
+        sb.append("  \"keysCollected\": ").append(listToJson(keysCollected)).append(",\n");
+        sb.append("  \"encounterProgress\": ").append(listToJson(encounterProgress)).append(",\n");
+        sb.append("  \"restShrineUsed\": ").append(restShrineUsed).append(",\n");
+        sb.append("  \"eventChoices\": ").append(listToJson(eventChoices)).append(",\n");
+        sb.append("  \"toxicAtmospherePurified\": ").append(toxicAtmospherePurified).append(",\n");
+        sb.append("  \"consecratedGroundBlessing\": ").append(consecratedGroundBlessing).append("\n");
         sb.append("}");
         return sb.toString();
     }
@@ -159,6 +212,15 @@ public class SaveData {
         data.spellCostReductionBonus = parseIntField(json, "spellCostReductionBonus");
         data.plagueBearerActive = parseBooleanField(json, "plagueBearerActive");
         data.immortalStandActive = parseBooleanField(json, "immortalStandActive");
+        data.gameMode = parseStringField(json, "gameMode");
+        data.currentArea = parseStringField(json, "currentArea");
+        data.completedAreas = parseStringList(json, "completedAreas");
+        data.keysCollected = parseStringList(json, "keysCollected");
+        data.encounterProgress = parseStringList(json, "encounterProgress");
+        data.restShrineUsed = parseBooleanField(json, "restShrineUsed");
+        data.eventChoices = parseStringList(json, "eventChoices");
+        data.toxicAtmospherePurified = parseBooleanField(json, "toxicAtmospherePurified");
+        data.consecratedGroundBlessing = parseBooleanField(json, "consecratedGroundBlessing");
         return data;
     }
 
