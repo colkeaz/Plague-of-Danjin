@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Enhance all non-battle screens (IntroScreen, SkillChoiceScreen, EventRoomScreen, VictoryScreen) with sprite integration and visual polish. Add pixel art title logo, animated backgrounds, decorative frames, skill element icons, thematic backgrounds, and victory celebration particles.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Update src/view/screens/IntroScreen.java: Generate a pixel art title logo ('PLAGUE OF DANJIN' rendered as a Pixmap in a chunky pixel font style) displayed at the top. Add animated background - slow-scrolling dungeon tilemap or drifting particle effect using the background tiles from AssetLoader. Add a blinking pixel cursor for name entry (replace the underscore text cursor with a small animated block). Use the ColorPalette colors throughout.",
     "Update src/view/screens/SkillChoiceScreen.java: Add decorative pixel-art frame border from AssetLoader.getMenuFrame() around the skill options area. Show element icons from AssetLoader.getElementIcon() next to each skill choice. Use element colors from ColorPalette for skill name text. Add subtle background (darker dungeon tiles or gradient).",
