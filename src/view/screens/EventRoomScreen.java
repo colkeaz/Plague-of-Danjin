@@ -9,6 +9,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import controller.CombatEngine;
@@ -153,14 +154,16 @@ public class EventRoomScreen extends InputAdapter implements Screen {
 
         if (choices == null || choices.isEmpty()) return false;
 
-        // Simple click region detection
-        float normalizedY = 1f - (float) screenY / Gdx.graphics.getHeight();
-        float choiceStartY = 140f / 240f;
-        float lineHeight = 25f / 240f;
+        // Use viewport.unproject() to correctly handle FitViewport letterboxing
+        Vector2 worldCoords = renderer.getViewport().unproject(new Vector2(screenX, screenY));
+        float worldY = worldCoords.y;
+
+        float choiceStartY = 140f;
+        float lineHeight = 25f;
 
         for (int i = 0; i < choices.size(); i++) {
             float optionY = choiceStartY - i * lineHeight;
-            if (normalizedY >= optionY - lineHeight / 2f && normalizedY <= optionY + lineHeight / 2f) {
+            if (worldY >= optionY - lineHeight / 2f && worldY <= optionY + lineHeight / 2f) {
                 makeChoice(i);
                 return true;
             }

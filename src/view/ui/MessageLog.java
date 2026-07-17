@@ -126,98 +126,111 @@ public class MessageLog implements GameEventListener {
 
     private String convertEventToString(GameEvent event) {
         GameEventType type = event.getType();
-        switch (type) {
-            case DAMAGE_DEALT:
-                return event.getString("targetName") + " takes " +
-                       event.getInt("finalDamage") + " damage! (" +
-                       event.getInt("currentHp") + "/" + event.getInt("maxHp") + " HP)";
+        try {
+            switch (type) {
+                case DAMAGE_DEALT:
+                    return safeString(event, "targetName", "Target") + " takes " +
+                           event.getInt("finalDamage") + " damage! (" +
+                           event.getInt("currentHp") + "/" + event.getInt("maxHp") + " HP)";
 
-            case CRITICAL_HIT:
-                return "CRITICAL HIT! " + event.getString("attackerName") +
-                       " deals " + event.getInt("damage") + " damage!";
+                case CRITICAL_HIT:
+                    return "CRITICAL HIT! " + safeString(event, "attackerName", "Attacker") +
+                           " deals " + event.getInt("damage") + " damage!";
 
-            case HEAL:
-                return event.getString("targetName") + " heals for " +
-                       event.getInt("amount") + " HP. (" +
-                       event.getInt("currentHp") + "/" + event.getInt("maxHp") + ")";
+                case HEAL:
+                    return safeString(event, "targetName", "Target") + " heals for " +
+                           event.getInt("amount") + " HP. (" +
+                           event.getInt("currentHp") + "/" + event.getInt("maxHp") + ")";
 
-            case PLAYER_BASIC_ATTACK:
-                String critText = event.getInt("isCritical") != 0 ? " (CRIT!)" : "";
-                return event.getString("attackerName") + " attacks " +
-                       event.getString("targetName") + " for " +
-                       event.getInt("damage") + " damage" + critText;
+                case PLAYER_BASIC_ATTACK:
+                    String critText = event.getInt("isCritical") != 0 ? " (CRIT!)" : "";
+                    return safeString(event, "attackerName", "Player") + " attacks " +
+                           safeString(event, "targetName", "Enemy") + " for " +
+                           event.getInt("damage") + " damage" + critText;
 
-            case SPELL_CAST:
-                return event.getString("casterName") + " casts " +
-                       event.getString("spellName") + "! (cost: " +
-                       event.getInt("manaCost") + " MP)";
+                case SPELL_CAST:
+                    return safeString(event, "casterName", "Caster") + " casts " +
+                           safeString(event, "spellName", "a spell") + "! (cost: " +
+                           event.getInt("manaCost") + " MP)";
 
-            case ENEMY_ATTACK:
-                return event.getString("attackerName") + " attacks for " +
-                       event.getInt("damage") + " damage!";
+                case ENEMY_ATTACK:
+                    return safeString(event, "attackerName", "Enemy") + " attacks for " +
+                           event.getInt("damage") + " damage!";
 
-            case ENEMY_TELEGRAPH:
-                return event.getString("telegraphMessage");
+                case ENEMY_TELEGRAPH:
+                    return safeString(event, "telegraphMessage", "The enemy prepares an attack...");
 
-            case ENEMY_ABILITY_FIRED:
-                return event.getString("attackerName") + " uses " +
-                       event.getString("abilityName") + " for " +
-                       event.getInt("damage") + " damage!";
+                case ENEMY_ABILITY_FIRED:
+                    return safeString(event, "attackerName", "Enemy") + " uses " +
+                           safeString(event, "abilityName", "an ability") + " for " +
+                           event.getInt("damage") + " damage!";
 
-            case ENEMY_DEFEATED:
-                return event.getString("enemyName") + " has been defeated!";
+                case ENEMY_DEFEATED:
+                    return safeString(event, "enemyName", "Enemy") + " has been defeated!";
 
-            case PLAYER_DEFEATED:
-                return event.getString("playerName") + " has fallen at wave " +
-                       event.getInt("waveNumber") + "...";
+                case PLAYER_DEFEATED:
+                    return safeString(event, "playerName", "Hero") + " has fallen at wave " +
+                           event.getInt("waveNumber") + "...";
 
-            case WAVE_COMPLETE:
-                return "Wave " + event.getInt("waveNumber") + " complete!";
+                case WAVE_COMPLETE:
+                    return "Wave " + event.getInt("waveNumber") + " complete!";
 
-            case WAVE_START:
-                return "Wave " + event.getInt("waveNumber") + " begins!";
+                case WAVE_START:
+                    return "Wave " + event.getInt("waveNumber") + " begins!";
 
-            case CHEST_FOUND:
-                return "A chest appears!";
+                case CHEST_FOUND:
+                    return "A chest appears!";
 
-            case ITEM_EQUIPPED:
-                return "Equipped: " + event.getString("itemName");
+                case ITEM_EQUIPPED:
+                    return "Equipped: " + safeString(event, "itemName", "an item");
 
-            case STATUS_APPLIED:
-                return event.getString("statusType") + " applied! (duration: " +
-                       event.getInt("duration") + " turns)";
+                case STATUS_APPLIED:
+                    return safeString(event, "statusType", "Effect") + " applied! (duration: " +
+                           event.getInt("duration") + " turns)";
 
-            case STATUS_EXPIRED:
-                return event.getString("statusType") + " has worn off.";
+                case STATUS_EXPIRED:
+                    return safeString(event, "statusType", "Effect") + " has worn off.";
 
-            case SKILL_UNLOCKED:
-                return "Skill unlocked: " + event.getString("skillName") + "!";
+                case SKILL_UNLOCKED:
+                    return "Skill unlocked: " + safeString(event, "skillName", "a skill") + "!";
 
-            case SKILL_ON_COOLDOWN:
-                return event.getString("skillName") + " is on cooldown (" +
-                       event.getInt("turnsRemaining") + " turns remaining)";
+                case SKILL_ON_COOLDOWN:
+                    return safeString(event, "skillName", "Skill") + " is on cooldown (" +
+                           event.getInt("turnsRemaining") + " turns remaining)";
 
-            case MANA_INSUFFICIENT:
-                return "Not enough mana!";
+                case MANA_INSUFFICIENT:
+                    return "Not enough mana!";
 
-            case GAME_VICTORY:
-                return event.getString("playerName") + " has conquered the Plague of Danjin!";
+                case GAME_VICTORY:
+                    return safeString(event, "playerName", "Hero") + " has conquered the Plague of Danjin!";
 
-            case SHIELD_BLOCKED:
-                return "Shield blocks " + event.getInt("blockedDamage") + " damage!";
+                case SHIELD_BLOCKED:
+                    return "Shield blocks " + event.getInt("blockedDamage") + " damage!";
 
-            case SHIELD_BROKEN:
-                return event.getString("targetName") + "'s shield shatters!";
+                case SHIELD_BROKEN:
+                    return safeString(event, "targetName", "Target") + "'s shield shatters!";
 
-            case CURSE_APPLIED:
-                return "CURSED! " + event.getString("effect");
+                case CURSE_APPLIED:
+                    return "CURSED! " + safeString(event, "effect", "A dark curse takes hold...");
 
-            case FLAVOR_TEXT:
-                return event.getString("text");
+                case FLAVOR_TEXT:
+                    return safeString(event, "text", "...");
 
-            default:
-                return null;
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            // Defensive fallback for any unexpected null or missing data
+            return null;
         }
+    }
+
+    /**
+     * Safely retrieves a string from a GameEvent, returning a fallback if null.
+     */
+    private String safeString(GameEvent event, String key, String fallback) {
+        String value = event.getString(key);
+        return value != null ? value : fallback;
     }
 
     private Color getColorForEvent(GameEventType type) {

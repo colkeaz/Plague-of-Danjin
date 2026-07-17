@@ -16,7 +16,7 @@ public class DesktopLauncher {
         config.useVsync(true);
         config.setResizable(true);
 
-        // Set to nearest-neighbor filtering for pixel art
+        // Configure back buffer with 8-bit RGBA color, 16-bit depth, no stencil, no MSAA
         config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 0);
 
         new Lwjgl3Application(new PlagueOfDanjinGame(), config);

@@ -46,6 +46,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
     // State tracking for animation-gated transitions
     private boolean waitingForAnimation;
     private GameState pendingState;
+    private boolean processingEnemyTurn;
 
     // Wave transition display
     private float waveTransitionTimer;
@@ -71,6 +72,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         this.waitingForAnimation = false;
         this.pendingState = null;
+        this.processingEnemyTurn = false;
         this.showingWaveTransition = false;
         this.waveTransitionTimer = 0f;
         this.showingGameOver = false;
@@ -194,6 +196,11 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
             return;
         }
 
+        // Reset enemy turn guard when we leave ENEMY_TURN state
+        if (currentState != GameState.ENEMY_TURN) {
+            processingEnemyTurn = false;
+        }
+
         // Handle wave transition animation
         if (showingWaveTransition) {
             return; // Wait for player input or timer
@@ -206,8 +213,11 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
                 break;
 
             case ENEMY_TURN:
-                // Process enemy turn when animations are done
-                engine.processEnemyTurn();
+                // Guard against re-entry on consecutive frames
+                if (!processingEnemyTurn) {
+                    processingEnemyTurn = true;
+                    engine.processEnemyTurn();
+                }
                 break;
 
             case WAVE_TRANSITION:
@@ -231,6 +241,10 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
             case GAME_OVER:
                 showingGameOver = true;
+                break;
+
+            case CHEST_RESULT:
+                // Handled via the event listener flag (showingChestResult)
                 break;
 
             default:
@@ -363,19 +377,15 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
     }
 
     private PlayerAction getActionForSkillIndex(int skillIndex) {
-        switch (skillIndex) {
-            case 0: return PlayerAction.BASIC_ATTACK;
-            case 1: return PlayerAction.FIREBALL;
-            case 2: return PlayerAction.HOLY_LIGHT;
-            case 3: return PlayerAction.IRON_WILL;
-            case 4: return PlayerAction.USE_SKILL_1;
-            case 5: return PlayerAction.USE_SKILL_2;
-            case 6: return PlayerAction.USE_SKILL_3;
-            case 7: return PlayerAction.USE_SKILL_4;
-            case 8: return PlayerAction.USE_SKILL_5;
-            case 9: return PlayerAction.USE_SKILL_6;
-            default: return null;
+        // Map the skill list index to the corresponding PlayerAction.
+        // PlayerAction enum values are ordered so that getSkillIndex() returns
+        // the matching position in the unlocked skills list.
+        for (PlayerAction action : PlayerAction.values()) {
+            if (action.getSkillIndex() == skillIndex) {
+                return action;
+            }
         }
+        return null;
     }
 
     @Override
@@ -455,11 +465,16 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
     public void resume() {}
 
     @Override
-    public void hide() {}
+    public void hide() {
+        // Unregister listeners when screen is hidden to avoid memory leaks.
+        // libGDX's Game.setScreen() calls hide() on the old screen, not dispose().
+        engine.removeListener(messageLog);
+        engine.removeListener(this);
+    }
 
     @Override
     public void dispose() {
-        // Unregister listeners to avoid memory leaks
+        // Also deregister here for safety if dispose() is called directly
         engine.removeListener(messageLog);
         engine.removeListener(this);
     }

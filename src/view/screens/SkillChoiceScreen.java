@@ -9,6 +9,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import controller.CombatEngine;
@@ -151,14 +152,16 @@ public class SkillChoiceScreen extends InputAdapter implements Screen {
         List<Skill> choices = engine.getPendingSkillChoices();
         if (choices == null || choices.isEmpty()) return false;
 
-        // Simple click detection by screen region
-        float normalizedY = 1f - (float) screenY / Gdx.graphics.getHeight();
-        float startY = 180f / 240f;
-        float spacing = 50f / 240f;
+        // Use viewport.unproject() to correctly handle FitViewport letterboxing
+        Vector2 worldCoords = renderer.getViewport().unproject(new Vector2(screenX, screenY));
+        float worldY = worldCoords.y;
+
+        float startY = 180f;
+        float spacing = 50f;
 
         for (int i = 0; i < choices.size(); i++) {
             float optionY = startY - i * spacing;
-            if (normalizedY >= optionY - spacing / 2f && normalizedY <= optionY + spacing / 2f) {
+            if (worldY >= optionY - spacing / 2f && worldY <= optionY + spacing / 2f) {
                 selectSkill(i, choices);
                 return true;
             }
