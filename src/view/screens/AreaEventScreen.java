@@ -304,6 +304,7 @@ public class AreaEventScreen extends InputAdapter implements Screen {
                         player.upgradeDefense(50);
                     }
                     engine.getRunModifiers().setDanjinHeartAbsorbed(true);
+                    engine.getRunModifiers().setPermanentDamagePerTurn(10);
                 } else {
                     resultText = "You refuse the Lich's temptation. Your resolve strengthens.";
                 }

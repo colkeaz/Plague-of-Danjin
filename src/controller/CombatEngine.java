@@ -748,8 +748,13 @@ public class CombatEngine extends GameEventDispatcher {
 
         Area current = worldManager.getWorldState().getCurrentArea();
         if (worldManager.isAreaComplete(current)) {
-            // Area is fully complete, return to world map
-            currentState = GameState.WORLD_MAP;
+            if (current == Area.LICHS_THRONE) {
+                // Final boss defeated, transition to victory
+                currentState = GameState.VICTORY;
+            } else {
+                // Area is fully complete, return to world map
+                currentState = GameState.WORLD_MAP;
+            }
             fireEvent(GameEvent.builder(GameEventType.WAVE_COMPLETE)
                     .put("waveNumber", 0)
                     .build());
