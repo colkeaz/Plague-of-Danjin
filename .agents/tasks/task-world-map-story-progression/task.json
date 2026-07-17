@@ -1,0 +1,7 @@
+{
+  "task_id": "task-world-map-story-progression",
+  "task_description": "Transform the game from a linear 20-wave gauntlet into a non-linear dungeon hub with branching sub-areas. Implement world map with 4 areas (Goblin Warrens, Bone Cathedral, Plague Gardens, Lich's Throne) around a central hub (Danjin's Core). Each area has encounters, events, bosses, and key rewards. Preserve existing wave-based combat as Classic Mode. Add story progression, multiple endings, new enemies, and full save/load support.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

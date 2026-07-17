@@ -12,5 +12,8 @@ public enum GameState {
     SKILL_CHOICE,
     EVENT_ROOM,
     EQUIP_SCREEN,
-    QTE_EVENT
+    QTE_EVENT,
+    WORLD_MAP,
+    AREA_NAVIGATION,
+    REST_SHRINE
 }
