@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Create CharacterClass enum, ClassSkillTree, and ClassAbility model classes. Modify Player to accept a CharacterClass and apply class-specific starting stats, skills, passives, and equipment. Update SkillTree to support class-based skill sets. Add new SkillEffect types needed for class abilities. Add class-specific starting items to ItemRegistry. Update SaveData to persist selected class. Update CombatEngine.startGame() to accept class info. Update CombatEngineRestorer to handle class on save restoration. Modify GameCharacter to support crit chance/damage modifier fields.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/model/CharacterClass.java - enum with KNIGHT, MAGE, ROGUE. Each value provides: getStartingHp(), getStartingAtk(), getStartingDef(), getStartingMp(), getStartingMaxMp(), getDescription(), getDisplayName(). Knight: 130/35/25/60/60, Mage: 70/15/8/100/120, Rogue: 85/28/10/80/80.",
     "Create src/model/ClassAbility.java - enum with THICK_SKIN (Knight: 10% less damage after DEF calc), ARCANE_AFFINITY (Mage: all spell costs -3 MP, mana regen 15/turn instead of 10), KEEN_EDGE (Rogue: base crit 25% instead of 15%, crit damage 2.5x instead of 2x). Provide getDescription() and getClassName() methods.",
@@ -31,5 +31,5 @@
   ],
   "verification": ["cd /projects/sandbox/Plague-of-Danjin && ./gradlew classes"],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All new SkillEffect types added and handled in Player.applySkillEffect(). THICK_SKIN passive implemented via Player.takeDamage() override rather than CombatEngine for cleaner separation. ARCANE_AFFINITY mana regen handled in CombatEngine.processPlayerAction(). Class starting items created inline in Player.equipClassStartingItems(). SkillTree backward compatibility maintained via no-arg constructor. Dodge-next-attack mechanism uses a flag on Player that is checked in the overridden takeDamage method. Immortal Stand reuses autoReviveActive flag with a class-specific check."
 }
