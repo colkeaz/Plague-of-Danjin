@@ -61,5 +61,10 @@ public enum GameEventType {
     SHIELD_BROKEN,
 
     // Enemy formation events
-    ENEMY_FORMATION_SPAWNED
+    ENEMY_FORMATION_SPAWNED,
+
+    // QTE (Quick-Time Event) events
+    QTE_TRIGGERED,
+    QTE_SUCCESS,
+    QTE_FAILURE
 }

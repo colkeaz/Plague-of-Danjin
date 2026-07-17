@@ -1,0 +1,7 @@
+{
+  "task_id": "task-phase5-combat-polish-sound-save",
+  "task_description": "Phase 5 - Combat Polish + Sound + Save: Implement QTE boss events, procedural 8-bit sound system, and save/meta-progression system for the Plague of Danjin roguelike",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

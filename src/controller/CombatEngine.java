@@ -1,10 +1,16 @@
 package controller;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import model.Enemy;
+import model.GoblinKing;
+import model.Lich;
 import model.Player;
 import model.PlayerAction;
+import model.enemies.BoneColossus;
+import model.enemies.GoblinChieftain;
 import model.events.GameEvent;
 import model.events.GameEventDispatcher;
 import model.events.GameEventListener;
@@ -46,6 +52,12 @@ public class CombatEngine extends GameEventDispatcher {
     private int enrageAtkBonus = 0;
     private int enrageDefReduction = 0;
     private boolean enrageActive = false;
+
+    // QTE system fields
+    private final Set<String> triggeredQTEThresholds = new HashSet<>();
+    private QTEPattern pendingQTEPattern;
+    private QTEManager currentQTEManager;
+    private boolean lichHealingPrevented = false;
 
     /**
      * Internal listener that forwards all child events through this engine's dispatcher.
@@ -172,6 +184,12 @@ public class CombatEngine extends GameEventDispatcher {
                 }
                 // Tick cooldowns after action
                 hero.getSkillTree().tickAllCooldowns();
+                // Check QTE thresholds on all enemies after multi-target
+                for (Enemy enemy : currentEnemies) {
+                    if (enemy.isAlive() && checkQTEThreshold(enemy)) {
+                        return; // State transitioned to QTE_EVENT
+                    }
+                }
                 // Check if all enemies are defeated
                 if (allEnemiesDefeated()) {
                     handleAllEnemiesDefeated();
@@ -193,6 +211,11 @@ public class CombatEngine extends GameEventDispatcher {
 
             // Tick cooldowns after action
             hero.getSkillTree().tickAllCooldowns();
+
+            // Check if a QTE threshold was crossed
+            if (checkQTEThreshold(currentEnemy)) {
+                return; // State transitioned to QTE_EVENT
+            }
 
             // Check if enemy was defeated
             if (!currentEnemy.isAlive()) {
@@ -590,7 +613,10 @@ public class CombatEngine extends GameEventDispatcher {
                 if ("POISON".equals(statusType)) {
                     enemy.takeDamage(potency);
                 } else if ("REGEN".equals(statusType)) {
-                    enemy.heal(potency);
+                    // Prevent healing if Lich healing is sealed by QTE
+                    if (!(enemy instanceof Lich && lichHealingPrevented)) {
+                        enemy.heal(potency);
+                    }
                 }
             }
         }
@@ -706,5 +732,273 @@ public class CombatEngine extends GameEventDispatcher {
 
     public List<Skill> getPendingSkillChoices() {
         return pendingSkillChoices;
+    }
+
+    // --- QTE System Methods ---
+
+    /**
+     * Checks if a boss HP threshold was crossed that should trigger a QTE.
+     * If a threshold is crossed, stores the pending QTE pattern, creates the QTEManager,
+     * transitions state to QTE_EVENT, and fires a QTE_TRIGGERED event.
+     *
+     * @param enemy the enemy to check thresholds for
+     * @return true if a QTE was triggered and state was changed, false otherwise
+     */
+    public boolean checkQTEThreshold(Enemy enemy) {
+        if (!enemy.isAlive()) return false;
+
+        QTEPattern pattern = getQTEPatternForThreshold(enemy);
+        if (pattern == null) return false;
+
+        // Check if this threshold has already been triggered
+        if (triggeredQTEThresholds.contains(pattern.getThresholdId())) {
+            return false;
+        }
+
+        // Mark threshold as triggered
+        triggeredQTEThresholds.add(pattern.getThresholdId());
+
+        // Store pending QTE and create manager
+        pendingQTEPattern = pattern;
+        currentQTEManager = new QTEManager(pattern);
+        currentState = GameState.QTE_EVENT;
+
+        // Fire event so message log and other listeners are notified
+        fireEvent(GameEvent.builder(GameEventType.QTE_TRIGGERED)
+                .put("bossName", pattern.getBossName())
+                .put("thresholdId", pattern.getThresholdId())
+                .put("qteType", pattern.getType().name())
+                .put("timeLimit", (int) pattern.getTimeLimit())
+                .build());
+
+        return true;
+    }
+
+    /**
+     * Determines if the enemy has crossed an HP threshold that warrants a QTE.
+     * Returns the appropriate QTEPattern or null if no threshold was crossed.
+     */
+    private QTEPattern getQTEPatternForThreshold(Enemy enemy) {
+        int currentHp = enemy.getHp();
+
+        if (enemy instanceof GoblinChieftain) {
+            // 50% of 120 = 60
+            if (currentHp <= 60 && !triggeredQTEThresholds.contains("GoblinChieftain_50")) {
+                return QTEPattern.goblinChieftain50();
+            }
+        } else if (enemy instanceof GoblinKing) {
+            // 25% of 150 = 37 (check lower threshold first to avoid conflicts)
+            if (currentHp <= 37 && !triggeredQTEThresholds.contains("GoblinKing_25")) {
+                return QTEPattern.goblinKing25();
+            }
+            // 50% of 150 = 75
+            if (currentHp <= 75 && !triggeredQTEThresholds.contains("GoblinKing_50")) {
+                return QTEPattern.goblinKing50();
+            }
+        } else if (enemy instanceof BoneColossus) {
+            // 50% of 200 = 100
+            if (currentHp <= 100 && !triggeredQTEThresholds.contains("BoneColossus_50")) {
+                return QTEPattern.boneColossus50();
+            }
+        } else if (enemy instanceof Lich) {
+            // 25% of 300 = 75 (check lowest first)
+            if (currentHp <= 75 && !triggeredQTEThresholds.contains("Lich_25")) {
+                return QTEPattern.lich25();
+            }
+            // 50% of 300 = 150
+            if (currentHp <= 150 && !triggeredQTEThresholds.contains("Lich_50")) {
+                return QTEPattern.lich50();
+            }
+            // 75% of 300 = 225
+            if (currentHp <= 225 && !triggeredQTEThresholds.contains("Lich_75")) {
+                return QTEPattern.lich75();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves a completed QTE by applying the success or failure effects to the boss/player.
+     * Returns the game to AWAITING_PLAYER_ACTION state.
+     *
+     * @param success true if the player succeeded the QTE, false if they failed
+     */
+    public void resolveQTE(boolean success) {
+        if (pendingQTEPattern == null) return;
+
+        String thresholdId = pendingQTEPattern.getThresholdId();
+        Enemy currentEnemy = getCurrentEnemy();
+
+        if (success) {
+            applyQTESuccess(thresholdId, currentEnemy);
+            fireEvent(GameEvent.builder(GameEventType.QTE_SUCCESS)
+                    .put("bossName", pendingQTEPattern.getBossName())
+                    .put("thresholdId", thresholdId)
+                    .put("effect", pendingQTEPattern.getSuccessEffect())
+                    .build());
+        } else {
+            applyQTEFailure(thresholdId, currentEnemy);
+            fireEvent(GameEvent.builder(GameEventType.QTE_FAILURE)
+                    .put("bossName", pendingQTEPattern.getBossName())
+                    .put("thresholdId", thresholdId)
+                    .put("effect", pendingQTEPattern.getFailureEffect())
+                    .build());
+        }
+
+        // Clean up and return to combat
+        pendingQTEPattern = null;
+        currentQTEManager = null;
+
+        // Check if the enemy died from QTE effects
+        if (currentEnemy != null && !currentEnemy.isAlive()) {
+            handleEnemyDefeated();
+        } else {
+            currentState = GameState.AWAITING_PLAYER_ACTION;
+        }
+    }
+
+    /**
+     * Applies success effects for a given QTE threshold.
+     */
+    private void applyQTESuccess(String thresholdId, Enemy enemy) {
+        if (enemy == null) return;
+
+        switch (thresholdId) {
+            case "GoblinChieftain_50":
+                // Stun for 2 turns
+                StatusEffect stun = new StatusEffect(StatusType.STUN, 2, 0, "QTE");
+                enemy.getStatusManager().addEffect(stun);
+                break;
+
+            case "GoblinKing_50":
+                // Deal 3x damage
+                int tripleDamage = hero.getTotalAttackPower() * 3;
+                enemy.takeDamage(tripleDamage);
+                break;
+
+            case "GoblinKing_25":
+                // -10 ATK permanent
+                enemy.upgradePower(-10);
+                break;
+
+            case "BoneColossus_50":
+                // -15 DEF
+                enemy.upgradeDefense(-15);
+                break;
+
+            case "Lich_75":
+                // Kill all minions
+                if (enemy instanceof Lich) {
+                    Lich lich = (Lich) enemy;
+                    // Reset minions by setting the field via reflection-free approach:
+                    // We reduce minionsActive by calling a method or directly modifying.
+                    // Since Lich has getMinionsActive() but no setter, we use a workaround
+                    // through the engine: we just note it for the attack logic.
+                    // Actually, let's add a method to Lich for this.
+                    clearLichMinions(lich);
+                }
+                break;
+
+            case "Lich_50":
+                // -50% ATK permanent
+                int atkReduction = enemy.getAttackPower() / 2;
+                enemy.upgradePower(-atkReduction);
+                break;
+
+            case "Lich_25":
+                // Prevent healing for rest of fight
+                lichHealingPrevented = true;
+                break;
+        }
+    }
+
+    /**
+     * Applies failure effects for a given QTE threshold.
+     */
+    private void applyQTEFailure(String thresholdId, Enemy enemy) {
+        if (enemy == null) return;
+
+        switch (thresholdId) {
+            case "GoblinChieftain_50":
+                // +10 ATK
+                enemy.upgradePower(10);
+                break;
+
+            case "GoblinKing_50":
+                // Heal 50 HP
+                enemy.heal(50);
+                break;
+
+            case "GoblinKing_25":
+                // +20 ATK
+                enemy.upgradePower(20);
+                break;
+
+            case "BoneColossus_50":
+                // Reflect 30 damage to player
+                hero.takeDamage(30);
+                break;
+
+            case "Lich_75":
+                // Summon 3 minions
+                if (enemy instanceof Lich) {
+                    Lich lich = (Lich) enemy;
+                    addLichMinions(lich, 3);
+                }
+                break;
+
+            case "Lich_50":
+                // 80 damage to player
+                hero.takeDamage(80);
+                break;
+
+            case "Lich_25":
+                // Heal to 50% HP
+                int targetHp = enemy.getMaxHp() / 2;
+                int currentHp = enemy.getHp();
+                if (targetHp > currentHp) {
+                    enemy.heal(targetHp - currentHp);
+                }
+                break;
+        }
+    }
+
+    /**
+     * Clears all active minions from the Lich.
+     * Uses reflection-free access to set minionsActive to 0.
+     */
+    private void clearLichMinions(Lich lich) {
+        // We need to reduce the minionsActive field. Since Lich only exposes getMinionsActive()
+        // and increments it in attack(), we use a package-visible method that we'll add.
+        lich.clearMinions();
+    }
+
+    /**
+     * Adds minions to the Lich.
+     */
+    private void addLichMinions(Lich lich, int count) {
+        lich.addMinions(count);
+    }
+
+    /**
+     * Returns whether the Lich's healing has been prevented by a QTE success.
+     */
+    public boolean isLichHealingPrevented() {
+        return lichHealingPrevented;
+    }
+
+    /**
+     * Returns the pending QTE pattern (available when state is QTE_EVENT).
+     */
+    public QTEPattern getPendingQTEPattern() {
+        return pendingQTEPattern;
+    }
+
+    /**
+     * Returns the current QTE manager (available when state is QTE_EVENT).
+     */
+    public QTEManager getCurrentQTEManager() {
+        return currentQTEManager;
     }
 }

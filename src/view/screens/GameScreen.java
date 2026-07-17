@@ -346,6 +346,10 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
                 game.setScreen(new EventRoomScreen(game, engine));
                 break;
 
+            case QTE_EVENT:
+                game.setScreen(new QTEScreen(game, engine));
+                break;
+
             case VICTORY:
                 game.setScreen(new VictoryScreen(game, engine));
                 break;
