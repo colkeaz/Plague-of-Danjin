@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Enemy Telegraph System, New Enemy Types (PlagueGoblin, ShieldedSkeleton, GoblinChieftain, BoneColossus), and Enemy Abilities. Create the EnemyAbility class, new enemy classes with special mechanics, and update WaveManager for new wave composition.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/model/enemies/EnemyAbility.java class: Fields: String name, float damageMultiplier, Element element, String telegraphMessage. Immutable data object with getters.",
     "Create src/model/enemies/PlagueGoblin.java extending Enemy. Element: POISON. On hit, applies POISON status to target (3 turns, 5 dmg/tick). Stats: 60 + wave*8 HP, 12 + wave*2 ATK, 0 DEF. Override attack() to apply poison via target's StatusManager after dealing damage.",
@@ -29,5 +29,5 @@
     "Run: grep -rn 'System\\.' src/model/ src/controller/ | grep -v '// ' - no System.in/out/err"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 5 new enemy files created in model.enemies package. Telegraph system added to Enemy base class with shouldTelegraph(int) as an overridable method (4th turn default for normal, 3rd for bosses via override). Lich uses a separate attackCounter for telegraph since its turnCounter includes summon turns. BoneColossus reflect implemented via takeDamage(int) override only (elemental version delegates to it). All acceptance criteria verified via clean javac compilation and no System.out/in/err found."
 }
