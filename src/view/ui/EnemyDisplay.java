@@ -1,12 +1,13 @@
 package view.ui;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import model.Enemy;
 import view.assets.AssetLoader;
+import view.sprites.AnimationState;
 
 /**
  * Enemy sprite area + HP bar + telegraph indicator.
@@ -57,13 +58,15 @@ public class EnemyDisplay {
     public void render(SpriteBatch batch, BitmapFont font, AssetLoader assets, Enemy enemy, float x, float y) {
         if (enemy == null) return;
 
-        // Render placeholder enemy sprite
-        Texture tex = assets.getPlaceholderTexture("enemy");
-        if (tex != null) {
+        // Render enemy sprite using generated sprite frames
+        String entityName = getEntityName(enemy);
+        TextureRegion[] frames = assets.getEntityFrames(entityName, AnimationState.IDLE);
+        if (frames != null && frames.length > 0) {
+            TextureRegion frame = frames[0];
             Color tint = damageFlash ? Color.WHITE : Color.RED;
             batch.setColor(tint);
-            float spriteX = x + (HP_BAR_WIDTH - tex.getWidth()) / 2f;
-            batch.draw(tex, spriteX, y + 20f);
+            float spriteX = x + (HP_BAR_WIDTH - frame.getRegionWidth()) / 2f;
+            batch.draw(frame, spriteX, y + 20f);
             batch.setColor(Color.WHITE);
         }
 
@@ -112,5 +115,22 @@ public class EnemyDisplay {
         Color barColor = damageFlash ? Color.WHITE : HP_BAR_FG;
         shapeRenderer.setColor(barColor);
         shapeRenderer.rect(x, y, HP_BAR_WIDTH * hpPercent, HP_BAR_HEIGHT);
+    }
+
+    /**
+     * Maps an Enemy's name to the sprite entity name used by SpriteGenerator.
+     */
+    private String getEntityName(Enemy enemy) {
+        String name = enemy.getName().toLowerCase().replace(" ", "_");
+        // Map common enemy names to sprite keys
+        if (name.contains("plague") && name.contains("goblin")) return "plague_goblin";
+        if (name.contains("goblin") && name.contains("king")) return "goblin_king";
+        if (name.contains("goblin") && name.contains("chieftain")) return "goblin_chieftain";
+        if (name.contains("shielded") && name.contains("skeleton")) return "shielded_skeleton";
+        if (name.contains("bone") && name.contains("colossus")) return "bone_colossus";
+        if (name.contains("goblin")) return "goblin";
+        if (name.contains("skeleton")) return "skeleton";
+        if (name.contains("lich")) return "lich";
+        return name;
     }
 }

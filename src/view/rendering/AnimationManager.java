@@ -77,6 +77,23 @@ public class AnimationManager {
     }
 
     /**
+     * Returns the GameEventType of the currently playing animation, or null if none.
+     */
+    public GameEventType getActiveEventType() {
+        if (currentAnimation == null) return null;
+        GameEvent event = currentAnimation.getEvent();
+        return event != null ? event.getType() : null;
+    }
+
+    /**
+     * Returns the full GameEvent of the currently playing animation, or null if none.
+     */
+    public GameEvent getActiveEvent() {
+        if (currentAnimation == null) return null;
+        return currentAnimation.getEvent();
+    }
+
+    /**
      * Clears all queued animations.
      */
     public void clear() {

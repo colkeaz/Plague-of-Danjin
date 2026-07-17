@@ -3,32 +3,38 @@ package view.assets;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.PixmapPacker;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Disposable;
 
+import model.skills.Element;
+import model.status.StatusType;
+import view.sprites.AnimationState;
+import view.sprites.SpriteGenerator;
+
 /**
- * Centralized asset management. Creates placeholder colored Pixmap textures
- * (green rect player, red rect enemies). Generates BitmapFont at pixel-appropriate size.
- * Uses ShapeRenderer for placeholder graphics. Designed so Phase 4 just swaps in real textures.
+ * Centralized asset management. Uses SpriteGenerator to create all sprites
+ * programmatically at startup. Provides typed accessor methods for entity frames,
+ * UI sprites, status icons, element icons, and particle textures.
+ * Retains BitmapFont and ShapeRenderer for rendering.
  */
 public class AssetLoader implements Disposable {
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
-    private final Map<String, Texture> placeholderTextures;
+    private SpriteGenerator spriteGenerator;
+
+    // Entity animation frames indexed by "entityName_stateName"
+    private final Map<String, TextureRegion[]> entityFrameCache;
 
     public AssetLoader() {
-        this.placeholderTextures = new HashMap<>();
+        this.entityFrameCache = new HashMap<>();
     }
 
     /**
-     * Loads all placeholder assets. Must be called after libGDX is initialized.
+     * Loads all assets. Must be called after libGDX is initialized.
+     * Generates all sprites via SpriteGenerator and caches them for fast access.
      */
     public void load() {
         // Create BitmapFont at pixel-appropriate size
@@ -36,30 +42,122 @@ public class AssetLoader implements Disposable {
         font.getData().setScale(0.5f); // Scale down for 320x240 resolution
         font.getRegion().getTexture().setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
 
-        // Create shape renderer for drawing placeholder graphics
+        // Create shape renderer for drawing shapes (HP bars, etc.)
         shapeRenderer = new ShapeRenderer();
 
-        // Create placeholder textures using Pixmaps
-        createPlaceholderTexture("player", Color.GREEN, 24, 32);
-        createPlaceholderTexture("enemy", Color.RED, 28, 32);
-        createPlaceholderTexture("enemy_boss", Color.PURPLE, 40, 48);
-        createPlaceholderTexture("projectile", Color.YELLOW, 8, 8);
+        // Generate all sprites
+        spriteGenerator = new SpriteGenerator();
+        spriteGenerator.generateAll();
+
+        // Cache entity animation frames for fast lookup
+        cacheEntityFrames();
     }
 
-    private void createPlaceholderTexture(String key, Color color, int width, int height) {
-        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-        pixmap.setColor(color);
-        pixmap.fill();
-        // Add a darker border
-        pixmap.setColor(color.cpy().mul(0.6f));
-        pixmap.drawRectangle(0, 0, width, height);
+    /**
+     * Pre-caches all entity animation frames in a flat map for fast access.
+     */
+    private void cacheEntityFrames() {
+        String[] entityNames = {
+            "player", "goblin", "plague_goblin", "skeleton",
+            "shielded_skeleton", "goblin_king", "goblin_chieftain",
+            "bone_colossus", "lich"
+        };
 
-        Texture texture = new Texture(pixmap);
-        texture.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
-        pixmap.dispose();
-
-        placeholderTextures.put(key, texture);
+        for (String entityName : entityNames) {
+            Map<AnimationState, TextureRegion[]> frames = spriteGenerator.getAnimationFrames(entityName);
+            if (frames != null) {
+                for (Map.Entry<AnimationState, TextureRegion[]> entry : frames.entrySet()) {
+                    String key = entityName + "_" + entry.getKey().name().toLowerCase();
+                    entityFrameCache.put(key, entry.getValue());
+                }
+            }
+        }
     }
+
+    // --- Entity frame accessors ---
+
+    /**
+     * Returns the animation frames for an entity in a given animation state.
+     *
+     * @param entityName     the entity name (e.g., "player", "goblin", "lich")
+     * @param state          the animation state (IDLE, ATTACKING, HURT, DYING, CASTING)
+     * @return array of TextureRegions for the animation frames, or null if not found
+     */
+    public TextureRegion[] getEntityFrames(String entityName, AnimationState state) {
+        String key = entityName + "_" + state.name().toLowerCase();
+        return entityFrameCache.get(key);
+    }
+
+    // --- UI sprite accessors ---
+
+    /**
+     * Returns the status effect icon for the given status type.
+     */
+    public TextureRegion getStatusIcon(StatusType type) {
+        if (type == null) return null;
+        return spriteGenerator.getUiSprite("status_" + type.name());
+    }
+
+    /**
+     * Returns the element icon for the given element.
+     */
+    public TextureRegion getElementIcon(Element element) {
+        if (element == null) return null;
+        return spriteGenerator.getUiSprite("element_" + element.name());
+    }
+
+    /**
+     * Returns the menu frame border texture.
+     */
+    public TextureRegion getMenuFrame() {
+        return spriteGenerator.getUiSprite("menu_frame");
+    }
+
+    /**
+     * Returns the HP bar frame texture.
+     */
+    public TextureRegion getHpBarFrame() {
+        return spriteGenerator.getUiSprite("hp_bar_frame");
+    }
+
+    /**
+     * Returns the MP bar frame texture.
+     */
+    public TextureRegion getMpBarFrame() {
+        return spriteGenerator.getUiSprite("mp_bar_frame");
+    }
+
+    /**
+     * Returns the animated chest frames (3 frames: closed, opening, open).
+     */
+    public TextureRegion[] getChestFrames() {
+        return spriteGenerator.getUiAnimatedSprite("chest");
+    }
+
+    /**
+     * Returns the wave banner texture.
+     */
+    public TextureRegion getWaveBanner() {
+        return spriteGenerator.getUiSprite("wave_banner");
+    }
+
+    /**
+     * Returns the background tile texture for the dungeon floor.
+     */
+    public TextureRegion getBackgroundTile() {
+        return spriteGenerator.getUiSprite("background_tile");
+    }
+
+    /**
+     * Returns a particle effect texture by type.
+     *
+     * @param type the particle type (e.g., "fire", "holy", "dark", "poison", "physical")
+     */
+    public TextureRegion getParticleTexture(String type) {
+        return spriteGenerator.getUiSprite("particle_" + type);
+    }
+
+    // --- Shared rendering utilities ---
 
     /**
      * Returns the shared BitmapFont for pixel text rendering.
@@ -69,18 +167,7 @@ public class AssetLoader implements Disposable {
     }
 
     /**
-     * Returns a placeholder texture by key. Returns the enemy texture as fallback.
-     */
-    public Texture getPlaceholderTexture(String key) {
-        Texture tex = placeholderTextures.get(key);
-        if (tex == null) {
-            tex = placeholderTextures.get("enemy");
-        }
-        return tex;
-    }
-
-    /**
-     * Returns the ShapeRenderer for drawing placeholder shapes.
+     * Returns the ShapeRenderer for drawing geometric shapes.
      */
     public ShapeRenderer getShapeRenderer() {
         return shapeRenderer;
@@ -94,9 +181,8 @@ public class AssetLoader implements Disposable {
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
         }
-        for (Texture texture : placeholderTextures.values()) {
-            texture.dispose();
+        if (spriteGenerator != null) {
+            spriteGenerator.dispose();
         }
-        placeholderTextures.clear();
     }
 }
