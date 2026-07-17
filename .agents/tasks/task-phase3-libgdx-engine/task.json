@@ -1,0 +1,7 @@
+{
+  "task_id": "task-phase3-libgdx-engine",
+  "task_description": "Phase 3 - Engine Setup & Game Loop: Convert the project to Gradle with libGDX, create the complete view layer with pixel-perfect rendering, screen management, input handling, HUD, message log, combat menu, animation queue, and placeholder assets - all bridging the existing non-blocking CombatEngine to a 60 FPS render loop.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
