@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Save and Meta-Progression System - Create save/load with per-run persistence (auto-save between waves) and cross-run meta-progression (stats + unlockable starting bonuses). Includes MainMenuScreen with New Game, Continue, Stats, Unlocks options.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/model/SaveData.java - data class representing serializable run state. Fields: int waveNumber, String playerName, int hp, int maxHp, int atk, int def, int mp, int maxMp, int mana, List<String> equippedItemNames (by slot), List<String> unlockedSkillIds, List<String> activeStatusEffects (type:duration:potency format), List<String> appliedRunModifiers, boolean danjinHeartAbsorbed, boolean danjinHeartShattered, int permanentDamagePerTurn. Methods: toJson() returning String, static fromJson(String json) parsing back. Use manual JSON construction with StringBuilder (no Gson/Jackson). Handle null safety.",
     "Create src/controller/MetaProgression.java - tracks cross-run statistics and unlockables. Fields: int totalRuns, int totalVictories, int highestWave, int totalEnemiesKilled, int totalDamageDealt, int totalDamageTaken, int fastestVictoryTurns, List<String> earnedUnlockIds. Methods: recordRunStart(), recordRunEnd(boolean victory, int wave, int turns), recordEnemyKill(), recordDamageDealt(int), recordDamageTaken(int), checkUnlockConditions(). Define 6 unlockables: veteran_blade (first victory), swift_boots (victory < 60 turns), iron_constitution (100 enemies killed), blood_warrior (beat Lich without Holy Light), lucky_coin (5 completed runs), plague_survivor (win with Danjin's Curse active never shattered). Serialize/deserialize to ~/.plague_of_danjin/meta.json using manual JSON. Implement GameEventListener to track stats in real-time.",
@@ -31,5 +31,5 @@
     "Run ./gradlew classes and confirm BUILD SUCCESSFUL"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All code compiles successfully. Used fully-qualified references for controller types in IntroScreen rather than adding imports to maintain minimal diff. CombatEngineRestorer placed in view.screens package as a package-private helper. Used java.util.Arrays inline in CombatEngine.applyUnlocks rather than adding import. ChestSystem modified to support configurable spawn chance (was hardcoded 50). MainMenuScreen reuses the same pixel font rendering patterns from IntroScreen. MetaProgression uses a transient tracking approach - runtime flags for current-run state are not persisted. The iron_constitution unlock grants +15 MAX_HP via equipping a hidden armor item since GameCharacter has no addMaxHp method."
 }
