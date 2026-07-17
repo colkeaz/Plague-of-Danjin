@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Event Rooms, Run Modifiers, and CombatEngine Integration. Create EventRoomManager with 4 event rooms, RunModifiers for Danjin's Curse and permanent modifiers, and fully integrate all new systems into CombatEngine (status ticks, telegraph handling, multi-target, stun checks, cooldown ticking, event rooms, run modifiers, skill choice state, equip screen).",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/controller/RunModifiers.java extending GameEventDispatcher: Tracks Danjin's Curse (every 5 waves at wave 5, 10, 15, 20 reduce player maxHp by 5 permanently). Tracks permanent modifiers from event rooms (stored as a list of applied modifiers). Method applyWaveModifiers(int wave, Player player) - called at wave start, applies curse if wave is divisible by 5, fires CURSE_APPLIED event. Method applyPermanentDamagePerTurn(Player player, int damage) for 'Danjin's Heart absorption' modifier. Has getter for active modifiers. Fires RUN_MODIFIER_APPLIED events.",
     "Create src/controller/EventRoomManager.java extending GameEventDispatcher: Triggers after waves 3, 7, 13, 17. Method shouldTrigger(int wave) returns true for those waves. Method getEventRoom(int wave) returns event room data. Method applyChoice(int wave, int choiceIndex, Player player, RunModifiers modifiers) applies the chosen effect. Fires EVENT_ROOM_ENTERED and EVENT_ROOM_CHOICE_MADE events.",

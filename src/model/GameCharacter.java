@@ -178,4 +178,43 @@ public abstract class GameCharacter extends GameEventDispatcher {
                 .put("maxMana", this.maxMana)
                 .build());
     }
+
+    /**
+     * Permanently reduces max HP by the given amount. Clamps to minimum 1.
+     * If current HP exceeds the new max, it is also clamped.
+     */
+    public void reduceMaxHp(int amount) {
+        this.maxHp -= amount;
+        if (this.maxHp < 1) this.maxHp = 1;
+        if (this.hp > this.maxHp) this.hp = this.maxHp;
+    }
+
+    /**
+     * Permanently reduces max mana by the given amount. Clamps to minimum 0.
+     * If current mana exceeds the new max, it is also clamped.
+     */
+    public void reduceMaxMana(int amount) {
+        this.maxMana -= amount;
+        if (this.maxMana < 0) this.maxMana = 0;
+        if (this.mana > this.maxMana) this.mana = this.maxMana;
+    }
+
+    /**
+     * Restores HP and mana to their maximum values.
+     */
+    public void fullRestore() {
+        this.hp = this.maxHp;
+        this.mana = this.maxMana;
+    }
+
+    /**
+     * Reduces the enemy's max HP by a percentage (used for Shatter effect).
+     * Also reduces current HP if it exceeds the new max.
+     */
+    public void reduceMaxHpByPercent(int percent) {
+        int reduction = this.maxHp * percent / 100;
+        this.maxHp -= reduction;
+        if (this.maxHp < 1) this.maxHp = 1;
+        if (this.hp > this.maxHp) this.hp = this.maxHp;
+    }
 }
