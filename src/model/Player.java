@@ -6,6 +6,7 @@ import model.events.GameEvent;
 import model.events.GameEventType;
 
 public class Player extends GameCharacter {
+    private final Random rand = new Random();
 
     public Player(String name) {
         // Start with fixed stats: 100 HP, 30 Attack, 15 Defense
@@ -65,7 +66,6 @@ public class Player extends GameCharacter {
 
     private void performBasicAttack(GameCharacter target) {
         int damageDealt = this.getAttackPower();
-        Random rand = new Random();
 
         boolean isCrit = rand.nextInt(100) < 15;
         if (isCrit) {
@@ -89,10 +89,11 @@ public class Player extends GameCharacter {
     /**
      * Default attack() implementation calls executeAction with BASIC_ATTACK
      * for AI compatibility and polymorphism support.
+     * Note: Mana regen is the controller's responsibility (CombatEngine.processPlayerAction),
+     * not the model's. This method does not regen mana.
      */
     @Override
     public void attack(GameCharacter target) {
-        this.regenMana(10);
         executeAction(PlayerAction.BASIC_ATTACK, target);
     }
 }

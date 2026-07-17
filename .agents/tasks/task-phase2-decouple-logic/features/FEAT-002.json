@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-002",
+  "type": "refactor",
+  "description": "Create the controller layer (CombatEngine, WaveManager, ChestSystem) in src/controller/ that orchestrates all game logic programmatically without any I/O. Extract wave progression, enemy spawning, chest/loot system, and combat flow from GameMain.java. Remove the old flat src/*.java files.",
+  "status": "completed",
+  "steps": [
+    "Step 1: Create src/controller/ChestSystem.java - Extract the findChest() logic from GameMain. Must use same probabilities: chance = rand.nextInt(100), if <10 legendary (+20 ATK), elif <25 epic (+15 DEF, +10 HP), elif <45 rare (+8 ATK, +8 DEF), elif <85 common (+30 HP), else mimic (-15 HP via takeDamage). Fire appropriate CHEST_* events. No System.out.",
+    "Step 2: Create src/controller/WaveManager.java - Extract enemy spawning logic. Methods: createWaveEnemies(int wave) returns Enemy[]. Exact logic: wave 10 or 20 -> 1 enemy. wave >= 15 -> rand.nextInt(2)+2. wave >= 5 -> rand.nextInt(2)+1. else -> 1. Enemy types: wave <10 -> Goblin(wave), wave==10 -> GoblinKing(), wave <20 -> Skeleton(wave), wave==20 -> Lich(). Fire WAVE_START events. No System.out.",
+    "Step 3: Create src/controller/CombatEngine.java - The main game controller. Fields: Player hero, WaveManager waveManager, ChestSystem chestSystem, int currentWave, Enemy[] currentEnemies, int currentEnemyIndex, GameState enum (AWAITING_PLAYER_ACTION, ENEMY_TURN, WAVE_TRANSITION, GAME_OVER, VICTORY). Methods: startGame(String playerName), processPlayerAction(PlayerAction action), processEnemyTurn(), advanceWave(), getCurrentState(), getPlayer(), getCurrentEnemy(). The engine must be non-blocking - no loops that wait for input. Each method call advances the state one step. This makes it easy for libGDX to call from render(). Fire events for enemy defeated (+5 HP heal), player defeated, wave transitions, game victory. 50% chest chance between waves (not after wave 20).",
+    "Step 4: Create src/controller/GameState.java - enum with values: INTRO, AWAITING_PLAYER_ACTION, PROCESSING_ACTION, ENEMY_TURN, WAVE_TRANSITION, CHEST_RESULT, GAME_OVER, VICTORY.",
+    "Step 5: Remove the old flat source files: src/GameMain.java, src/GameCharacter.java, src/Player.java, src/Enemy.java, src/Goblin.java, src/Skeleton.java, src/GoblinKing.java, src/Lich.java. These are fully replaced by the model/ and controller/ packages.",
+    "Step 6: Ensure all controller classes have 'package controller;' and proper imports to model and model.events packages.",
+    "Step 7: Verify the entire project compiles: javac -d out $(find src -name '*.java'). Fix any compilation errors."
+  ],
+  "acceptance_criteria": [
+    "All files in src/controller/ have 'package controller;' declaration",
+    "Zero System.out.println, System.out.print, or Scanner references in any file under src/controller/",
+    "CombatEngine is non-blocking - no while loops waiting for input, no Thread.sleep()",
+    "ChestSystem preserves exact probabilities: 10% legendary, 15% epic, 20% rare, 40% common, 15% mimic",
+    "WaveManager spawns correct enemy types and counts for each wave range",
+    "CombatEngine handles: +5 HP heal on kill, 50% chest spawn between waves (not after wave 20), 20 total waves",
+    "Old flat src/*.java files are removed",
+    "Full project compiles with: javac -d out $(find src -name '*.java')",
+    "No System.out or Scanner in any source file under src/"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/Plague-of-Danjin && javac -d out $(find src -name '*.java') and confirm zero compilation errors",
+    "Run: grep -r 'System.out' src/ and confirm zero results",
+    "Run: grep -r 'Scanner' src/ and confirm zero results",
+    "Run: ls src/*.java 2>/dev/null and confirm no files (all moved to packages)",
+    "Run: ls src/controller/ and confirm CombatEngine.java, WaveManager.java, ChestSystem.java, GameState.java exist"
+  ],
+  "blocked_reason": null,
+  "findings": "All controller classes compile cleanly with Java 25. CombatEngine extends GameEventDispatcher for event firing. Player.executeAction handles mana checks internally and returns false on failure - CombatEngine uses this to revert to AWAITING_PLAYER_ACTION. Note: Player.attack() method has built-in regenMana(10) but CombatEngine calls regenMana separately before executeAction to keep control explicit. The proceedAfterChest() method was added to handle the CHEST_RESULT->next wave transition cleanly."
+}

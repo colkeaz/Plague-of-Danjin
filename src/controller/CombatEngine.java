@@ -5,12 +5,17 @@ import model.Player;
 import model.PlayerAction;
 import model.events.GameEvent;
 import model.events.GameEventDispatcher;
+import model.events.GameEventListener;
 import model.events.GameEventType;
 
 /**
  * Main game controller that orchestrates combat flow.
  * This engine is NON-BLOCKING: each method call advances the state one step.
  * No while loops waiting for input, no Thread.sleep().
+ *
+ * The engine acts as a central event bus: it forwards events from all child objects
+ * (player, enemies, WaveManager, ChestSystem) so that a view layer only needs to
+ * register a single listener on the engine to receive all game events.
  */
 public class CombatEngine extends GameEventDispatcher {
     private Player hero;
@@ -21,11 +26,20 @@ public class CombatEngine extends GameEventDispatcher {
     private int currentEnemyIndex;
     private GameState currentState;
 
+    /**
+     * Internal listener that forwards all child events through this engine's dispatcher.
+     */
+    private final GameEventListener forwardingListener = this::fireEvent;
+
     public CombatEngine() {
         this.waveManager = new WaveManager();
         this.chestSystem = new ChestSystem();
         this.currentState = GameState.INTRO;
         this.currentWave = 0;
+
+        // Register forwarding on subsystems so their events bubble up through the engine
+        waveManager.addListener(forwardingListener);
+        chestSystem.addListener(forwardingListener);
     }
 
     /**
@@ -34,8 +48,12 @@ public class CombatEngine extends GameEventDispatcher {
      */
     public void startGame(String playerName) {
         this.hero = new Player(playerName);
+        // Forward player events through the engine
+        hero.addListener(forwardingListener);
+
         this.currentWave = 1;
         this.currentEnemies = waveManager.createWaveEnemies(currentWave);
+        registerEnemyListeners(currentEnemies);
         this.currentEnemyIndex = 0;
         this.currentState = GameState.AWAITING_PLAYER_ACTION;
     }
@@ -44,6 +62,9 @@ public class CombatEngine extends GameEventDispatcher {
      * Processes a player action against the current enemy.
      * Applies mana regen (10) at the start of the player's turn, then executes the action.
      * Transitions to ENEMY_TURN, WAVE_TRANSITION, or GAME_OVER/VICTORY depending on outcome.
+     *
+     * Uses try/finally to ensure state never stays stuck at PROCESSING_ACTION if an
+     * unexpected exception occurs during action execution.
      */
     public void processPlayerAction(PlayerAction action) {
         if (currentState != GameState.AWAITING_PLAYER_ACTION) {
@@ -52,24 +73,30 @@ public class CombatEngine extends GameEventDispatcher {
 
         currentState = GameState.PROCESSING_ACTION;
 
-        // Regen mana at the start of each player turn
-        hero.regenMana(10);
+        try {
+            // Regen mana at the start of each player turn
+            hero.regenMana(10);
 
-        Enemy currentEnemy = getCurrentEnemy();
-        boolean success = hero.executeAction(action, currentEnemy);
+            Enemy currentEnemy = getCurrentEnemy();
+            boolean success = hero.executeAction(action, currentEnemy);
 
-        if (!success) {
-            // Action failed (e.g., insufficient mana), return to awaiting action
+            if (!success) {
+                // Action failed (e.g., insufficient mana), return to awaiting action
+                currentState = GameState.AWAITING_PLAYER_ACTION;
+                return;
+            }
+
+            // Check if enemy was defeated
+            if (!currentEnemy.isAlive()) {
+                handleEnemyDefeated();
+            } else {
+                // Enemy still alive, proceed to enemy turn
+                currentState = GameState.ENEMY_TURN;
+            }
+        } catch (RuntimeException e) {
+            // On unexpected failure, revert to a safe state so the engine is not stuck
             currentState = GameState.AWAITING_PLAYER_ACTION;
-            return;
-        }
-
-        // Check if enemy was defeated
-        if (!currentEnemy.isAlive()) {
-            handleEnemyDefeated();
-        } else {
-            // Enemy still alive, proceed to enemy turn
-            currentState = GameState.ENEMY_TURN;
+            throw e;
         }
     }
 
@@ -141,6 +168,7 @@ public class CombatEngine extends GameEventDispatcher {
     private void startNextWave() {
         currentWave++;
         currentEnemies = waveManager.createWaveEnemies(currentWave);
+        registerEnemyListeners(currentEnemies);
         currentEnemyIndex = 0;
         currentState = GameState.AWAITING_PLAYER_ACTION;
     }
@@ -163,6 +191,16 @@ public class CombatEngine extends GameEventDispatcher {
         } else {
             // All enemies in wave defeated, transition to next wave
             currentState = GameState.WAVE_TRANSITION;
+        }
+    }
+
+    /**
+     * Registers the forwarding listener on each enemy so their events
+     * are dispatched through the engine's central event bus.
+     */
+    private void registerEnemyListeners(Enemy[] enemies) {
+        for (Enemy enemy : enemies) {
+            enemy.addListener(forwardingListener);
         }
     }
 

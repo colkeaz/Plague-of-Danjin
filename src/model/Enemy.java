@@ -6,6 +6,7 @@ import model.events.GameEvent;
 import model.events.GameEventType;
 
 public class Enemy extends GameCharacter {
+    private final Random rand = new Random();
 
     public Enemy(String name, int hp, int attackPower, int defense) {
         super(name, hp, attackPower, defense);
@@ -14,7 +15,6 @@ public class Enemy extends GameCharacter {
     @Override
     public void attack(GameCharacter target) {
         // Simple AI: The enemy just attacks with random variation
-        Random rand = new Random();
         int damageVar = rand.nextInt(6); // Random variation of 0-5
         int totalDamage = this.getAttackPower() + damageVar;
 
