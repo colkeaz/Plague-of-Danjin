@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import controller.CombatEngine;
 import controller.WorldManager;
 import model.Player;
+import model.status.StatusEffect;
+import model.status.StatusType;
 import model.world.Area;
 import model.world.AreaEvent;
 import model.world.WorldState;
@@ -293,6 +295,8 @@ public class AreaEventScreen extends InputAdapter implements Screen {
                     resultText = "You absorb the tree's power. Dark energy floods your veins. You feel stronger, but tainted.";
                     if (player != null) {
                         player.upgradePower(20);
+                        player.getStatusManager().addEffect(
+                                new StatusEffect(StatusType.POISON, 999, 5, "Corrupted Tree"));
                     }
                 }
                 break;

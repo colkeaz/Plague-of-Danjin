@@ -132,9 +132,10 @@ public class VictoryScreen extends InputAdapter implements Screen {
             else if (treeChoice != null && treeChoice == 0) pureChoices++;
 
             // Lich's Offer: 0=accept (corrupt), 1=refuse (pure)
+            // Note: acceptance is already counted via the danjinHeartAbsorbed flag below,
+            // so only count the pure choice (refusal) here to avoid double-counting.
             Integer lichChoice = choices.get("The Lich's Offer");
-            if (lichChoice != null && lichChoice == 0) corruptChoices++;
-            else if (lichChoice != null && lichChoice == 1) pureChoices++;
+            if (lichChoice != null && lichChoice == 1) pureChoices++;
         }
 
         if (absorbed) corruptChoices += 2;
