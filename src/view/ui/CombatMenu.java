@@ -5,32 +5,42 @@ import java.util.List;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 
 import model.Player;
 import model.skills.Element;
 import model.skills.Skill;
+import view.assets.AssetLoader;
+import view.sprites.ColorPalette;
 
 /**
- * Action selection UI. Shows available actions: "1. Attack" and "2. Skills >" at top level.
- * Skills sub-menu shows all unlocked skills with mana cost. Highlights current selection.
- * Grays out cooldown skills (shows remaining turns). Grays out insufficient mana.
- * Supports keyboard (up/down/enter, number keys) and mouse click. Element color next to each skill.
+ * Action selection UI with pixel-art menu frame border.
+ * Shows available actions: "1. Attack" and "2. Skills >" at top level.
+ * Skills sub-menu shows all unlocked skills with mana cost, element icons,
+ * element color coding, blinking cursor, and cooldown overlay.
+ * Supports keyboard (up/down/enter, number keys) and mouse click.
  */
 public class CombatMenu {
     private static final Color SELECTED_COLOR = Color.YELLOW;
     private static final Color AVAILABLE_COLOR = Color.WHITE;
     private static final Color DISABLED_COLOR = Color.GRAY;
-    private static final Color HIGHLIGHT_COLOR = Color.GOLD;
+    private static final Color COOLDOWN_OVERLAY = new Color(0.3f, 0.3f, 0.3f, 0.6f);
 
     private int selectedIndex;
     private boolean inSkillsSubMenu;
     private int skillMenuIndex;
     private Player player;
 
+    // Blinking cursor timer
+    private float cursorBlinkTimer;
+    private static final float CURSOR_BLINK_RATE = 3.0f;
+
     public CombatMenu() {
         this.selectedIndex = 0;
         this.inSkillsSubMenu = false;
         this.skillMenuIndex = 0;
+        this.cursorBlinkTimer = 0f;
     }
 
     /**
@@ -41,35 +51,67 @@ public class CombatMenu {
     }
 
     /**
-     * Renders the combat menu.
+     * Renders the combat menu with optional AssetLoader for sprite elements.
      */
     public void render(SpriteBatch batch, BitmapFont font, float x, float y) {
+        render(batch, font, null, x, y);
+    }
+
+    /**
+     * Renders the combat menu with pixel-art frame, element icons, and visual indicators.
+     */
+    public void render(SpriteBatch batch, BitmapFont font, AssetLoader assets, float x, float y) {
         if (player == null) return;
 
+        // Update blink timer
+        cursorBlinkTimer += com.badlogic.gdx.Gdx.graphics.getDeltaTime();
+
+        // Render menu frame border
+        renderMenuFrame(batch, assets, x, y);
+
         if (!inSkillsSubMenu) {
-            renderMainMenu(batch, font, x, y);
+            renderMainMenu(batch, font, assets, x, y);
         } else {
-            renderSkillsMenu(batch, font, x, y);
+            renderSkillsMenu(batch, font, assets, x, y);
         }
     }
 
-    private void renderMainMenu(SpriteBatch batch, BitmapFont font, float x, float y) {
+    /**
+     * Renders the pixel-art menu frame border around the action list.
+     */
+    private void renderMenuFrame(SpriteBatch batch, AssetLoader assets, float x, float y) {
+        if (assets == null) return;
+        TextureRegion menuFrame = assets.getMenuFrame();
+        if (menuFrame == null) return;
+
+        // Draw frame around the menu area (slightly larger than content)
+        float frameX = x - 4f;
+        float frameY = y - 42f;
+        float frameW = 148f;
+        float frameH = 50f;
+
+        batch.setColor(Color.WHITE);
+        batch.draw(menuFrame, frameX, frameY, frameW, frameH);
+    }
+
+    private void renderMainMenu(SpriteBatch batch, BitmapFont font, AssetLoader assets, float x, float y) {
         float lineHeight = 10f;
 
-        // Option 1: Attack
+        // Option 1: Attack with blinking cursor
+        boolean cursorVisible = isCursorVisible();
+        String attackPrefix = (selectedIndex == 0 && cursorVisible) ? "> " : "  ";
         font.setColor(selectedIndex == 0 ? SELECTED_COLOR : AVAILABLE_COLOR);
-        String attackPrefix = selectedIndex == 0 ? "> " : "  ";
         font.draw(batch, attackPrefix + "1. Attack", x, y);
 
-        // Option 2: Skills
+        // Option 2: Skills with blinking cursor
+        String skillsPrefix = (selectedIndex == 1 && cursorVisible) ? "> " : "  ";
         font.setColor(selectedIndex == 1 ? SELECTED_COLOR : AVAILABLE_COLOR);
-        String skillsPrefix = selectedIndex == 1 ? "> " : "  ";
         font.draw(batch, skillsPrefix + "2. Skills >", x, y - lineHeight);
 
         font.setColor(Color.WHITE);
     }
 
-    private void renderSkillsMenu(SpriteBatch batch, BitmapFont font, float x, float y) {
+    private void renderSkillsMenu(SpriteBatch batch, BitmapFont font, AssetLoader assets, float x, float y) {
         if (player == null) return;
 
         List<Skill> skills = player.getSkillTree().getUnlockedSkills();
@@ -79,47 +121,69 @@ public class CombatMenu {
         font.setColor(Color.CYAN);
         font.draw(batch, "Skills (ESC: back)", x, y);
 
+        boolean cursorVisible = isCursorVisible();
+
         for (int i = 0; i < skills.size(); i++) {
             Skill skill = skills.get(i);
             float yPos = y - (i + 1) * lineHeight;
 
-            // Determine color based on state
+            boolean onCooldown = !skill.isReady();
+            boolean insufficientMana = skill.getManaCost() > player.getMana();
+
+            // Determine text color based on state with element color coding
             Color color;
-            if (!skill.isReady()) {
-                color = DISABLED_COLOR;
-            } else if (skill.getManaCost() > player.getMana()) {
+            if (onCooldown || insufficientMana) {
                 color = DISABLED_COLOR;
             } else if (i == skillMenuIndex) {
                 color = SELECTED_COLOR;
             } else {
-                color = AVAILABLE_COLOR;
+                // Element color coding for available skills
+                color = getElementColor(skill.getElement());
             }
 
             font.setColor(color);
-            String prefix = (i == skillMenuIndex) ? "> " : "  ";
-            String suffix = "";
-            if (!skill.isReady()) {
-                suffix = " [CD:" + skill.getCurrentCooldown() + "]";
-            } else if (skill.getManaCost() > 0) {
-                suffix = " (" + skill.getManaCost() + " MP)";
+
+            // Blinking cursor for selected item
+            String prefix = (i == skillMenuIndex && cursorVisible) ? "> " : "  ";
+
+            // Build display string
+            StringBuilder display = new StringBuilder();
+            display.append(prefix).append(i + 1).append(". ");
+            display.append(skill.getName());
+
+            // Show mana cost visually
+            if (skill.getManaCost() > 0) {
+                display.append(" ").append(skill.getManaCost()).append("MP");
             }
 
-            // Element indicator
-            String elementTag = getElementTag(skill.getElement());
-            font.draw(batch, prefix + (i + 1) + ". " + elementTag + skill.getName() + suffix, x, yPos);
+            // Cooldown overlay text
+            if (onCooldown) {
+                display.append(" [").append(skill.getCurrentCooldown()).append("T]");
+            }
+
+            font.draw(batch, display.toString(), x, yPos);
+
+            // Render element icon next to skill name if assets available
+            if (assets != null && skill.getElement() != Element.PHYSICAL) {
+                TextureRegion elementIcon = assets.getElementIcon(skill.getElement());
+                if (elementIcon != null) {
+                    float iconSize = 7f;
+                    float iconX = x + 12f;
+                    float iconY = yPos - iconSize + 1f;
+                    batch.setColor(Color.WHITE);
+                    batch.draw(elementIcon, iconX, iconY, iconSize, iconSize);
+                }
+            }
         }
 
         font.setColor(Color.WHITE);
     }
 
-    private String getElementTag(Element element) {
-        switch (element) {
-            case FIRE: return "[F]";
-            case HOLY: return "[H]";
-            case DARK: return "[D]";
-            case POISON: return "[P]";
-            default: return "";
-        }
+    /**
+     * Returns whether the blinking cursor is currently visible.
+     */
+    private boolean isCursorVisible() {
+        return MathUtils.sin(cursorBlinkTimer * CURSOR_BLINK_RATE * MathUtils.PI2) > 0f;
     }
 
     /**
@@ -127,11 +191,11 @@ public class CombatMenu {
      */
     public static Color getElementColor(Element element) {
         switch (element) {
-            case FIRE: return Color.ORANGE;
-            case HOLY: return Color.GOLD;
-            case DARK: return Color.PURPLE;
-            case POISON: return Color.GREEN;
-            default: return Color.WHITE;
+            case FIRE: return ColorPalette.FIRE_ORANGE;
+            case HOLY: return ColorPalette.HOLY_GOLD;
+            case DARK: return ColorPalette.DARK_PURPLE;
+            case POISON: return ColorPalette.POISON_GREEN;
+            default: return ColorPalette.TEXT_WHITE;
         }
     }
 

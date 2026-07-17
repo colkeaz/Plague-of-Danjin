@@ -7,7 +7,9 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import controller.CombatEngine;
@@ -18,10 +20,13 @@ import model.events.GameEventListener;
 import model.events.GameEventType;
 import view.PlagueOfDanjinGame;
 import view.assets.AssetLoader;
+import view.effects.VisualEffectsManager;
 import view.rendering.AnimationManager;
 import view.rendering.PixelRenderer;
 import view.rendering.ScreenShake;
+import view.sprites.ColorPalette;
 import view.ui.CombatMenu;
+import view.ui.EnemyDisplay;
 import view.ui.HUD;
 import view.ui.MessageLog;
 
@@ -30,6 +35,8 @@ import view.ui.MessageLog;
  * Integrates with CombatEngine state machine: renders based on currentState.
  * Implements InputProcessor for keyboard and mouse input.
  * Uses AnimationManager to prevent game from racing ahead of visual display.
+ * Integrates VisualEffectsManager for particles, damage numbers, and screen flash.
+ * Renders tiled dungeon background with subtle torchlight flicker effect.
  */
 public class GameScreen implements Screen, InputProcessor, GameEventListener {
     private final PlagueOfDanjinGame game;
@@ -42,6 +49,15 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
     private final MessageLog messageLog;
     private final AnimationManager animationManager;
     private final ScreenShake screenShake;
+    private final VisualEffectsManager visualEffects;
+
+    // Enemy display position constants (matching HUD layout)
+    private static final float ENEMY_CENTER_X = 160f;
+    private static final float ENEMY_CENTER_Y = 170f;
+
+    // Player position for damage numbers
+    private static final float PLAYER_X = 50f;
+    private static final float PLAYER_Y = 45f;
 
     // State tracking for animation-gated transitions
     private boolean waitingForAnimation;
@@ -58,6 +74,11 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
     private boolean showingChestResult;
     private String chestResultText;
 
+    // Torchlight flicker
+    private float torchlightTimer;
+    private static final float TORCHLIGHT_FLICKER_SPEED = 2.5f;
+    private static final float TORCHLIGHT_MIN_BRIGHTNESS = 0.85f;
+
     public GameScreen(PlagueOfDanjinGame game, CombatEngine engine) {
         this.game = game;
         this.renderer = game.getRenderer();
@@ -69,6 +90,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         this.hud = new HUD(combatMenu, messageLog);
         this.animationManager = new AnimationManager();
         this.screenShake = new ScreenShake();
+        this.visualEffects = new VisualEffectsManager();
 
         this.waitingForAnimation = false;
         this.pendingState = null;
@@ -78,6 +100,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         this.showingGameOver = false;
         this.showingChestResult = false;
         this.chestResultText = "";
+        this.torchlightTimer = 0f;
 
         // Set up UI
         combatMenu.setPlayer(engine.getPlayer());
@@ -95,25 +118,66 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         GameEventType type = event.getType();
         switch (type) {
             case DAMAGE_DEALT:
+                animationManager.queueAnimation(event);
+                screenShake.trigger(2f);
+                hud.triggerHpFlash();
+                // Trigger visual effects: slash + damage number at enemy position
+                visualEffects.onDamageDealt(event, ENEMY_CENTER_X, ENEMY_CENTER_Y);
+                break;
+
             case ENEMY_ATTACK:
             case ENEMY_ABILITY_FIRED:
                 animationManager.queueAnimation(event);
                 screenShake.trigger(2f);
                 hud.triggerHpFlash();
+                // Enemy attacks player: red flash + damage number at player position
+                visualEffects.onPlayerDamaged(event, PLAYER_X, PLAYER_Y);
+                // Trigger enemy attack animation
+                hud.getEnemyDisplay().triggerAttackAnimation();
                 break;
+
             case CRITICAL_HIT:
                 animationManager.queueAnimation(event);
                 screenShake.trigger(4f);
+                // Larger slash + screen shake + CRITICAL! popup
+                visualEffects.onCriticalHit(event, ENEMY_CENTER_X, ENEMY_CENTER_Y);
+                hud.triggerEnemyDamageFlash();
                 break;
+
             case PLAYER_BASIC_ATTACK:
+                animationManager.queueAnimation(event);
+                hud.triggerEnemyDamageFlash();
+                // Slash effect at enemy
+                visualEffects.spawnSlashEffect(ENEMY_CENTER_X, ENEMY_CENTER_Y);
+                break;
+
             case SPELL_CAST:
                 animationManager.queueAnimation(event);
                 hud.triggerEnemyDamageFlash();
+                // Element-appropriate particles at enemy
+                visualEffects.onSpellCast(event, ENEMY_CENTER_X, ENEMY_CENTER_Y);
                 break;
+
             case HEAL:
             case MANA_REGEN:
                 animationManager.queueAnimation(event);
+                // Green number + sparkles at player
+                if (type == GameEventType.HEAL) {
+                    visualEffects.onHeal(event, PLAYER_X, PLAYER_Y);
+                }
                 break;
+
+            case ENEMY_DEFEATED:
+                // Enemy death animation + dissolve particles
+                hud.getEnemyDisplay().triggerDeathAnimation();
+                visualEffects.onEnemyDeath(ENEMY_CENTER_X, ENEMY_CENTER_Y);
+                break;
+
+            case WAVE_COMPLETE:
+                // Golden screen flash
+                visualEffects.onLevelUp();
+                break;
+
             case CHEST_FOUND:
             case CHEST_LEGENDARY:
             case CHEST_EPIC:
@@ -122,11 +186,13 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
                 showingChestResult = true;
                 chestResultText = getChestText(event);
                 break;
+
             case CHEST_MIMIC:
                 showingChestResult = true;
                 chestResultText = "A Mimic! It attacks!";
                 screenShake.trigger(3f);
                 break;
+
             default:
                 break;
         }
@@ -156,6 +222,8 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         screenShake.update(delta);
         animationManager.update(delta);
         hud.update(delta);
+        visualEffects.update(delta);
+        torchlightTimer += delta;
 
         // Handle state machine transitions gated by animations
         handleStateTransitions();
@@ -173,11 +241,23 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         BitmapFont font = assets.getFont();
         SpriteBatch batch = renderer.getBatch();
 
+        // Apply torchlight flicker to background
+        applyTorchlightFlicker(batch);
+
         GameState currentState = engine.getCurrentState();
         boolean showMenu = (currentState == GameState.AWAITING_PLAYER_ACTION)
                            && !animationManager.isPlaying();
 
         hud.render(batch, font, assets, engine, showMenu);
+
+        // Reset batch color after HUD (torchlight may have tinted it)
+        batch.setColor(Color.WHITE);
+
+        // Render visual effects (particles, damage numbers) inside SpriteBatch
+        visualEffects.render(batch, font, assets);
+
+        // Render screen flash overlay
+        renderScreenFlash(batch);
 
         // Render state-specific overlays
         renderStateOverlay(batch, font, currentState);
@@ -186,6 +266,37 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         // Reset camera for next frame
         renderer.resetCamera();
+    }
+
+    /**
+     * Applies subtle torchlight flicker effect (periodic brightness variation).
+     */
+    private void applyTorchlightFlicker(SpriteBatch batch) {
+        float flicker = TORCHLIGHT_MIN_BRIGHTNESS +
+                (1f - TORCHLIGHT_MIN_BRIGHTNESS) *
+                (0.5f + 0.5f * MathUtils.sin(torchlightTimer * TORCHLIGHT_FLICKER_SPEED));
+        // Add secondary frequency for organic feel
+        flicker += 0.03f * MathUtils.sin(torchlightTimer * 7.3f);
+        flicker = MathUtils.clamp(flicker, TORCHLIGHT_MIN_BRIGHTNESS, 1f);
+        batch.setColor(flicker, flicker * 0.95f, flicker * 0.85f, 1f);
+    }
+
+    /**
+     * Renders screen flash overlay when active.
+     */
+    private void renderScreenFlash(SpriteBatch batch) {
+        if (!visualEffects.isScreenFlashing()) return;
+
+        Color flashColor = visualEffects.getScreenFlashColor();
+        if (flashColor.a <= 0.01f) return;
+
+        // Use a particle texture stretched over the screen as the flash overlay
+        TextureRegion flashTex = assets.getParticleTexture("physical");
+        if (flashTex != null) {
+            batch.setColor(flashColor);
+            batch.draw(flashTex, 0, 0, 320, 240);
+            batch.setColor(Color.WHITE);
+        }
     }
 
     private void handleStateTransitions() {
