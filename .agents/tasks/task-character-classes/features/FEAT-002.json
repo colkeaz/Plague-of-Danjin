@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Create the ClassSelectionScreen UI, generate class-specific player sprites, integrate class selection into the game flow (IntroScreen -> ClassSelectionScreen -> GameScreen), update MainMenuScreen to show class on Continue, and update MetaProgression to track per-class stats.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Create src/view/screens/ClassSelectionScreen.java - A new Screen implementation following the pattern of SkillChoiceScreen and IntroScreen. Shows 3 class options with pixel art sprites, class name, description, stat preview (HP/ATK/DEF/MP), starting skills list. Navigate with 1/2/3 keys or arrow keys + Enter, or mouse click. Confirm selection before starting. Color identity: Knight=Steel blue/silver, Mage=Purple/gold, Rogue=Dark green/crimson. After selection, create CombatEngine, call startGame(playerName, selectedClass), apply unlocks, and transition to GameScreen.",
     "Add to ColorPalette.java - Add class-specific colors: KNIGHT_BLUE (steel blue ~#4A7FB5), KNIGHT_SILVER (~#C8D0D8), MAGE_PURPLE (~#7B2FBE), MAGE_GOLD (~#FFD700 - can reuse HOLY_GOLD), ROGUE_GREEN (~#2D5A27), ROGUE_CRIMSON (~#8B1A1A).",
@@ -25,5 +25,5 @@
   ],
   "verification": ["cd /projects/sandbox/Plague-of-Danjin && ./gradlew classes"],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All steps completed successfully. ClassSelectionScreen follows SkillChoiceScreen pattern with 3 panels. HUD sprite key mechanism uses a setter called from GameScreen constructor. MetaProgression recordRunEnd overloaded to accept CharacterClass for per-class tracking. IntroScreen simplified to just transition to ClassSelectionScreen. The class selection and game start logic moved entirely into ClassSelectionScreen.selectClass()."
 }
