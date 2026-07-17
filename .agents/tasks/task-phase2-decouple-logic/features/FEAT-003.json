@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-003",
+  "type": "fix",
+  "description": "Address code review findings: fix double mana regen, fragmented event dispatch, ConcurrentModificationException risk, and Random instantiation per call.",
+  "status": "completed",
+  "steps": [
+    "Step 1: Remove regenMana(10) from Player.attack() - the controller owns mana regen timing",
+    "Step 2: Fix Random instantiation in Player.performBasicAttack() - hoist to a field",
+    "Step 3: Fix Random instantiation in Enemy.attack() - hoist to a field",
+    "Step 4: Fix ConcurrentModificationException in GameEventDispatcher.fireEvent() - use snapshot iteration",
+    "Step 5: Add central event forwarding in CombatEngine - re-fire child events from player/enemies/subsystems so views only register once",
+    "Step 6: Add try/finally in CombatEngine.processPlayerAction() to prevent stuck state on exception",
+    "Step 7: Verify compilation: javac -d out $(find src -name '*.java')"
+  ],
+  "acceptance_criteria": [
+    "Player.attack() does NOT call regenMana() - mana regen is solely the controller's responsibility",
+    "Player.performBasicAttack() uses a field-level Random, not a new instance per call",
+    "Enemy.attack() uses a field-level Random, not a new instance per call",
+    "GameEventDispatcher.fireEvent() is safe against ConcurrentModificationException (snapshot or CopyOnWriteArrayList)",
+    "CombatEngine re-fires events from child objects (player, enemies, subsystems) so a view can register on the engine alone",
+    "CombatEngine.processPlayerAction() uses try/finally to prevent stuck PROCESSING_ACTION state",
+    "Full project compiles with: javac -d out $(find src -name '*.java')",
+    "No entry point created - Phase 3 handles that"
+  ],
+  "verification": [
+    "Run: javac -d out $(find src -name '*.java') and confirm zero compilation errors",
+    "Verify Player.attack() has no regenMana call",
+    "Verify no 'new Random()' inside method bodies in Player.java or Enemy.java"
+  ],
+  "blocked_reason": null,
+  "findings": "All 4 actionable review issues addressed. Issue 5 (no entry point) intentionally left as-is for Phase 3. Compilation verified with Java 25. The central event bus pattern uses a method reference (this::fireEvent) as the forwarding listener, which keeps the implementation minimal. The snapshot approach in fireEvent() uses toArray rather than CopyOnWriteArrayList to avoid the overhead of COW on every add/remove while still being safe during dispatch."
+}

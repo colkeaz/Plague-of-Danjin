@@ -1,0 +1,14 @@
+{
+  "task_id": "task-phase25-gameplay-enhancement",
+  "task_description": "Phase 2.5 Gameplay Enhancement Layer for Plague of Danjin. Implements 10 interconnected systems: Items & Equipment, Elemental System, Skills & Cooldowns, Status Effects, Enemy Telegraph, New Enemy Types, Event Rooms, Run Modifiers, Extended Events, and CombatEngine Integration.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "All class files compile cleanly. No System.in/out/err in model or controller. Review fix pass applied: all 9 issues from 2026-07-17-121727-review.md resolved. Shield Bash applies STUN, Drain Life has lifesteal, Assassinate is conditional, Blood Pact costs HP, Divine Shield applies 2-hit SHIELD, Berserker Rage uses ENRAGE status, Resurrection sets auto-revive, BoneColossus reflect deals 20 damage, PlagueGoblin checks poison immunity."
+  }
+}

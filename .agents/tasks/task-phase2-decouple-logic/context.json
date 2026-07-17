@@ -1,0 +1,25 @@
+{
+  "project_type": "Java console turn-based RPG game, being migrated to libGDX MVC architecture",
+  "language": "Java",
+  "build_system": "javac (no build tool - compile with javac *.java in src directory)",
+  "test_framework": "None currently - validation via compilation only",
+  "build_command": "javac -d out $(find src -name '*.java')",
+  "test_command": "javac -d out $(find src -name '*.java') && echo 'Compilation successful'",
+  "verification_instructions": "1. Run javac on all .java files in src/ with proper package structure. 2. Verify zero compilation errors. 3. Verify no System.out or Scanner references in model/ or controller/ packages (only allowed in a temporary main class if needed for testing).",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "Java is pre-installed. No additional setup needed. Compile with: javac -d out $(find src -name '*.java')",
+  "environment_constraints": "OPEN_INTERNET network mode. Java 25 available (default). No test framework - validation by compilation. Must create package structure under src/.",
+  "contribution_requirements": "Commit to branch 'phase2-decouple-logic'. Preserve all game mechanics exactly.",
+  "key_patterns": "Current code: flat file structure, no packages, heavy System.out.println usage throughout all classes, Scanner-based input in Player.java and GameMain.java. Abstract class GameCharacter with abstract attack() method. Polymorphism via Enemy subclasses. Defense formula: reduction = defense/100.0, blocked = damage * reduction. Defense cap at 75. Mana starts at 75/100. +10 mana regen per turn.",
+  "relevant_files": [
+    "src/GameCharacter.java",
+    "src/Player.java",
+    "src/Enemy.java",
+    "src/Goblin.java",
+    "src/Skeleton.java",
+    "src/GoblinKing.java",
+    "src/Lich.java",
+    "src/GameMain.java"
+  ],
+  "directory_structure": "src/ contains all 8 Java files in a flat structure. No packages currently. Target structure: src/model/, src/model/events/, src/controller/ with proper package declarations."
+}

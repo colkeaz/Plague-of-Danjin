@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Enhance all non-battle screens (IntroScreen, SkillChoiceScreen, EventRoomScreen, VictoryScreen) with sprite integration and visual polish. Add pixel art title logo, animated backgrounds, decorative frames, skill element icons, thematic backgrounds, and victory celebration particles.",
+  "status": "pending",
+  "steps": [
+    "Update src/view/screens/IntroScreen.java: Generate a pixel art title logo ('PLAGUE OF DANJIN' rendered as a Pixmap in a chunky pixel font style) displayed at the top. Add animated background - slow-scrolling dungeon tilemap or drifting particle effect using the background tiles from AssetLoader. Add a blinking pixel cursor for name entry (replace the underscore text cursor with a small animated block). Use the ColorPalette colors throughout.",
+    "Update src/view/screens/SkillChoiceScreen.java: Add decorative pixel-art frame border from AssetLoader.getMenuFrame() around the skill options area. Show element icons from AssetLoader.getElementIcon() next to each skill choice. Use element colors from ColorPalette for skill name text. Add subtle background (darker dungeon tiles or gradient).",
+    "Update src/view/screens/EventRoomScreen.java: Add thematic background variation - darker tiles/atmosphere for Danjin's Heart events, slightly lighter for Merchant events (can key off wave number or description text). Add pixel-art decorative frame around the choice buttons. Use ColorPalette colors for the UI elements. Add subtle ambient particle effects (dust motes or magical sparkles).",
+    "Update src/view/screens/VictoryScreen.java: Add animated pixel art victory celebration with sparkle particles using VisualEffectsManager or a local particle list. Generate a victory player sprite frame (player with raised sword pose). Add golden particle bursts that spawn periodically during credits scroll. Use ColorPalette gold/white colors for enhanced visual contrast. Keep credits scroll functional."
+  ],
+  "acceptance_criteria": [
+    "IntroScreen displays a pixel-art title logo generated via Pixmap",
+    "IntroScreen has animated/scrolling background",
+    "SkillChoiceScreen shows element icons next to skills and has decorative frame",
+    "EventRoomScreen has thematic background variation and pixel-art choice frames",
+    "VictoryScreen has particle celebration effects and a victory player sprite",
+    "All screens use ColorPalette consistently",
+    "Project compiles with ./gradlew classes"
+  ],
+  "verification": [
+    "Run ./gradlew classes and confirm BUILD SUCCESSFUL with no errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

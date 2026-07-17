@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Set up Gradle project with libGDX dependencies and verify existing code compiles within the new build system. This creates the entire build infrastructure from scratch.",
+  "status": "completed",
+  "steps": [
+    "Create build.gradle at project root with: plugins { id 'java' }, sourceCompatibility = JavaVersion.VERSION_17, repositories { mavenCentral() }, dependencies for libGDX 1.12.1 (gdx, gdx-backend-lwjgl3, gdx-platform natives-desktop). Source sets: main.java.srcDirs = ['src'] to include existing model/controller code and the new view layer.",
+    "Create settings.gradle with rootProject.name = 'Plague-of-Danjin'",
+    "Run 'gradle wrapper --gradle-version 8.11' in the project directory to generate gradlew, gradlew.bat, gradle/wrapper/gradle-wrapper.jar, and gradle-wrapper.properties. Use Gradle 8.11 for Java 17 compatibility.",
+    "Run './gradlew classes' to verify that existing model/ and controller/ code compiles successfully within the Gradle project alongside the libGDX dependencies.",
+    "Verify no changes to existing src/model/ or src/controller/ files with git diff."
+  ],
+  "acceptance_criteria": [
+    "./gradlew classes succeeds with zero errors",
+    "build.gradle exists with libGDX 1.12.1 dependencies (gdx, gdx-backend-lwjgl3, gdx-platform natives-desktop)",
+    "settings.gradle exists",
+    "gradlew and gradlew.bat exist and are executable",
+    "All existing model/controller source files are unchanged (git diff shows no modifications to src/model/ or src/controller/)"
+  ],
+  "verification": [
+    "Run './gradlew classes' and confirm exit code 0",
+    "Run 'git diff --name-only src/model/ src/controller/' and confirm empty output"
+  ],
+  "blocked_reason": null,
+  "findings": "Gradle 8.11 wrapper created successfully. System Gradle 8.14 generated it. ./gradlew classes compiles all existing model/controller code with zero errors alongside libGDX 1.12.1. Build output goes to build/ directory. .gitignore added to exclude .gradle/, build/, and out/ directories."
+}

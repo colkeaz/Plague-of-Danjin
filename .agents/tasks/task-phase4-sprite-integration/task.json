@@ -1,0 +1,7 @@
+{
+  "task_id": "task-phase4-sprite-integration",
+  "task_description": "Phase 4 - Sprite Integration for Plague of Danjin. Replace placeholder colored rectangles with authentic 8-bit pixel art generated programmatically via Pixmap. Create sprite generation system, animation state machine, visual effects (particles, damage numbers), and integrate sprites into all UI components and screens.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}

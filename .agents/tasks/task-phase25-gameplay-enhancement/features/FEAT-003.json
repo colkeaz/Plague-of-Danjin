@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Enemy Telegraph System, New Enemy Types (PlagueGoblin, ShieldedSkeleton, GoblinChieftain, BoneColossus), and Enemy Abilities. Create the EnemyAbility class, new enemy classes with special mechanics, and update WaveManager for new wave composition.",
+  "status": "completed",
+  "steps": [
+    "Create src/model/enemies/EnemyAbility.java class: Fields: String name, float damageMultiplier, Element element, String telegraphMessage. Immutable data object with getters.",
+    "Create src/model/enemies/PlagueGoblin.java extending Enemy. Element: POISON. On hit, applies POISON status to target (3 turns, 5 dmg/tick). Stats: 60 + wave*8 HP, 12 + wave*2 ATK, 0 DEF. Override attack() to apply poison via target's StatusManager after dealing damage.",
+    "Create src/model/enemies/ShieldedSkeleton.java extending Enemy. Element: DARK. Has a boolean shieldActive field that resets to true at start of each turn. Override attack() to reset shield. Override or integrate with a mechanism so that the first hit each turn is blocked (fires SHIELD_BLOCKED event). Stats: 100 + (wave-10)*10 HP, 12 + (wave-10)*2 ATK, 8 + (wave-10)*1 DEF. The shield mechanic: at the start of ShieldedSkeleton's turn, it gains SHIELD status via its StatusManager.",
+    "Create src/model/enemies/GoblinChieftain.java extending Enemy. Element: PHYSICAL. Mini-boss at wave 5. Has a turnCounter. Ability: 'War Cry' every 2 turns: buffs own ATK by +5 AND heals for 15 HP. Has telegraphed ability. Stats: 120 HP, 18 ATK, 10 DEF. Override attack() to implement war cry on schedule plus normal attack.",
+    "Create src/model/enemies/BoneColossus.java extending Enemy. Element: DARK. Mini-boss at wave 15. High DEF (25), low ATK (15). Ability: 'Bone Shield' - gains SHIELD status every 3 turns. When shield breaks, deals 20 PHYSICAL damage to attacker (reflected). Stats: 200 HP, 15 ATK, 25 DEF. Override attack() with turn counter for bone shield. The reflect-on-shield-break can be handled via events or a flag.",
+    "Implement telegraph system in Enemy base class: Add fields EnemyAbility nextAbility (null if not winding up), boolean isWindingUp. Add methods: shouldTelegraph(int turnCount) - returns true based on schedule (every 4th for normal, every 3rd for bosses). windUp(EnemyAbility) sets isWindingUp=true, fires ENEMY_TELEGRAPH event. executeAbility(GameCharacter target) fires ENEMY_ABILITY_FIRED event and deals multiplied damage with element. In attack() override pattern: if isWindingUp, execute the wound-up ability then clear. Normal enemies and bosses check their telegraph schedule.",
+    "Add telegraphed abilities to enemies: Lich gets 'Necrotic Blast' (4x DARK, 'The Lich is channeling dark energy...'), GoblinKing gets 'Crushing Blow' (3x PHYSICAL, 'The Goblin King raises his massive fist...'), GoblinChieftain gets 'War Cry' telegraph, BoneColossus gets 'Bone Crush' (3x DARK, 'The Bone Colossus is winding up a massive swing...').",
+    "Update WaveManager.java: Import new enemy classes. Modify createEnemy/wave logic: Wave 5 = GoblinChieftain (1 enemy, mini-boss). Waves 1-4 = Goblins. Waves 6-9 = mix of Goblins and PlagueGoblins (random). Wave 10 = GoblinKing. Waves 11-14 = Skeletons. Wave 15 = BoneColossus (1 enemy, mini-boss). Waves 16-19 = mix of Skeletons and ShieldedSkeletons (random). Wave 20 = Lich.",
+    "Ensure compilation. The build command must include: src/model/enemies/*.java in the javac invocation."
+  ],
+  "acceptance_criteria": [
+    "All new enemy classes compile cleanly",
+    "PlagueGoblin applies POISON on hit via StatusManager",
+    "ShieldedSkeleton blocks first hit each turn via SHIELD status",
+    "GoblinChieftain uses War Cry every 2 turns (+5 ATK, +15 HP)",
+    "BoneColossus gains SHIELD every 3 turns, reflects 20 damage on break",
+    "Telegraph system fires ENEMY_TELEGRAPH event 1 turn before powerful attack",
+    "WaveManager spawns correct enemy types per wave: wave 5 = GoblinChieftain, wave 15 = BoneColossus, waves 6-9 mix goblins/plague goblins, waves 16-19 mix skeletons/shielded",
+    "No I/O in model or controller"
+  ],
+  "verification": [
+    "Run: javac -d out -sourcepath src src/model/events/*.java src/model/status/*.java src/model/items/*.java src/model/skills/*.java src/model/enemies/*.java src/model/*.java src/controller/*.java - must exit 0",
+    "Run: grep -rn 'System\\.' src/model/ src/controller/ | grep -v '// ' - no System.in/out/err"
+  ],
+  "blocked_reason": null,
+  "findings": "All 5 new enemy files created in model.enemies package. Telegraph system added to Enemy base class with shouldTelegraph(int) as an overridable method (4th turn default for normal, 3rd for bosses via override). Lich uses a separate attackCounter for telegraph since its turnCounter includes summon turns. BoneColossus reflect implemented via takeDamage(int) override only (elemental version delegates to it). All acceptance criteria verified via clean javac compilation and no System.out/in/err found."
+}
