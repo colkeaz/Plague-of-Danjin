@@ -169,9 +169,9 @@ public class EnemyDisplay {
             float spriteX = x + (HP_BAR_WIDTH - scaledWidth) / 2f;
             float spriteY = y + 20f;
 
-            // Tint white during damage flash
+            // Tint red during damage flash for visual feedback
             if (damageFlash) {
-                batch.setColor(Color.WHITE);
+                batch.setColor(Color.RED);
             } else {
                 batch.setColor(Color.WHITE);
             }

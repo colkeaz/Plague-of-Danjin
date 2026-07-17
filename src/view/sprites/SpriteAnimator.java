@@ -89,12 +89,12 @@ public class SpriteAnimator {
 
         switch (currentState) {
             case IDLE:
-            case CASTING:
                 // Loop: stateTime wraps around (handled in getCurrentFrame)
                 break;
 
             case ATTACKING:
             case HURT:
+            case CASTING:
                 // Play once then return to IDLE
                 if (stateTime >= totalDuration) {
                     currentState = AnimationState.IDLE;
@@ -145,7 +145,7 @@ public class SpriteAnimator {
         float frameDuration = frameDurations.getOrDefault(stateForFrame, DEFAULT_IDLE_DURATION);
         int frameIndex;
 
-        if (stateForFrame == AnimationState.IDLE || stateForFrame == AnimationState.CASTING) {
+        if (stateForFrame == AnimationState.IDLE) {
             // Looping animation
             float loopTime = stateTime % (frameDuration * currentFrames.length);
             frameIndex = (int) (loopTime / frameDuration);
@@ -169,7 +169,7 @@ public class SpriteAnimator {
         if (currentState == AnimationState.DEAD) {
             return true;
         }
-        if (currentState == AnimationState.IDLE || currentState == AnimationState.CASTING) {
+        if (currentState == AnimationState.IDLE) {
             return false; // Looping animations never finish
         }
 

@@ -1022,6 +1022,12 @@ public class SpriteGenerator implements Disposable {
         setPixel(pm, 0, 2, ColorPalette.HOLY_WHITE); setPixel(pm, 3, 2, ColorPalette.HOLY_WHITE);
         setPixel(pm, 1, 3, ColorPalette.HOLY_WHITE); setPixel(pm, 2, 3, ColorPalette.HOLY_WHITE);
         uiSprites.put("particle_impact", createRegionFromPixmap(pm));
+
+        // Physical particle (4x4 white square) - default particle used by effects system
+        pm = createPixmap(4, 4);
+        pm.setColor(Color.WHITE);
+        pm.fillRectangle(0, 0, 4, 4);
+        uiSprites.put("particle_physical", createRegionFromPixmap(pm));
     }
 
     @Override
