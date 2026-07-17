@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Items & Equipment System plus Skill/Cooldown System. Create the items package (Item, ItemRarity, ItemSlot, ItemEffect, ItemRegistry with 15-20 items, Inventory) and the skills package (Skill, SkillTree with milestone unlocks). Modify ChestSystem to drop items. Extend PlayerAction to support dynamic skills.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/model/items/ItemRarity.java enum: COMMON, RARE, EPIC, LEGENDARY.",
     "Create src/model/items/ItemSlot.java enum: WEAPON, ARMOR, ACCESSORY.",

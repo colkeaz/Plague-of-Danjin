@@ -6,6 +6,9 @@ import model.Player;
 import model.events.GameEvent;
 import model.events.GameEventDispatcher;
 import model.events.GameEventType;
+import model.items.Item;
+import model.items.ItemRarity;
+import model.items.ItemRegistry;
 
 public class ChestSystem extends GameEventDispatcher {
     private final Random rand = new Random();
@@ -25,11 +28,13 @@ public class ChestSystem extends GameEventDispatcher {
 
     /**
      * Applies chest reward based on exact probability distribution:
-     * <10: legendary (+20 ATK)
-     * <25: epic (+15 DEF, +10 HP)
-     * <45: rare (+8 ATK, +8 DEF)
-     * <85: common (+30 HP)
+     * <10: legendary item (random LEGENDARY from ItemRegistry)
+     * <25: epic item (random EPIC from ItemRegistry)
+     * <45: rare item (random RARE from ItemRegistry)
+     * <85: common item (random COMMON from ItemRegistry)
      * else: mimic (takeDamage 15)
+     *
+     * Items are auto-equipped into the player's inventory.
      */
     private void applyChestReward(Player player) {
         int chance = rand.nextInt(100);
@@ -39,37 +44,21 @@ public class ChestSystem extends GameEventDispatcher {
                 .build());
 
         if (chance < 10) {
-            // Legendary: +20 ATK
-            player.upgradePower(20);
-            fireEvent(GameEvent.builder(GameEventType.CHEST_LEGENDARY)
-                    .put("playerName", player.getName())
-                    .put("attackBonus", 20)
-                    .build());
+            // Legendary item
+            Item item = ItemRegistry.getRandomByRarity(ItemRarity.LEGENDARY);
+            dropAndEquip(player, item, GameEventType.CHEST_LEGENDARY);
         } else if (chance < 25) {
-            // Epic: +15 DEF, +10 HP
-            player.upgradeDefense(15);
-            player.heal(10);
-            fireEvent(GameEvent.builder(GameEventType.CHEST_EPIC)
-                    .put("playerName", player.getName())
-                    .put("defenseBonus", 15)
-                    .put("hpBonus", 10)
-                    .build());
+            // Epic item
+            Item item = ItemRegistry.getRandomByRarity(ItemRarity.EPIC);
+            dropAndEquip(player, item, GameEventType.CHEST_EPIC);
         } else if (chance < 45) {
-            // Rare: +8 ATK, +8 DEF
-            player.upgradePower(8);
-            player.upgradeDefense(8);
-            fireEvent(GameEvent.builder(GameEventType.CHEST_RARE)
-                    .put("playerName", player.getName())
-                    .put("attackBonus", 8)
-                    .put("defenseBonus", 8)
-                    .build());
+            // Rare item
+            Item item = ItemRegistry.getRandomByRarity(ItemRarity.RARE);
+            dropAndEquip(player, item, GameEventType.CHEST_RARE);
         } else if (chance < 85) {
-            // Common: +30 HP
-            player.heal(30);
-            fireEvent(GameEvent.builder(GameEventType.CHEST_COMMON)
-                    .put("playerName", player.getName())
-                    .put("healAmount", 30)
-                    .build());
+            // Common item
+            Item item = ItemRegistry.getRandomByRarity(ItemRarity.COMMON);
+            dropAndEquip(player, item, GameEventType.CHEST_COMMON);
         } else {
             // Mimic: takeDamage 15
             player.takeDamage(15);
@@ -78,5 +67,24 @@ public class ChestSystem extends GameEventDispatcher {
                     .put("damage", 15)
                     .build());
         }
+    }
+
+    /**
+     * Fires ITEM_DROPPED event and auto-equips the item into the player's inventory.
+     */
+    private void dropAndEquip(Player player, Item item, GameEventType chestType) {
+        fireEvent(GameEvent.builder(GameEventType.ITEM_DROPPED)
+                .put("itemName", item.getName())
+                .put("rarity", item.getRarity().name())
+                .put("slot", item.getSlot().name())
+                .build());
+
+        fireEvent(GameEvent.builder(chestType)
+                .put("playerName", player.getName())
+                .put("itemName", item.getName())
+                .put("rarity", item.getRarity().name())
+                .build());
+
+        player.getInventory().equip(item);
     }
 }

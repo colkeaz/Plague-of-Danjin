@@ -4,15 +4,38 @@ import java.util.Random;
 
 import model.events.GameEvent;
 import model.events.GameEventType;
+import model.items.Inventory;
+import model.items.ItemEffect;
 import model.skills.Element;
+import model.skills.Skill;
+import model.skills.SkillTree;
 
 public class Player extends GameCharacter {
     private final Random rand = new Random();
+    private final Inventory inventory;
+    private final SkillTree skillTree;
 
     public Player(String name) {
         // Start with fixed stats: 100 HP, 30 Attack, 15 Defense
         super(name, 100, 30, 15);
         setElement(Element.PHYSICAL);
+        this.inventory = new Inventory();
+        this.skillTree = new SkillTree();
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public SkillTree getSkillTree() {
+        return skillTree;
+    }
+
+    /**
+     * Returns total attack power including bonuses from equipped items.
+     */
+    public int getTotalAttackPower() {
+        return getAttackPower() + inventory.getTotalStatBonus(ItemEffect.ATK);
     }
 
     /**
@@ -26,50 +49,110 @@ public class Player extends GameCharacter {
                 return true;
 
             case FIREBALL:
-                if (spendMana(20)) {
-                    fireEvent(GameEvent.builder(GameEventType.SPELL_CAST)
-                            .put("casterName", getName())
-                            .put("spellName", "Fireball")
-                            .put("manaCost", 20)
-                            .build());
-                    target.takeDamage(getAttackPower() * 3);
-                    return true;
-                }
-                return false;
+                return executeSkillByIndex(1, target);
 
             case HOLY_LIGHT:
-                if (spendMana(15)) {
-                    fireEvent(GameEvent.builder(GameEventType.SPELL_CAST)
-                            .put("casterName", getName())
-                            .put("spellName", "Holy Light")
-                            .put("manaCost", 15)
-                            .build());
-                    this.heal(30);
-                    return true;
-                }
-                return false;
+                return executeSkillByIndex(2, target);
 
             case IRON_WILL:
-                if (spendMana(10)) {
-                    fireEvent(GameEvent.builder(GameEventType.SPELL_CAST)
-                            .put("casterName", getName())
-                            .put("spellName", "Iron Will")
-                            .put("manaCost", 10)
-                            .build());
-                    this.upgradeDefense(5);
-                    return true;
-                }
-                return false;
+                return executeSkillByIndex(3, target);
+
+            case USE_SKILL_1:
+            case USE_SKILL_2:
+            case USE_SKILL_3:
+            case USE_SKILL_4:
+            case USE_SKILL_5:
+            case USE_SKILL_6:
+                return executeSkillByIndex(action.getSkillIndex(), target);
 
             default:
                 return false;
         }
     }
 
-    private void performBasicAttack(GameCharacter target) {
-        int damageDealt = this.getAttackPower();
+    /**
+     * Executes a skill by its index in the skill tree.
+     * Handles mana cost (with spell cost reduction), cooldown checks, and event firing.
+     */
+    private boolean executeSkillByIndex(int index, GameCharacter target) {
+        Skill skill = skillTree.getSkillByIndex(index);
+        if (skill == null) {
+            return false;
+        }
 
-        boolean isCrit = rand.nextInt(100) < 15;
+        if (!skill.isReady()) {
+            fireEvent(GameEvent.builder(GameEventType.SKILL_ON_COOLDOWN)
+                    .put("skillName", skill.getName())
+                    .put("turnsRemaining", skill.getCurrentCooldown())
+                    .build());
+            return false;
+        }
+
+        int spellCostReduction = inventory.getTotalStatBonus(ItemEffect.SPELL_COST_REDUCTION);
+        int effectiveCost = skill.getEffectiveCost(spellCostReduction);
+
+        if (effectiveCost > 0 && !spendMana(effectiveCost)) {
+            return false;
+        }
+
+        skill.use();
+
+        fireEvent(GameEvent.builder(GameEventType.SPELL_CAST)
+                .put("casterName", getName())
+                .put("spellName", skill.getName())
+                .put("manaCost", effectiveCost)
+                .build());
+
+        applySkillEffect(skill, target);
+        return true;
+    }
+
+    /**
+     * Applies the effect of a skill based on its SkillEffect type.
+     */
+    private void applySkillEffect(Skill skill, GameCharacter target) {
+        switch (skill.getSkillEffect()) {
+            case DAMAGE:
+                int damage = (int)(getTotalAttackPower() * skill.getDamageMultiplier());
+                target.takeDamage(damage, skill.getElement());
+                break;
+
+            case HEAL:
+                this.heal(30);
+                break;
+
+            case BUFF_DEF:
+                this.upgradeDefense(5);
+                break;
+
+            case BUFF_ATK:
+                this.upgradePower(5);
+                break;
+
+            case STUN:
+                int stunDamage = (int)(getTotalAttackPower() * skill.getDamageMultiplier());
+                target.takeDamage(stunDamage, skill.getElement());
+                break;
+
+            case MULTI_TARGET:
+                int multiDamage = (int)(getTotalAttackPower() * skill.getDamageMultiplier());
+                target.takeDamage(multiDamage, skill.getElement());
+                break;
+        }
+    }
+
+    private void performBasicAttack(GameCharacter target) {
+        int damageDealt = getTotalAttackPower();
+
+        // Determine element: check inventory for element override, else PHYSICAL
+        Element attackElement = inventory.getElementOverride();
+        if (attackElement == null) {
+            attackElement = Element.PHYSICAL;
+        }
+
+        // Crit chance: base 15% + bonus from equipped items
+        int critChance = 15 + inventory.getTotalStatBonus(ItemEffect.CRIT_CHANCE);
+        boolean isCrit = rand.nextInt(100) < critChance;
         if (isCrit) {
             damageDealt *= 2;
             fireEvent(GameEvent.builder(GameEventType.CRITICAL_HIT)
@@ -83,9 +166,18 @@ public class Player extends GameCharacter {
                 .put("damage", damageDealt)
                 .put("targetName", target.getName())
                 .put("isCritical", isCrit)
+                .put("element", attackElement.name())
                 .build());
 
-        target.takeDamage(damageDealt);
+        target.takeDamage(damageDealt, attackElement);
+
+        // Lifesteal: heal percentage of damage dealt
+        if (inventory.hasLifesteal()) {
+            int lifestealAmount = damageDealt * inventory.getLifestealPercent() / 100;
+            if (lifestealAmount > 0) {
+                this.heal(lifestealAmount);
+            }
+        }
     }
 
     /**
