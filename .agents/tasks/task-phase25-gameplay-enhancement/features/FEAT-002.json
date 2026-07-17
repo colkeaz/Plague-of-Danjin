@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Items & Equipment System plus Skill/Cooldown System. Create the items package (Item, ItemRarity, ItemSlot, ItemEffect, ItemRegistry with 15-20 items, Inventory) and the skills package (Skill, SkillTree with milestone unlocks). Modify ChestSystem to drop items. Extend PlayerAction to support dynamic skills.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create src/model/items/ItemRarity.java enum: COMMON, RARE, EPIC, LEGENDARY.",
     "Create src/model/items/ItemSlot.java enum: WEAPON, ARMOR, ACCESSORY.",
@@ -34,5 +34,5 @@
     "Run: grep -rn 'System\\.' src/model/ src/controller/ | grep -v '// ' - no System.in/out/err"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 19 items in registry across all rarities and slots. Build command in context.json references src/model/enemies/*.java which does not exist - used the build command from FEAT-002.json instead (without enemies glob). PlayerAction extended with USE_SKILL_1-6 slots mapping to skill indices. Player.performBasicAttack now uses elemental override from inventory and applies crit bonus from items. ChestSystem auto-equips dropped items into player inventory."
 }
