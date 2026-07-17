@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Procedural Sound System - Create an 8-bit audio engine using libGDX audio API. Generate all sounds at runtime from waveform data (square, sawtooth, triangle, noise). Includes SFX manager subscribing to game events, music manager with crossfade, and note sequencer for chiptune loops.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create src/view/audio/SoundGenerator.java - generates PCM audio data at 22050 Hz mono. Methods: generateSquareWave(float frequency, float duration, float volume), generateSawtoothWave(float frequency, float duration, float volume), generateTriangleWave(float frequency, float duration, float volume), generateNoise(float duration, float volume), generateFrequencySweep(float startFreq, float endFreq, float duration, WaveType type), mixSamples(short[] a, short[] b). Utility to convert short[] PCM data to libGDX Sound objects via Gdx.audio.newSound() using a custom FileHandleAdapter that provides WAV-format byte stream",
     "Create src/view/audio/NoteSequencer.java - converts note arrays into playable audio. Define Note class (frequency in Hz, duration in seconds, waveType). Method: sequenceToSamples(Note[] notes, int sampleRate) that concatenates wave segments. Method: createLoopableMusic(Note[] notes) that returns a libGDX Sound or uses AudioDevice for streaming. Include standard note frequencies (C4=262, D4=294, E4=330, F4=349, G4=392, A4=440, B4=494, C5=523, etc.)",

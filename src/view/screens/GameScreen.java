@@ -20,6 +20,8 @@ import model.events.GameEventListener;
 import model.events.GameEventType;
 import view.PlagueOfDanjinGame;
 import view.assets.AssetLoader;
+import view.audio.MusicManager;
+import view.audio.SFXManager;
 import view.effects.VisualEffectsManager;
 import view.rendering.AnimationManager;
 import view.rendering.PixelRenderer;
@@ -50,6 +52,8 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
     private final AnimationManager animationManager;
     private final ScreenShake screenShake;
     private final VisualEffectsManager visualEffects;
+    private final SFXManager sfxManager;
+    private final MusicManager musicManager;
 
     // Enemy display position constants (matching HUD layout)
     private static final float ENEMY_CENTER_X = 160f;
@@ -91,6 +95,8 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         this.animationManager = new AnimationManager();
         this.screenShake = new ScreenShake();
         this.visualEffects = new VisualEffectsManager();
+        this.sfxManager = game.getSfxManager();
+        this.musicManager = game.getMusicManager();
 
         this.waitingForAnimation = false;
         this.pendingState = null;
@@ -110,6 +116,12 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         // Register this screen as a listener for animation triggers
         engine.addListener(this);
+
+        // Register SFX manager for audio feedback on game events
+        engine.addListener(sfxManager);
+
+        // Start combat music
+        musicManager.play("combat_theme");
     }
 
     @Override
@@ -223,10 +235,14 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         animationManager.update(delta);
         hud.update(delta);
         visualEffects.update(delta);
+        musicManager.update(delta);
         torchlightTimer += delta;
 
         // Handle state machine transitions gated by animations
         handleStateTransitions();
+
+        // Update music based on current wave (boss theme for waves 5/10/15/20)
+        updateMusicTrack();
 
         // Apply screen shake
         renderer.applyCameraOffset(screenShake.getOffsetX(), screenShake.getOffsetY());
@@ -296,6 +312,34 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
             batch.setColor(flashColor);
             batch.draw(flashTex, 0, 0, 320, 240);
             batch.setColor(Color.WHITE);
+        }
+    }
+
+    /**
+     * Switches music track based on current game state and wave number.
+     * Boss theme plays on waves 5, 10, 15, 20; combat theme otherwise.
+     */
+    private void updateMusicTrack() {
+        GameState state = engine.getCurrentState();
+        switch (state) {
+            case AWAITING_PLAYER_ACTION:
+            case PROCESSING_ACTION:
+            case ENEMY_TURN:
+                int wave = engine.getCurrentWave();
+                if (wave % 5 == 0) {
+                    musicManager.play("boss_theme");
+                } else {
+                    musicManager.play("combat_theme");
+                }
+                break;
+            case WAVE_TRANSITION:
+                musicManager.play("dungeon_theme");
+                break;
+            case GAME_OVER:
+                musicManager.stop();
+                break;
+            default:
+                break;
         }
     }
 
@@ -585,6 +629,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         // libGDX's Game.setScreen() calls hide() on the old screen, not dispose().
         engine.removeListener(messageLog);
         engine.removeListener(this);
+        engine.removeListener(sfxManager);
     }
 
     @Override
@@ -592,5 +637,6 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         // Also deregister here for safety if dispose() is called directly
         engine.removeListener(messageLog);
         engine.removeListener(this);
+        engine.removeListener(sfxManager);
     }
 }
