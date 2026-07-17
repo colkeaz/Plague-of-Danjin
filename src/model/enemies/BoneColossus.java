@@ -43,7 +43,7 @@ public class BoneColossus extends Enemy {
 
         // Bone Shield every 3 turns
         if (turnCounter % 3 == 0) {
-            StatusEffect shield = new StatusEffect(StatusType.SHIELD, 99, 0, this.getName());
+            StatusEffect shield = new StatusEffect(StatusType.SHIELD, 1, 0, this.getName());
             getStatusManager().addEffect(shield);
             shieldActiveThisCycle = true;
         }

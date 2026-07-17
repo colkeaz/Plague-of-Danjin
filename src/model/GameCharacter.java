@@ -77,11 +77,14 @@ public abstract class GameCharacter extends GameEventDispatcher {
                     .put("blockedDamage", damage)
                     .build());
 
-            statusManager.removeEffect(StatusType.SHIELD);
+            // Decrement shield duration (each hit uses one charge)
+            statusManager.decrementShield();
 
-            fireEvent(GameEvent.builder(GameEventType.SHIELD_BROKEN)
-                    .put("targetName", this.name)
-                    .build());
+            if (!statusManager.hasEffect(StatusType.SHIELD)) {
+                fireEvent(GameEvent.builder(GameEventType.SHIELD_BROKEN)
+                        .put("targetName", this.name)
+                        .build());
+            }
             return;
         }
 

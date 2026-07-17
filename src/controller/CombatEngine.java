@@ -42,10 +42,37 @@ public class CombatEngine extends GameEventDispatcher {
     // Skill choice state: holds offered skills during milestone waves
     private List<Skill> pendingSkillChoices;
 
+    // Track ENRAGE stat modifications for reversal on expiry
+    private int enrageAtkBonus = 0;
+    private int enrageDefReduction = 0;
+    private boolean enrageActive = false;
+
     /**
      * Internal listener that forwards all child events through this engine's dispatcher.
      */
     private final GameEventListener forwardingListener = this::fireEvent;
+
+    /**
+     * Internal listener that handles reflect damage from events like BoneColossus shield break.
+     * Processes ENEMY_ABILITY_FIRED events that contain reflectDamage.
+     */
+    private final GameEventListener reflectHandler = event -> {
+        if (event.getType() == GameEventType.ENEMY_ABILITY_FIRED) {
+            int reflectDamage = event.getInt("reflectDamage");
+            if (reflectDamage > 0 && hero != null && hero.isAlive()) {
+                String elementName = event.getString("element");
+                model.skills.Element reflectElement = model.skills.Element.PHYSICAL;
+                if (elementName != null) {
+                    try {
+                        reflectElement = model.skills.Element.valueOf(elementName);
+                    } catch (IllegalArgumentException e) {
+                        // Fall back to PHYSICAL
+                    }
+                }
+                hero.takeDamage(reflectDamage, reflectElement);
+            }
+        }
+    };
 
     public CombatEngine() {
         this.waveManager = new WaveManager();
@@ -103,7 +130,7 @@ public class CombatEngine extends GameEventDispatcher {
             // Apply permanent damage per turn from Danjin's Heart absorption
             if (runModifiers.isDanjinHeartAbsorbed() && runModifiers.getPermanentDamagePerTurn() > 0) {
                 runModifiers.applyPermanentDamagePerTurn(hero, runModifiers.getPermanentDamagePerTurn());
-                if (!hero.isAlive()) {
+                if (isPlayerDeadAfterReviveCheck()) {
                     currentState = GameState.GAME_OVER;
                     fireEvent(GameEvent.builder(GameEventType.PLAYER_DEFEATED)
                             .put("playerName", hero.getName())
@@ -117,7 +144,7 @@ public class CombatEngine extends GameEventDispatcher {
             List<GameEvent> statusEvents = hero.getStatusManager().tickAll();
             applyPlayerStatusEffects(statusEvents);
 
-            if (!hero.isAlive()) {
+            if (isPlayerDeadAfterReviveCheck()) {
                 currentState = GameState.GAME_OVER;
                 fireEvent(GameEvent.builder(GameEventType.PLAYER_DEFEATED)
                         .put("playerName", hero.getName())
@@ -234,7 +261,7 @@ public class CombatEngine extends GameEventDispatcher {
             currentEnemy.attack(hero);
         }
 
-        if (!hero.isAlive()) {
+        if (isPlayerDeadAfterReviveCheck()) {
             currentState = GameState.GAME_OVER;
             fireEvent(GameEvent.builder(GameEventType.PLAYER_DEFEATED)
                     .put("playerName", hero.getName())
@@ -516,7 +543,7 @@ public class CombatEngine extends GameEventDispatcher {
     }
 
     /**
-     * Applies status effect consequences from tickAll (poison damage, regen heals, etc.)
+     * Applies status effect consequences from tickAll (poison damage, regen heals, enrage, etc.)
      */
     private void applyPlayerStatusEffects(List<GameEvent> statusEvents) {
         for (GameEvent event : statusEvents) {
@@ -528,7 +555,27 @@ public class CombatEngine extends GameEventDispatcher {
                 } else if ("REGEN".equals(statusType)) {
                     hero.heal(potency);
                 }
+            } else if (event.getType() == GameEventType.STATUS_EXPIRED) {
+                String statusType = event.getString("statusType");
+                if ("ENRAGE".equals(statusType) && enrageActive) {
+                    // Revert enrage stat modifications
+                    hero.upgradePower(-enrageAtkBonus);
+                    hero.upgradeDefense(enrageDefReduction);
+                    enrageAtkBonus = 0;
+                    enrageDefReduction = 0;
+                    enrageActive = false;
+                }
             }
+        }
+
+        // Check if ENRAGE was just applied (status exists but we haven't tracked it yet)
+        if (!enrageActive && hero.getStatusManager().hasEffect(StatusType.ENRAGE)) {
+            // Apply +100% ATK, -50% DEF
+            enrageAtkBonus = hero.getTotalAttackPower(); // +100% of current ATK
+            enrageDefReduction = hero.getDefense() / 2; // -50% of current DEF
+            hero.upgradePower(enrageAtkBonus);
+            hero.upgradeDefense(-enrageDefReduction);
+            enrageActive = true;
         }
     }
 
@@ -547,6 +594,28 @@ public class CombatEngine extends GameEventDispatcher {
                 }
             }
         }
+    }
+
+    /**
+     * Checks if the player has died and handles auto-revive if active.
+     * Returns true if the player is actually dead (no revive available),
+     * false if the player was revived or is still alive.
+     */
+    private boolean isPlayerDeadAfterReviveCheck() {
+        if (!hero.isAlive() && hero.isAutoReviveActive()) {
+            // Consume the auto-revive and restore to 50% HP
+            hero.setAutoReviveActive(false);
+            int reviveHp = hero.getMaxHp() / 2;
+            hero.heal(reviveHp);
+            fireEvent(GameEvent.builder(GameEventType.HEAL)
+                    .put("targetName", hero.getName())
+                    .put("amount", reviveHp)
+                    .put("currentHp", hero.getHp())
+                    .put("maxHp", hero.getMaxHp())
+                    .build());
+            return false;
+        }
+        return !hero.isAlive();
     }
 
     /**
@@ -586,10 +655,13 @@ public class CombatEngine extends GameEventDispatcher {
     /**
      * Registers the forwarding listener on each enemy so their events
      * are dispatched through the engine's central event bus.
+     * Also registers the reflect handler so BoneColossus shield-break
+     * damage is applied to the player.
      */
     private void registerEnemyListeners(Enemy[] enemies) {
         for (Enemy enemy : enemies) {
             enemy.addListener(forwardingListener);
+            enemy.addListener(reflectHandler);
         }
     }
 

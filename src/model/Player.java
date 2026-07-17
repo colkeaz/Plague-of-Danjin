@@ -9,11 +9,14 @@ import model.items.ItemEffect;
 import model.skills.Element;
 import model.skills.Skill;
 import model.skills.SkillTree;
+import model.status.StatusEffect;
+import model.status.StatusType;
 
 public class Player extends GameCharacter {
     private final Random rand = new Random();
     private final Inventory inventory;
     private final SkillTree skillTree;
+    private boolean autoReviveActive = false;
 
     public Player(String name) {
         // Start with fixed stats: 100 HP, 30 Attack, 15 Defense
@@ -29,6 +32,21 @@ public class Player extends GameCharacter {
 
     public SkillTree getSkillTree() {
         return skillTree;
+    }
+
+    /**
+     * Returns whether the auto-revive passive (from Resurrection skill) is active.
+     */
+    public boolean isAutoReviveActive() {
+        return autoReviveActive;
+    }
+
+    /**
+     * Sets the auto-revive flag. When true, the player will revive with 50% HP
+     * on death (one-time use, consumed on trigger).
+     */
+    public void setAutoReviveActive(boolean active) {
+        this.autoReviveActive = active;
     }
 
     /**
@@ -73,6 +91,7 @@ public class Player extends GameCharacter {
     /**
      * Executes a skill by its index in the skill tree.
      * Handles mana cost (with spell cost reduction), cooldown checks, and event firing.
+     * Special case: Blood Pact costs 20 HP instead of mana.
      */
     private boolean executeSkillByIndex(int index, GameCharacter target) {
         Skill skill = skillTree.getSkillByIndex(index);
@@ -88,11 +107,20 @@ public class Player extends GameCharacter {
             return false;
         }
 
-        int spellCostReduction = inventory.getTotalStatBonus(ItemEffect.SPELL_COST_REDUCTION);
-        int effectiveCost = skill.getEffectiveCost(spellCostReduction);
+        // Blood Pact costs 20 HP instead of mana
+        if (skill.getSkillEffect() == model.skills.SkillEffect.BLOOD_PACT) {
+            if (getHp() <= 20) {
+                // Not enough HP to pay the cost (would kill the player)
+                return false;
+            }
+            takeDamage(20);
+        } else {
+            int spellCostReduction = inventory.getTotalStatBonus(ItemEffect.SPELL_COST_REDUCTION);
+            int effectiveCost = skill.getEffectiveCost(spellCostReduction);
 
-        if (effectiveCost > 0 && !spendMana(effectiveCost)) {
-            return false;
+            if (effectiveCost > 0 && !spendMana(effectiveCost)) {
+                return false;
+            }
         }
 
         skill.use();
@@ -100,7 +128,7 @@ public class Player extends GameCharacter {
         fireEvent(GameEvent.builder(GameEventType.SPELL_CAST)
                 .put("casterName", getName())
                 .put("spellName", skill.getName())
-                .put("manaCost", effectiveCost)
+                .put("manaCost", skill.getManaCost())
                 .build());
 
         applySkillEffect(skill, target);
@@ -132,11 +160,64 @@ public class Player extends GameCharacter {
             case STUN:
                 int stunDamage = (int)(getTotalAttackPower() * skill.getDamageMultiplier());
                 target.takeDamage(stunDamage, skill.getElement());
+                // Apply STUN status for 1 turn
+                target.getStatusManager().addEffect(
+                        new StatusEffect(StatusType.STUN, 1, 0, getName()));
                 break;
 
             case MULTI_TARGET:
                 int multiDamage = (int)(getTotalAttackPower() * skill.getDamageMultiplier());
                 target.takeDamage(multiDamage, skill.getElement());
+                break;
+
+            case DRAIN_LIFE:
+                int drainDamage = (int)(getTotalAttackPower() * skill.getDamageMultiplier());
+                target.takeDamage(drainDamage, skill.getElement());
+                // Heal caster for 50% of damage dealt
+                int healAmount = drainDamage / 2;
+                if (healAmount > 0) {
+                    this.heal(healAmount);
+                }
+                break;
+
+            case ASSASSINATE:
+                // 6x if enemy below 30% HP, else 2x
+                float multiplier;
+                if (target.getHp() < target.getMaxHp() * 0.3) {
+                    multiplier = 6.0f;
+                } else {
+                    multiplier = 2.0f;
+                }
+                int assassinateDamage = (int)(getTotalAttackPower() * multiplier);
+                target.takeDamage(assassinateDamage, skill.getElement());
+                break;
+
+            case BLOOD_PACT:
+                // HP cost already deducted in executeSkillByIndex; just deal 5x damage
+                int bloodDamage = (int)(getTotalAttackPower() * skill.getDamageMultiplier());
+                target.takeDamage(bloodDamage, skill.getElement());
+                break;
+
+            case DIVINE_SHIELD:
+                // Apply SHIELD status that blocks next 2 attacks
+                StatusEffect shield = new StatusEffect(StatusType.SHIELD, 2, 0, getName());
+                this.getStatusManager().addEffect(shield);
+                break;
+
+            case BERSERKER_RAGE:
+                // Apply ENRAGE status: +100% ATK, -50% DEF for 3 turns
+                StatusEffect enrage = new StatusEffect(StatusType.ENRAGE, 3, 0, getName());
+                this.getStatusManager().addEffect(enrage);
+                break;
+
+            case RESURRECTION:
+                // Set passive auto-revive flag (one-time, triggers on death)
+                this.autoReviveActive = true;
+                fireEvent(GameEvent.builder(GameEventType.SKILL_UNLOCKED)
+                        .put("skillName", "Resurrection")
+                        .put("skillId", "resurrection_passive")
+                        .put("element", Element.HOLY.name())
+                        .build());
                 break;
         }
     }

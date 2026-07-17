@@ -97,6 +97,24 @@ public class StatusManager extends GameEventDispatcher {
     }
 
     /**
+     * Decrements the SHIELD effect duration by 1. If duration reaches 0, removes the shield.
+     * This supports multi-hit shields (e.g., Divine Shield blocks 2 attacks).
+     */
+    public void decrementShield() {
+        Iterator<StatusEffect> iterator = activeEffects.iterator();
+        while (iterator.hasNext()) {
+            StatusEffect effect = iterator.next();
+            if (effect.getType() == StatusType.SHIELD) {
+                effect.tick(); // decrements duration
+                if (effect.isExpired()) {
+                    iterator.remove();
+                }
+                return; // Only decrement one shield instance
+            }
+        }
+    }
+
+    /**
      * Returns true if the character is currently stunned.
      */
     public boolean isStunned() {

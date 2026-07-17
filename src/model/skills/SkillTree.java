@@ -44,7 +44,7 @@ public class SkillTree extends GameEventDispatcher {
 
     private static final Skill DRAIN_LIFE = new Skill(
             "drain_life", "Drain Life", 20, 0,
-            Element.DARK, 2.0f, SkillEffect.DAMAGE);
+            Element.DARK, 2.0f, SkillEffect.DRAIN_LIFE);
 
     // Wave 10 milestone choices
     private static final Skill METEOR = new Skill(
@@ -53,24 +53,24 @@ public class SkillTree extends GameEventDispatcher {
 
     private static final Skill DIVINE_SHIELD = new Skill(
             "divine_shield", "Divine Shield", 25, 0,
-            Element.HOLY, 0.0f, SkillEffect.BUFF_DEF);
+            Element.HOLY, 0.0f, SkillEffect.DIVINE_SHIELD);
 
     private static final Skill ASSASSINATE = new Skill(
             "assassinate", "Assassinate", 30, 0,
-            Element.PHYSICAL, 6.0f, SkillEffect.DAMAGE);
+            Element.PHYSICAL, 6.0f, SkillEffect.ASSASSINATE);
 
     // Wave 15 milestone choices
     private static final Skill BLOOD_PACT = new Skill(
             "blood_pact", "Blood Pact", 0, 0,
-            Element.DARK, 5.0f, SkillEffect.DAMAGE);
+            Element.DARK, 5.0f, SkillEffect.BLOOD_PACT);
 
     private static final Skill RESURRECTION = new Skill(
             "resurrection", "Resurrection", 50, 0,
-            Element.HOLY, 0.0f, SkillEffect.HEAL);
+            Element.HOLY, 0.0f, SkillEffect.RESURRECTION);
 
     private static final Skill BERSERKER_RAGE = new Skill(
             "berserker_rage", "Berserker Rage", 0, 5,
-            Element.PHYSICAL, 0.0f, SkillEffect.BUFF_ATK);
+            Element.PHYSICAL, 0.0f, SkillEffect.BERSERKER_RAGE);
 
     private final List<Skill> unlockedSkills = new ArrayList<>();
 
