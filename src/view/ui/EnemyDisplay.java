@@ -39,6 +39,7 @@ public class EnemyDisplay {
     // SpriteAnimator for the current enemy
     private SpriteAnimator animator;
     private String currentEntityName;
+    private Enemy currentEnemyInstance;
 
     public EnemyDisplay() {
         this.damageFlash = false;
@@ -46,20 +47,25 @@ public class EnemyDisplay {
         this.telegraphPulseTimer = 0f;
         this.animator = null;
         this.currentEntityName = null;
+        this.currentEnemyInstance = null;
     }
 
     /**
      * Sets the current enemy and initializes the SpriteAnimator for it.
+     * Forces a reset if the enemy instance is different (even if same type).
      */
     public void setEnemy(Enemy enemy, AssetLoader assets) {
         if (enemy == null) {
             animator = null;
             currentEntityName = null;
+            currentEnemyInstance = null;
             return;
         }
-        String entityName = getEntityName(enemy);
-        if (!entityName.equals(currentEntityName)) {
-            currentEntityName = entityName;
+
+        // Force reset if the enemy INSTANCE changed (different object, even if same name)
+        if (enemy != currentEnemyInstance) {
+            currentEnemyInstance = enemy;
+            currentEntityName = getEntityName(enemy);
             initAnimator(assets);
         }
     }

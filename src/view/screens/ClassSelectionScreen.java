@@ -113,13 +113,15 @@ public class ClassSelectionScreen extends InputAdapter implements Screen {
         font.setColor(ColorPalette.HOLY_GOLD);
         font.draw(batch, "Choose Your Class, " + playerName + "!", 50f, 232f);
 
-        // Render the 3 class panels
-        float panelWidth = 100f;
-        float startX = 5f;
+        // Render the 3 class panels (centered)
+        float panelWidth = 95f;
+        float panelGap = 5f;
+        float totalWidth = (panelWidth * 3) + (panelGap * 2);
+        float startX = (320f - totalWidth) / 2f;
         float panelY = 215f;
 
         for (int i = 0; i < CLASSES.length; i++) {
-            float x = startX + i * (panelWidth + 5f);
+            float x = startX + i * (panelWidth + panelGap);
             boolean isSelected = (i == selectedIndex);
             renderClassPanel(batch, font, i, x, panelY, panelWidth, isSelected);
         }
@@ -179,11 +181,11 @@ public class ClassSelectionScreen extends InputAdapter implements Screen {
 
         // Stats
         font.setColor(ColorPalette.TEXT_WHITE);
-        font.draw(batch, "HP:" + cc.getStartingHp(), x + 2f, y);
-        font.draw(batch, "ATK:" + cc.getStartingAtk(), x + 50f, y);
+        font.draw(batch, "HP:" + cc.getStartingHp(), x + 5f, y);
+        font.draw(batch, "ATK:" + cc.getStartingAtk(), x + 48f, y);
         y -= 10f;
-        font.draw(batch, "DEF:" + cc.getStartingDef(), x + 2f, y);
-        font.draw(batch, "MP:" + cc.getStartingMp(), x + 50f, y);
+        font.draw(batch, "DEF:" + cc.getStartingDef(), x + 5f, y);
+        font.draw(batch, "MP:" + cc.getStartingMp(), x + 48f, y);
         y -= 12f;
 
         // Starting skills
@@ -332,11 +334,13 @@ public class ClassSelectionScreen extends InputAdapter implements Screen {
         Vector2 worldCoords = renderer.getViewport().unproject(new Vector2(screenX, screenY));
         float worldX = worldCoords.x;
 
-        float panelWidth = 100f;
-        float startX = 5f;
+        float panelWidth = 95f;
+        float panelGap = 5f;
+        float totalWidth = (panelWidth * 3) + (panelGap * 2);
+        float startX = (320f - totalWidth) / 2f;
 
         for (int i = 0; i < CLASSES.length; i++) {
-            float panelLeft = startX + i * (panelWidth + 5f);
+            float panelLeft = startX + i * (panelWidth + panelGap);
             float panelRight = panelLeft + panelWidth;
             if (worldX >= panelLeft && worldX <= panelRight) {
                 selectClass(i);

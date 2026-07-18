@@ -127,8 +127,8 @@ public class HUD {
             enemyDisplay.render(batch, font, assets, enemy, 120f, MIDDLE_Y - 40f);
         }
 
-        // Message log (left side, lower-middle)
-        messageLog.render(batch, font, 5f, 130f, 9f);
+        // Message log (right side, lower-middle)
+        messageLog.render(batch, font, 160f, 130f, 9f);
 
         // --- Bottom area: Player stats with textured bars ---
         if (player != null) {
