@@ -1,10 +1,10 @@
 <h1 align = "center">𐔌 .⋮ Plague of Danjin  .ᐟ  ֹ   ₊ ꒱</h1>
-<h3 align = "center">A turn-based Java Console RPG with Skills, Mana, and Boss Battles.</h3>
+<h3 align = "center">A graphical 8-bit roguelike dungeon crawler built with Java and libGDX.</h3>
 <p align = "center">
 
 
 ## ‧₊˚ ┊ Overview
-Plague of Danjin is a console-based Java RPG where the player controls a hero fighting through **20 progressive waves** of enemies to cleanse the land of corruption.
+Plague of Danjin is a graphical 8-bit roguelike dungeon crawler built with Java and libGDX. The player descends into the Dungeon of Danjin to cleanse the kingdom of Morthga from a spreading plague. Features non-linear exploration, 3 character classes, turn-based combat with elemental systems, and procedural pixel art.
 <br/><br/>
 
 ## ‧₊˚ ┊ Object-oriented Principles
@@ -34,143 +34,144 @@ Abstract classes define the "blueprint" for all entities.
 ---
 <br/>
 
-### Players can:
-⚔️ Perform basic and magic attacks  
-🔥 Cast powerful spells using mana  
-🛡️ Buff defense and regenerate mana  
-🎯 Land critical hits  
-📦 Open mysterious chests for upgrades  
-👑 Defeat the Goblin King and the Necromancer Lich  
+## ‧₊˚ ┊ Features
+1. **Turn-Based Combat System** with Elemental Damage (Fire, Holy, Dark, Physical, Poison)
+2. **3 Character Classes** — Knight (tank), Mage (glass cannon), Rogue (crit/poison)
+3. **Non-Linear World Map** — 4 branching dungeon areas explorable in any order
+4. **Story Mode + Classic Mode** (original 20-wave gauntlet preserved)
+5. **39 Unique Skills** with cooldowns and class-specific milestone unlocks
+6. **Items & Equipment** — 20+ items across 3 slots (Weapon, Armor, Accessory)
+7. **8 Enemy Types** with unique mechanics (telegraphs, shields, poison, minions, rage)
+8. **4 Boss Encounters** with QTE (Quick-Time Event) phases
+9. **Status Effects** — Poison, Regen, Shield, Stun, Enrage, Curse
+10. **Procedural 8-Bit Audio** — Chiptune BGM and 18 SFX generated from waveforms
+11. **Save System** with Meta-Progression and 6 Unlockable Starting Bonuses
+12. **Event Rooms** with moral choices affecting 3 possible story endings
+13. **Pixel-Perfect 8-Bit Rendering** (320×240, 3× scaled to 960×720)
+14. **Dynamic Difficulty** — Danjin's Curse escalates danger over time
 
-### Game Data Handling
-💾 Player HP, defense, attack, and mana persist across all 20 waves.
+---
+
+## ‧₊˚ ┊ Game Modes
+
+### 🗺️ Story Mode
+Non-linear dungeon exploration. Explore the Goblin Warrens, Bone Cathedral, and Plague Gardens in any order. Collect 3 keys to face the Lich. Choices affect which of 3 endings you receive.
+
+### ⚔️ Classic Mode
+The original 20-wave gauntlet — fight through progressive waves of increasing difficulty.
+
+---
+
+## ‧₊˚ ┊ Character Classes
+
+| Class | HP | Specialty | Passive |
+|-------|-----|-----------|---------|
+| 🛡️ **Knight** | 130 HP, 25 DEF | Shield Slam, Rally, Fortress | Thick Skin (10% damage reduction) |
+| 🔮 **Mage** | High MP (120) | Fireball, Ice Shard, Arcane Shield | Arcane Affinity (-3 MP costs, +5 mana regen) |
+| 🗡️ **Rogue** | High Crit (25%) | Poison Strike, Shadow Step, Backstab | Keen Edge (2.5× crit damage) |
+
+---
+
+## ‧₊˚ ┊ World Map
+
+```
+              ┌────────────────────┐
+              │   THE LICH'S THRONE │ (Requires 3 Keys)
+              └────────┬───────────┘
+                       │
+              ┌────────┴───────────┐
+              │   DANJIN'S CORE    │ (Central Hub)
+              └─┬──────┬──────┬───┘
+                │      │      │
+     [GOBLIN WARRENS] [BONE CATHEDRAL] [PLAGUE GARDENS]
+       Boss: GobKing    Boss: Colossus   Boss: Thornmother
+```
+
+---
+
+## ‧₊˚ ┊ Enemy Types
+
+| Enemy | Element | Mechanic |
+|-------|---------|----------|
+| Goblin Grunt | Physical | Scaling melee attacker |
+| Plague Goblin | Poison | Poison on hit, toxic aura |
+| Goblin King | Physical | Boss, rage mechanic +2 ATK/turn |
+| Goblin Chieftain | Physical | Mini-boss, war cry buff |
+| Skeleton Warrior | Dark | Armored undead |
+| Shielded Skeleton | Dark | Blocks first hit per turn |
+| Bone Colossus | Dark | Mini-boss, reflects damage on shield break |
+| Necromancer Lich | Dark | Final boss, summons minions, 3 QTE phases |
+| Plague Elemental | Poison | Double poison stacks |
+| Thornmother | Poison | Summons vine minions, self-heals |
+
+---
+
+## ‧₊˚ ┊ Architecture (MVC)
+
+- **Model:** Pure game logic with zero I/O. Communicates via an event-driven system (Observer pattern).
+- **Controller:** Non-blocking state machines. CombatEngine advances one step per call — designed for 60 FPS integration.
+- **View:** libGDX rendering layer. Completely replaceable without touching game logic.
 
 ---
 
 ## ‧₊˚ ┊ Project Structure
 ```
-📂 src/
-├── ☕ GameMain.java
-├── ☕ GameCharacter.java
-├── ☕ Player.java
-├── ☕ Enemy.java
-├── ☕ Goblin.java
-├── ☕ GoblinKing.java
-├── ☕ Skeleton.java
-└── ☕ Lich.java
-
+src/
+├── model/                  (Game Logic — Zero I/O)
+│   ├── GameCharacter.java, Player.java, Enemy.java
+│   ├── CharacterClass.java, ClassAbility.java, ClassSkillTree.java
+│   ├── PlayerAction.java, SaveData.java
+│   ├── items/             (Item, Inventory, ItemRegistry — 20+ items)
+│   ├── skills/            (Element, Skill, SkillTree — 39 skills)
+│   ├── status/            (StatusManager — 6 effect types)
+│   ├── enemies/           (8 enemy types + telegraph system)
+│   ├── events/            (GameEvent system — 35+ event types)
+│   └── world/             (Area, Encounter, WorldState — dungeon map)
+├── controller/            (State Machines & Game Flow)
+│   ├── CombatEngine.java, WaveManager.java, WorldManager.java
+│   ├── QTEManager.java, SaveManager.java, MetaProgression.java
+│   ├── ChestSystem.java, EventRoomManager.java, RunModifiers.java
+│   └── AreaEncounterGenerator.java, GameState.java
+└── view/                  (libGDX Rendering — Replaceable)
+    ├── PlagueOfDanjinGame.java, DesktopLauncher.java
+    ├── screens/           (9 screens: WorldMap, Combat, QTE, etc.)
+    ├── sprites/           (Pixmap pixel-art generator, animations)
+    ├── effects/           (Particles, damage numbers, screen shake)
+    ├── audio/             (Procedural chiptune SFX + BGM)
+    ├── ui/                (HUD, CombatMenu, MessageLog)
+    └── rendering/         (PixelRenderer — 320×240 FitViewport)
 ```
 
-- `GameMain.java` – The entry point. Handles the game loop, array-based wave generation, chest/loot logic, and the victory condition.
-- `GameCharacter.java` – The abstract blueprint defining the core stats (HP, Mana) and logic for damage/healing.
-- `Player.java` – Handles user input, the skills Grimoire, and mana management.
-- `Enemy.java` – Defines basic AI behavior for standard attacks.
-- `Goblin.java` – Phase 1 enemy with stats that scale based on the wave number.
-- `Skeleton.java` – Phase 2 enemy with higher base stats and natural defense.
-- `GoblinKing.java` – Boss class that utilizes a "Rage" mechanic to increase attack power every turn.
-- `Lich.java` – Final Boss class with unique logic for summoning skeleton minions.
+87 Java files across 17 packages.
 
+---
 
-## ‧₊˚ ┊ How to Run the Program
+## ‧₊˚ ┊ Tech Stack
 
-```
-Open your terminal in the project src folder and run:
+| Component | Technology |
+|-----------|-----------|
+| Language | Java 17 |
+| Framework | libGDX 1.12.1 (LWJGL3 desktop backend) |
+| Build | Gradle 8.11 |
+| Rendering | SpriteBatch + Pixmap (procedural pixel art) |
+| Audio | Procedural chiptune (square/triangle/sawtooth waveforms at 22050 Hz) |
+| Resolution | 320×240 internal, 960×720 window (nearest-neighbor scaling) |
 
-javac *.java
+---
 
-Run the game using:
-
-java GameMain
+## ‧₊˚ ┊ How to Run
 
 ```
+Prerequisites: Java 17+, Gradle 8.x (wrapper included)
 
-## ‧₊˚ ┊ Features
-1. **Turn-Based Combat System**
-2. **20 Progressive Waves**
-3. **Two Boss Battles**
-   - Goblin King (Wave 10)
-   - Necromancer Lich (Wave 20)
-4. **Mana & Skill System**
-   - Fireball (3x Damage)
-   - Holy Light (Heal)
-   - Iron Will (Defense Buff)
-5. **Skeleton Minion System (Lich Boss)**
-6. **Critical Hit System (15%)**
-7. **Dynamic Defense & Damage Reduction**
-8. **Chest & Loot Rewards**
-9. **Auto Heal +5 After Every Kill**
-10. **Animated Text & Victory Screen**
+# Build the project
+./gradlew classes
 
-## ‧₊˚ ┊ Enemy Phases
-
-- `Phase 1` – Goblins (Waves 1–9)
-  - Basic enemies with scaling HP and attack.
-  
-- `Boss 1` – Goblin King (Wave 10)
-  - High HP, strong attack, increased defense.
-  - Unique Ability: Attack increases each turn.
-  
-- `Phase 2` – Skeleton Warriors (Waves 11–19)
-  - Naturally armored enemies with higher stats.
-  
-- `Final Boss` – Necromancer Lich (Wave 20)
-  - Summons skeleton minions every 3 turns
-  - Minions deal passive damage every turn
-  - Extremely high HP and strong defense
-
-## ‧₊˚ ┊ Example Output
-
+# Run the game
+./gradlew run
 ```
 
---- Your Turn (HP: 84 | MP: 55) ---
-1. Basic Attack
-2. Skills (Magic)
-Choose an action: 2
-
---- Grimoire ---
-1. Fireball (20 MP)
-2. Holy Light (15 MP)
-3. Iron Will (10 MP)
-4. Back
-Select Spell: 1
-
-🔥 You cast FIREBALL! 🔥
-Skeleton Warrior blocked 5 damage and took 85 damage!
-Current HP: 12/140
-
-```
-
-## ‧₊˚ ┊ Victory Screen (Snippet)
-
-```
-  CONGRATULATIONS, traveler.
-            The Corrupted Heart has been destroyed... and with it, the plague.
-            Morthga breathes once more because of you.
-            Your name shall echo through its restored halls. 
-            Farewell, Hero Lan."
-            Until the next descent.
-################################################################################
-#                                                                              #
-#   ______  _                                       __                         #
-#   | ___ \\| |                                     / _|                       #
-#   | |_/ /| |  __ _   __ _  _   _   ___     ___  | |_                         #
-#   |  __/ | | / _` | / _` || | | | / _ \\   / _ \\ |  _|                      #
-#   | |    | || (_| || (_| || |_| ||  __/  | (_) || |                          #
-#   \\_|    |_| \\__,_| \\__, | \\__,_| \\___|   \\___/ |_|                    #
-#                      __/ |                                                   #
-#                     |___/                                                    #
-#    ______              _  _                                                  #
-#    |  _  \\            (_)(_)                                                #
-#    | | | |  __ _  _ __  _  _  _ __                                           #
-#    | | | | / _` || '_ \\| || || '_ \\                                        #
-#    | |/ / | (_| || | | || || || | | |                                        #
-#    |___/   \\__,_||_| |_|| ||_||_| |_|                                       #
-#                        _/ |                                                  #
-#                       |__/                                                   #
-#                                                                              #
-################################################################################
-
-```
+---
 
 ## ‧₊˚ ┊ Authors and Acknowledgement
 <table>
@@ -209,20 +210,3 @@ own way to bringing this project to life.
 Lastly, we acknowledge our own effort, patience, and teamwork.
 This project strengthened both our technical skills and our collaboration
 as a group.
-
-
-
-
-## ‧₊˚ ┊ Future Enhancements
-1. **Classes**
-    - Classes with different archetypes such as Knight, Mage, Assassin, and etc.
-2. **Graphic User Interface**
-    - For the visual enhancement of the Player.
-3. **More Enemies**
-   - More Unique enemies and varrying stats.
-4. **Items and INventory**
-    - Improvement of the items and possibly an addition of an Inventory System.
-5. **Lore and Area Expansion**
-    - This project is open to explore more about the lore and have more areas to go through and fight.
-6. **World Interaction**
-    - Make the player able to explore around the dungeon and interact with npc's.
