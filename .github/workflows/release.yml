@@ -105,23 +105,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "Plague of Danjin ${{ github.ref_name }}"
-          body: |
-            ## Plague of Danjin ${{ github.ref_name }}
-            
-            A graphical 8-bit roguelike dungeon crawler.
-            
-            ### Download
-            Choose the version for your operating system:
-            - **Windows**: `PlagueOfDanjin-windows.zip`
-            - **macOS**: `PlagueOfDanjin-macos.zip`
-            - **Linux**: `PlagueOfDanjin-linux.zip`
-            
-            ### How to Play
-            1. Download the ZIP for your platform
-            2. Extract the archive
-            3. Run `PlagueOfDanjin` (or `PlagueOfDanjin.exe` on Windows)
-            
-            No Java installation required — the runtime is bundled.
+          body: "## Plague of Danjin ${{ github.ref_name }}\n\nA graphical 8-bit roguelike dungeon crawler.\n\n### Download\nChoose the version for your operating system:\n- **Windows**: `PlagueOfDanjin-windows.zip`\n- **macOS**: `PlagueOfDanjin-macos.zip`\n- **Linux**: `PlagueOfDanjin-linux.zip`\n\n### How to Play\n1. Download the ZIP for your platform\n2. Extract the archive\n3. Run `PlagueOfDanjin` (or `PlagueOfDanjin.exe` on Windows)\n\nNo Java installation required — the runtime is bundled."
           files: |
             artifacts/PlagueOfDanjin-windows/PlagueOfDanjin-windows.zip
             artifacts/PlagueOfDanjin-macos/PlagueOfDanjin-macos.zip
