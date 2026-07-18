@@ -31,7 +31,7 @@ import view.sprites.ColorPalette;
 public class HUD {
     private static final float TOP_Y = 235f;
     private static final float MIDDLE_Y = 190f;
-    private static final float BOTTOM_Y = 55f;
+    private static final float BOTTOM_Y = 87f;
     private static final float BAR_WIDTH = 60f;
     private static final float BAR_HEIGHT = 5f;
     private static final float LERP_SPEED = 8f;
@@ -128,7 +128,7 @@ public class HUD {
         }
 
         // Message log (left side, lower-middle)
-        messageLog.render(batch, font, 5f, 115f, 9f);
+        messageLog.render(batch, font, 5f, 130f, 9f);
 
         // --- Bottom area: Player stats with textured bars ---
         if (player != null) {
@@ -137,7 +137,7 @@ public class HUD {
 
         // Combat menu (right side of bottom area)
         if (showMenu) {
-            combatMenu.render(batch, font, assets, 170f, BOTTOM_Y);
+            combatMenu.render(batch, font, assets, 8f, 55f);
         }
     }
 
@@ -211,17 +211,17 @@ public class HUD {
 
             // HP background
             shapeRenderer.setColor(ColorPalette.HP_BG);
-            shapeRenderer.rect(5f, 40f, BAR_WIDTH, BAR_HEIGHT);
+            shapeRenderer.rect(52f, 76f, BAR_WIDTH, BAR_HEIGHT);
             // HP fill with lerp
             Color hpColor = hpFlash ? Color.WHITE : ColorPalette.HP_RED;
             shapeRenderer.setColor(hpColor);
-            shapeRenderer.rect(5f, 40f, BAR_WIDTH * displayedHp, BAR_HEIGHT);
+            shapeRenderer.rect(52f, 76f, BAR_WIDTH * displayedHp, BAR_HEIGHT);
 
             // MP bar
             shapeRenderer.setColor(ColorPalette.MP_BG);
-            shapeRenderer.rect(5f, 32f, BAR_WIDTH, BAR_HEIGHT);
+            shapeRenderer.rect(52f, 68f, BAR_WIDTH, BAR_HEIGHT);
             shapeRenderer.setColor(ColorPalette.MP_BLUE);
-            shapeRenderer.rect(5f, 32f, BAR_WIDTH * displayedMp, BAR_HEIGHT);
+            shapeRenderer.rect(52f, 68f, BAR_WIDTH * displayedMp, BAR_HEIGHT);
         }
 
         // Enemy HP bar
@@ -237,28 +237,28 @@ public class HUD {
         TextureRegion hpFrame = assets.getHpBarFrame();
         if (hpFrame != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(hpFrame, 4f, 39f, BAR_WIDTH + 2f, BAR_HEIGHT + 2f);
+            batch.draw(hpFrame, 51f, 75f, BAR_WIDTH + 2f, BAR_HEIGHT + 2f);
         }
 
         // Textured MP bar frame
         TextureRegion mpFrame = assets.getMpBarFrame();
         if (mpFrame != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(mpFrame, 4f, 31f, BAR_WIDTH + 2f, BAR_HEIGHT + 2f);
+            batch.draw(mpFrame, 51f, 67f, BAR_WIDTH + 2f, BAR_HEIGHT + 2f);
         }
 
         // HP and MP text
         Color hpTextColor = hpFlash ? Color.YELLOW : ColorPalette.HP_RED;
         font.setColor(hpTextColor);
-        font.draw(batch, "HP:" + player.getHp() + "/" + player.getMaxHp(), 5f, BOTTOM_Y);
+        font.draw(batch, "HP:" + player.getHp() + "/" + player.getMaxHp(), 52f, 87f);
 
         font.setColor(ColorPalette.MP_BLUE);
-        font.draw(batch, "MP:" + player.getMana() + "/" + player.getMaxMana(), 5f, BOTTOM_Y - 10f);
+        font.draw(batch, "MP:" + player.getMana() + "/" + player.getMaxMana(), 52f, 77f);
 
         // ATK/DEF
         font.setColor(Color.WHITE);
         font.draw(batch, "ATK:" + player.getAttackPower() + " DEF:" + player.getDefense(),
-                  5f, BOTTOM_Y - 20f);
+                  52f, 67f);
 
         // Player mini-sprite in HUD corner
         renderPlayerMiniSprite(batch, assets);
@@ -284,11 +284,11 @@ public class HUD {
         int frameIdx = (int) (playerSpriteTimer / 0.5f) % playerFrames.length;
         TextureRegion frame = playerFrames[frameIdx];
 
-        float scale = 1.5f;
+        float scale = 1.2f;
         float spriteW = frame.getRegionWidth() * scale;
         float spriteH = frame.getRegionHeight() * scale;
         batch.setColor(Color.WHITE);
-        batch.draw(frame, 70f, 30f, spriteW, spriteH);
+        batch.draw(frame, 8f, 66f, spriteW, spriteH);
     }
 
     /**
@@ -298,8 +298,8 @@ public class HUD {
         List<StatusEffect> effects = player.getStatusManager().getActiveEffects();
         if (effects.isEmpty()) return;
 
-        float iconX = 5f;
-        float iconY = BOTTOM_Y - 38f;
+        float iconX = 140f;
+        float iconY = 72f;
         float iconSize = 8f;
 
         for (StatusEffect effect : effects) {
