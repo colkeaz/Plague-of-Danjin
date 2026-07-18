@@ -124,7 +124,7 @@ jobs:
             3. Run `PlagueOfDanjin` (or `PlagueOfDanjin.exe` on Windows)
   
             No Java installation required — the runtime is bundled.
-            files: |
-              artifacts/PlagueOfDanjin-windows/PlagueOfDanjin-windows.zip
-              artifacts/PlagueOfDanjin-macos/PlagueOfDanjin-macos.zip
-              artifacts/PlagueOfDanjin-linux/PlagueOfDanjin-linux.zip
+          files: |
+            artifacts/PlagueOfDanjin-windows/PlagueOfDanjin-windows.zip
+            artifacts/PlagueOfDanjin-macos/PlagueOfDanjin-macos.zip
+            artifacts/PlagueOfDanjin-linux/PlagueOfDanjin-linux.zip
