@@ -161,15 +161,30 @@ src/
 
 ## ‧₊˚ ┊ How to Run
 
-```
-Prerequisites: Java 17+, Gradle 8.x (wrapper included)
+### Quick Start (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/colkeaz/Plague-of-Danjin.git
+cd Plague-of-Danjin
 
-# Build the project
-./gradlew classes
+# Run the setup script (detects/installs prerequisites automatically)
+./setup.sh          # Linux/Mac
+setup.bat           # Windows
 
-# Run the game
+# Play the game
 ./gradlew run
 ```
+
+### Prerequisites
+- **Java 17+** — The setup script will detect and guide installation if needed
+- **Gradle** — Included via wrapper (no manual install required)
+
+### Manual Setup
+If you prefer to set things up manually:
+1. Install Java 17 or higher from [Adoptium](https://adoptium.net/temurin/releases/)
+2. Set `JAVA_HOME` to your JDK installation path
+3. Build: `./gradlew classes`
+4. Run: `./gradlew run`
 
 ---
 

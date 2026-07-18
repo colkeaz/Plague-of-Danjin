@@ -22,3 +22,38 @@ sourceSets {
         }
     }
 }
+
+// --- Pre-check: Verify Java version before compiling ---
+tasks.register('verifyJava') {
+    description = 'Verifies that Java 17 or higher is being used to build the project.'
+    doFirst {
+        def current = JavaVersion.current()
+        if (current < JavaVersion.VERSION_17) {
+            throw new GradleException(
+                "\nERROR: Java 17 or higher is required to build Plague of Danjin.\n" +
+                "Current version: ${current}\n\n" +
+                "To fix this:\n" +
+                "  - Run ./setup.sh (Linux/Mac) or setup.bat (Windows) for guided installation\n" +
+                "  - Or download Java 17 from: https://adoptium.net/temurin/releases/\n"
+            )
+        }
+    }
+}
+
+compileJava.dependsOn verifyJava
+
+// --- Run task ---
+tasks.register('run', JavaExec) {
+    description = 'Runs the Plague of Danjin game.'
+    mainClass = 'view.DesktopLauncher'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+// --- Setup task ---
+tasks.register('setup') {
+    description = 'Prints setup instructions for the project.'
+    doLast {
+        println "Run ./setup.sh (Linux/Mac) or setup.bat (Windows) for automatic setup"
+        println "Or ensure Java 17+ is installed and JAVA_HOME is set"
+    }
+}
