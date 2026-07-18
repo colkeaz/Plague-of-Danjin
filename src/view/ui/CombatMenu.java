@@ -86,9 +86,9 @@ public class CombatMenu {
 
         // Draw frame around the menu area (slightly larger than content)
         float frameX = x - 4f;
-        float frameY = y - 42f;
-        float frameW = 148f;
-        float frameH = 50f;
+        float frameY = y - 50f;
+        float frameW = 310f;
+        float frameH = 55f;
 
         batch.setColor(Color.WHITE);
         batch.draw(menuFrame, frameX, frameY, frameW, frameH);
