@@ -159,9 +159,26 @@ src/
 
 ---
 
-## ‧₊˚ ┊ How to Run
+## ‧₊˚ ┊ Download & Play
 
-### Quick Start (Recommended)
+### For Players (Recommended)
+Download the latest release for your platform — no installation or setup required:
+
+1. Go to [**Releases**](https://github.com/colkeaz/Plague-of-Danjin/releases)
+2. Download the ZIP for your OS:
+   - `PlagueOfDanjin-windows.zip` (Windows)
+   - `PlagueOfDanjin-macos.zip` (macOS)
+   - `PlagueOfDanjin-linux.zip` (Linux)
+3. Extract the archive
+4. Run `PlagueOfDanjin` (or `PlagueOfDanjin.exe` on Windows)
+
+> No Java installation required — the runtime is bundled with the game.
+
+---
+
+### For Developers
+
+#### Quick Start
 ```bash
 # Clone the repository
 git clone https://github.com/colkeaz/Plague-of-Danjin.git
@@ -175,16 +192,32 @@ setup.bat           # Windows
 ./gradlew run
 ```
 
-### Prerequisites
+#### Prerequisites
 - **Java 17+** — The setup script will detect and guide installation if needed
 - **Gradle** — Included via wrapper (no manual install required)
 
-### Manual Setup
-If you prefer to set things up manually:
+#### Manual Setup
 1. Install Java 17 or higher from [Adoptium](https://adoptium.net/temurin/releases/)
 2. Set `JAVA_HOME` to your JDK installation path
 3. Build: `./gradlew classes`
 4. Run: `./gradlew run`
+
+#### Building a Distribution Package
+```bash
+# Build the fat JAR (all dependencies included)
+./gradlew fatJar
+
+# Create a native application package (requires jpackage)
+./gradlew packageGame
+```
+
+#### Creating a Release
+Push a version tag to trigger automatic builds for all platforms:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+This creates a GitHub Release with downloads for Windows, macOS, and Linux automatically.
 
 ---
 

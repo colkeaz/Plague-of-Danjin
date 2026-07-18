@@ -1,11 +1,16 @@
-# Gradle
-.gradle/
+# Build outputs
 build/
+out/
+.gradle/
 
-# IDE
+# IDE files
 .idea/
 *.iml
 .vscode/
 
-# Compiled output
-out/
+# OS files
+.DS_Store
+Thumbs.db
+
+# Distribution
+*.zip
