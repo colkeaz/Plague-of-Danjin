@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Procedural Sound System - Create an 8-bit audio engine using libGDX audio API. Generate all sounds at runtime from waveform data (square, sawtooth, triangle, noise). Includes SFX manager subscribing to game events, music manager with crossfade, and note sequencer for chiptune loops.",
+  "status": "completed",
+  "steps": [
+    "Create src/view/audio/SoundGenerator.java - generates PCM audio data at 22050 Hz mono. Methods: generateSquareWave(float frequency, float duration, float volume), generateSawtoothWave(float frequency, float duration, float volume), generateTriangleWave(float frequency, float duration, float volume), generateNoise(float duration, float volume), generateFrequencySweep(float startFreq, float endFreq, float duration, WaveType type), mixSamples(short[] a, short[] b). Utility to convert short[] PCM data to libGDX Sound objects via Gdx.audio.newSound() using a custom FileHandleAdapter that provides WAV-format byte stream",
+    "Create src/view/audio/NoteSequencer.java - converts note arrays into playable audio. Define Note class (frequency in Hz, duration in seconds, waveType). Method: sequenceToSamples(Note[] notes, int sampleRate) that concatenates wave segments. Method: createLoopableMusic(Note[] notes) that returns a libGDX Sound or uses AudioDevice for streaming. Include standard note frequencies (C4=262, D4=294, E4=330, F4=349, G4=392, A4=440, B4=494, C5=523, etc.)",
+    "Create src/view/audio/SFXManager.java - implements GameEventListener. On construction, generates and caches all 18 SFX as libGDX Sound objects: menu_select (high square 50ms), menu_navigate (triangle 30ms), sword_slash (noise burst + falling pitch 100ms), spell_fire (rising sawtooth + crackle 200ms), spell_holy (high triangle chord 300ms), spell_dark (low descending sawtooth 200ms), spell_poison (modulated square 150ms), hit_damage (short impact noise 50ms), critical_hit (longer impact + rising pitch 150ms), enemy_death (descending sweep 200ms), chest_open (rising arpeggio 300ms), item_equip (two-note chime 150ms), qte_correct (quick ascending blip 50ms), qte_wrong (low buzz 100ms), qte_success (3 ascending notes 500ms), qte_failure (descending minor 400ms), wave_complete (4 ascending notes 600ms), player_death (sad descending 500ms). In onEvent(), play appropriate SFX for: DAMAGE_DEALT, CRITICAL_HIT, SPELL_CAST, ENEMY_DEFEATED, CHEST_FOUND/LEGENDARY/EPIC/RARE/COMMON, ITEM_EQUIPPED, QTE_SUCCESS, QTE_FAILURE, WAVE_COMPLETE, PLAYER_DEFEATED, PLAYER_BASIC_ATTACK",
+    "Create src/view/audio/MusicManager.java - manages background music loops. Generates 5 tracks as looping audio: dungeon_theme (calm ominous 8-bar, square+triangle), combat_theme (mid-tempo energetic), boss_theme (intense faster), event_room_theme (mysterious minor key), victory_theme (triumphant fanfare). Methods: play(String trackName), stop(), setVolume(float vol), update(float delta) for crossfade logic. Crossfade: fade out current over 0.5s, fade in new track. Track selection based on GameState: INTRO/WAVE_TRANSITION=dungeon_theme, AWAITING_PLAYER_ACTION/PROCESSING_ACTION/ENEMY_TURN=combat_theme (or boss_theme if wave 5/10/15/20), EVENT_ROOM=event_room_theme, VICTORY=victory_theme",
+    "Integrate audio into PlagueOfDanjinGame.java: Create SFXManager and MusicManager in create(). Register SFXManager as listener on game events. Provide getters for both managers. Add dispose() calls for both in Game.dispose()",
+    "Integrate audio into GameScreen.java: On construction, get SFXManager from game and register it on the engine's event bus. Update MusicManager each frame. On state changes, call MusicManager to switch tracks appropriately",
+    "Add volume control fields to SFXManager and MusicManager (masterVolume, sfxVolume, musicVolume) with getters/setters that will be persisted by SaveManager in FEAT-003"
+  ],
+  "acceptance_criteria": [
+    "SoundGenerator produces valid PCM data for square, sawtooth, triangle, and noise waveforms at 22050 Hz",
+    "NoteSequencer can convert note frequency/duration arrays into concatenated PCM audio",
+    "SFXManager generates and caches all 18 sound effects on construction",
+    "SFXManager responds to game events by playing the correct SFX",
+    "MusicManager generates 5 background tracks and crossfades between them",
+    "Audio managers are integrated into PlagueOfDanjinGame and GameScreen",
+    "No external audio files are used - all audio is procedurally generated",
+    "Project compiles with ./gradlew classes"
+  ],
+  "verification": [
+    "Run ./gradlew classes and confirm BUILD SUCCESSFUL"
+  ],
+  "blocked_reason": null,
+  "findings": "All 4 audio files created and integrated successfully. Build compiles cleanly. SoundGenerator uses temp WAV file approach for libGDX Sound creation (Gdx.files.local + delete after load). MusicManager uses Sound.loop() for music playback since libGDX Music requires actual files. The crossfade uses Sound.setVolume() on play IDs. GameScreen registers/unregisters sfxManager on engine in constructor/hide/dispose."
+}

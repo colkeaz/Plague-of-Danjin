@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Create the ClassSelectionScreen UI, generate class-specific player sprites, integrate class selection into the game flow (IntroScreen -> ClassSelectionScreen -> GameScreen), update MainMenuScreen to show class on Continue, and update MetaProgression to track per-class stats.",
+  "status": "completed",
+  "steps": [
+    "Create src/view/screens/ClassSelectionScreen.java - A new Screen implementation following the pattern of SkillChoiceScreen and IntroScreen. Shows 3 class options with pixel art sprites, class name, description, stat preview (HP/ATK/DEF/MP), starting skills list. Navigate with 1/2/3 keys or arrow keys + Enter, or mouse click. Confirm selection before starting. Color identity: Knight=Steel blue/silver, Mage=Purple/gold, Rogue=Dark green/crimson. After selection, create CombatEngine, call startGame(playerName, selectedClass), apply unlocks, and transition to GameScreen.",
+    "Add to ColorPalette.java - Add class-specific colors: KNIGHT_BLUE (steel blue ~#4A7FB5), KNIGHT_SILVER (~#C8D0D8), MAGE_PURPLE (~#7B2FBE), MAGE_GOLD (~#FFD700 - can reuse HOLY_GOLD), ROGUE_GREEN (~#2D5A27), ROGUE_CRIMSON (~#8B1A1A).",
+    "Modify src/view/sprites/SpriteGenerator.java - Add methods generateKnightSprite(), generateMageSprite(), generateRogueSprite() that create class-specific player sprites (24x32 like existing player). Knight: heavy plate armor with shield and longsword, steel blue tint. Mage: flowing robes with staff, purple/gold colors. Rogue: hooded cloak with twin daggers, dark green/crimson. Register them as 'player_knight', 'player_mage', 'player_rogue' in entitySprites. Call these from generateAll().",
+    "Modify src/view/screens/IntroScreen.java - After name entry is confirmed and story is complete (READY_TO_START state), instead of calling startGame() which creates CombatEngine directly, transition to new ClassSelectionScreen passing the player name. Change startGame() to accept a transition to ClassSelectionScreen(game, playerName.toString()).",
+    "Modify src/view/screens/MainMenuScreen.java - In renderMainMenu(), when showing Continue option and a save exists, load SaveData to get characterClass field and display it next to 'Continue' (e.g., 'Continue (Knight - Wave 5)'). Show the class name in the menu.",
+    "Modify src/controller/MetaProgression.java - Add per-class tracking fields: knightVictories, mageVictories, rogueVictories (ints). Update recordRunEnd to accept characterClass parameter. Update toJson/fromJson to include new fields. Add getters for class-specific stats.",
+    "Modify src/view/screens/GameScreen.java - When determining which player sprite to use, check the player's CharacterClass and use the corresponding sprite key ('player_knight', 'player_mage', 'player_rogue') instead of always 'player'. If characterClass is null (legacy), fall back to 'player'.",
+    "Modify src/view/screens/CombatEngineRestorer.java - When loading a saved game with a class, ensure the correct sprite key is used by passing class to engine.",
+    "Ensure the ClassSelectionScreen shows stat previews formatted nicely: HP, ATK, DEF, MP as bar-like indicators or numbers, plus list of 4 starting skills with element colors, plus class passive description."
+  ],
+  "acceptance_criteria": [
+    "Running ./gradlew classes compiles with no errors",
+    "ClassSelectionScreen.java exists and implements Screen with all 3 class options",
+    "SpriteGenerator creates distinct sprites for knight, mage, and rogue",
+    "IntroScreen transitions to ClassSelectionScreen after name entry instead of directly to GameScreen",
+    "MainMenuScreen shows character class in Continue option when save exists",
+    "ColorPalette has class-specific color constants",
+    "MetaProgression tracks per-class victories"
+  ],
+  "verification": ["cd /projects/sandbox/Plague-of-Danjin && ./gradlew classes"],
+  "blocked_reason": null,
+  "findings": "All steps completed successfully. ClassSelectionScreen follows SkillChoiceScreen pattern with 3 panels. HUD sprite key mechanism uses a setter called from GameScreen constructor. MetaProgression recordRunEnd overloaded to accept CharacterClass for per-class tracking. IntroScreen simplified to just transition to ClassSelectionScreen. The class selection and game start logic moved entirely into ClassSelectionScreen.selectClass()."
+}

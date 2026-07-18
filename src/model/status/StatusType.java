@@ -20,5 +20,11 @@ public enum StatusType {
     CURSE,
 
     /** Target skips their next turn entirely. */
-    STUN
+    STUN,
+
+    /** Temporary DEF buff. Potency = DEF amount added. Reverts on expiry. */
+    DEF_BUFF,
+
+    /** Temporary ATK buff. Potency = ATK amount added. Reverts on expiry. */
+    ATK_BUFF
 }

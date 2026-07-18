@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "QTE Boss Events System - Create the Quick-Time Event system that triggers during boss fights at HP thresholds. This includes the controller logic (QTEManager, QTEPattern), the view screen (QTEScreen), adding QTE_EVENT to GameState, new event types for QTE_SUCCESS/QTE_FAILURE, and integrating with CombatEngine to check boss HP thresholds after damage.",
+  "status": "completed",
+  "steps": [
+    "Add QTE_EVENT to the GameState enum in src/controller/GameState.java",
+    "Add QTE_SUCCESS, QTE_FAILURE, and QTE_TRIGGERED event types to src/model/events/GameEventType.java",
+    "Create src/controller/QTEPattern.java - defines a QTE sequence with: type (MASH or SEQUENCE), key sequence (int[] of Input.Keys), required count for MASH type, time limit in seconds, success effect description, failure effect description, boss name, and threshold identifier",
+    "Create src/controller/QTEManager.java - manages QTE state and timing. Tracks: current pattern, current key index, mash count, elapsed time, completed status, success/failure result. Methods: startQTE(QTEPattern), update(float delta), processKeyPress(int keycode), isComplete(), isSuccess(), getProgress(), getTimeRemaining(), getRequiredKeys(), getCurrentKeyIndex(), getMashCount(), penalizeWrongKey() which accelerates timer",
+    "Create src/view/screens/QTEScreen.java - renders QTE overlay. Shows: large key icons center screen, timer bar shrinking left to right, green flash on correct key, red flash + timer acceleration on wrong key, golden burst on success, screen shake + dark flash on failure. Implements Screen and InputProcessor. On completion calls back to CombatEngine/GameScreen to apply effects and return to combat",
+    "Integrate QTE triggers into CombatEngine.java: Add method checkQTEThreshold(Enemy enemy) called after damage is dealt. Track which thresholds have already fired (Set<String> of bossName+threshold). Define boss thresholds: GoblinChieftain at 50% (60 HP), GoblinKing at 50% (75 HP) and 25% (37 HP), BoneColossus at 50% (100 HP), Lich at 75% (225 HP), 50% (150 HP), 25% (75 HP). When threshold crossed, store pending QTEPattern and transition to QTE_EVENT state. Add method resolveQTE(boolean success) that applies effects to boss/player and returns to AWAITING_PLAYER_ACTION or ENEMY_TURN",
+    "Define QTE patterns per boss threshold: GoblinChieftain - MASH type, 8 presses, 3s, success=stun 2 turns, fail=+10 ATK. GoblinKing @50% - SEQUENCE [LEFT,UP,RIGHT,DOWN], 2.5s, success=3x damage, fail=heal 50. GoblinKing @25% - SEQUENCE [UP,RIGHT,DOWN,LEFT,UP], 2s, success=-10 ATK permanent, fail=+20 ATK. BoneColossus - SEQUENCE [A,D,A,D,A,D], 3s, success=-15 DEF, fail=reflect 30 dmg. Lich @75% - SEQUENCE [UP,UP,RIGHT,DOWN,LEFT], 2s, success=kill minions, fail=summon 3. Lich @50% - MASH SPACE 12 times, 2.5s, success=-50% ATK permanent, fail=80 dmg. Lich @25% - SEQUENCE [LEFT,DOWN,RIGHT,UP,UP,RIGHT], 2s, success=prevent healing, fail=heal to 50%",
+    "Integrate QTE state handling in GameScreen.java: In handleStateTransitions(), when state is QTE_EVENT, transition to QTEScreen. Register QTEScreen to fire QTE_SUCCESS/QTE_FAILURE events through the engine for MessageLog and VisualEffectsManager"
+  ],
+  "acceptance_criteria": [
+    "GameState.QTE_EVENT exists in the enum",
+    "QTEManager tracks timing, key progress, mash counts, and reports completion/success",
+    "QTEPattern defines all 7 boss QTE configurations as specified in the requirements table",
+    "QTEScreen renders key prompts, timer bar, and provides visual feedback for correct/wrong inputs",
+    "CombatEngine checks boss HP thresholds after damage and transitions to QTE_EVENT state",
+    "QTE effects are applied correctly: stun, ATK/DEF modifications, healing, damage, minion spawning/killing",
+    "Already-triggered thresholds are not re-triggered",
+    "Project compiles with ./gradlew classes"
+  ],
+  "verification": [
+    "Run ./gradlew classes and confirm BUILD SUCCESSFUL"
+  ],
+  "blocked_reason": null,
+  "findings": "All 7 QTE patterns implemented as static factory methods on QTEPattern. Added clearMinions()/addMinions() to Lich since it only had a getter for minionsActive. Used lichHealingPrevented boolean flag on CombatEngine to block Lich healing via REGEN status effects. The QTEScreen transitions back to a new GameScreen instance (same pattern as SkillChoiceScreen). Build successful with ./gradlew classes."
+}

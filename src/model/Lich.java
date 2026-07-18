@@ -37,6 +37,20 @@ public class Lich extends Enemy {
         return minionsActive;
     }
 
+    /**
+     * Clears all active minions (used by QTE success effect).
+     */
+    public void clearMinions() {
+        this.minionsActive = 0;
+    }
+
+    /**
+     * Adds the specified number of minions (used by QTE failure effect).
+     */
+    public void addMinions(int count) {
+        this.minionsActive += count;
+    }
+
     @Override
     public void attack(GameCharacter target) {
         turnCounter++;

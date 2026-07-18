@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create CharacterClass enum, ClassSkillTree, and ClassAbility model classes. Modify Player to accept a CharacterClass and apply class-specific starting stats, skills, passives, and equipment. Update SkillTree to support class-based skill sets. Add new SkillEffect types needed for class abilities. Add class-specific starting items to ItemRegistry. Update SaveData to persist selected class. Update CombatEngine.startGame() to accept class info. Update CombatEngineRestorer to handle class on save restoration. Modify GameCharacter to support crit chance/damage modifier fields.",
+  "status": "completed",
+  "steps": [
+    "Create src/model/CharacterClass.java - enum with KNIGHT, MAGE, ROGUE. Each value provides: getStartingHp(), getStartingAtk(), getStartingDef(), getStartingMp(), getStartingMaxMp(), getDescription(), getDisplayName(). Knight: 130/35/25/60/60, Mage: 70/15/8/100/120, Rogue: 85/28/10/80/80.",
+    "Create src/model/ClassAbility.java - enum with THICK_SKIN (Knight: 10% less damage after DEF calc), ARCANE_AFFINITY (Mage: all spell costs -3 MP, mana regen 15/turn instead of 10), KEEN_EDGE (Rogue: base crit 25% instead of 15%, crit damage 2.5x instead of 2x). Provide getDescription() and getClassName() methods.",
+    "Add SkillEffect enum values needed for new class skills: POISON_DAMAGE (deals damage + applies POISON), DODGE_NEXT (dodge next attack + guarantee next crit), CONDITIONAL_DAMAGE (4x if POISONED else 2x for Backstab), SELF_HEAL_CURE (heal + cure POISON for Rally), BUFF_DEF_TEMP (temporary DEF buff for Fortress), SHIELD_SINGLE (single-hit shield for Arcane Shield).",
+    "Modify src/model/skills/SkillTree.java - Add a constructor SkillTree(CharacterClass characterClass) that sets class-specific default skills instead of generic Fireball/Holy Light/Iron Will. Keep the no-arg constructor for backward compatibility. Add method getChoicesForMilestone(int wave, CharacterClass characterClass) that returns class-specific milestone choices. Define all class skills as static Skill instances (Knight: Shield Slam/Rally/Fortress + 9 milestone skills, Mage: Fireball(15MP)/Ice Shard/Arcane Shield + 9 milestone skills, Rogue: Poison Strike/Shadow Step/Backstab + 9 milestone skills).",
+    "Create src/model/ClassSkillTree.java - A helper class that holds all the static Skill definitions for each class. Provides getDefaultSkills(CharacterClass), getMilestoneChoices(CharacterClass, int wave) methods. This keeps SkillTree.java from becoming too large.",
+    "Modify src/model/GameCharacter.java - Add private fields: float baseCritChance = 0.15f, float critDamageMultiplier = 2.0f. Add getters/setters for both. These are used by Player.performBasicAttack() instead of hardcoded 15% and 2x.",
+    "Modify src/model/Player.java - Add a constructor Player(String name, CharacterClass characterClass). Store the CharacterClass field. Apply class starting stats (override super constructor values). Use class-based SkillTree constructor. Apply class passive (store ClassAbility). In performBasicAttack(): use baseCritChance from GameCharacter instead of hardcoded 15, use critDamageMultiplier instead of hardcoded 2. In executeSkillByIndex(): if ARCANE_AFFINITY passive is active, reduce effective cost by additional 3. Add getCharacterClass() getter. Add applyClassPassive() that configures crit/damage based on class. Equip class starting items via Inventory. Keep the single-arg Player(String name) constructor for backward compatibility (defaults to null class which uses legacy behavior).",
+    "Modify CombatEngine.processPlayerAction() - In the mana regen section, check if player has ARCANE_AFFINITY passive (Mage class), and if so regen 15 instead of 10. Also in takeDamage path, apply THICK_SKIN (Knight passive): after normal damage calculation, reduce final damage by 10%.",
+    "Modify src/model/Player.java applySkillEffect() - Add cases for new SkillEffect types: POISON_DAMAGE (deal damage + apply POISON 3 turns), DODGE_NEXT (apply a new status or flag for dodge), CONDITIONAL_DAMAGE (check if target has POISON status, use 4x or 2x multiplier), SELF_HEAL_CURE (heal 20 HP + remove POISON from self), BUFF_DEF_TEMP (apply DEF buff via StatusEffect), SHIELD_SINGLE (apply SHIELD status 1 charge).",
+    "Modify src/model/SaveData.java - Add field 'characterClass' (String). Add getter/setter. Include in toJson() and fromJson() methods.",
+    "Modify src/controller/SaveManager.java createSaveData() - Include player.getCharacterClass().name() in save data (handle null for legacy saves).",
+    "Modify src/view/screens/CombatEngineRestorer.java - When restoring from save, read characterClass from SaveData and pass to Player/CombatEngine. Add overload or modify startGame to accept CharacterClass. Also update findSkillById to search class-specific skills from ClassSkillTree.",
+    "Modify src/controller/CombatEngine.java - Add overload startGame(String playerName, CharacterClass characterClass) that creates Player with class. The existing startGame(String) remains for backward compat (uses null/legacy). Store CharacterClass reference for save data access. Apply THICK_SKIN passive in damage handling if Knight.",
+    "Add class starting items: In Player constructor or CombatEngine.startGame(), equip class-specific starting gear. Knight: 'Knight's Longsword' (+10 ATK, PHYSICAL), 'Plate Mail' (+12 DEF, +20 MAX_HP). Mage: 'Apprentice Staff' (+3 ATK, FIRE, +10 MAX_MP), 'Enchanted Robe' (+5 DEF, +20 MAX_MP). Rogue: 'Poison Dagger' (+8 ATK, POISON, +5% CRIT), 'Shadow Cloak' (+5 DEF, +10% CRIT). These items should be created inline in the Player class or registered in ItemRegistry."
+  ],
+  "acceptance_criteria": [
+    "Running ./gradlew classes compiles with no errors",
+    "CharacterClass.java enum exists with KNIGHT, MAGE, ROGUE and stat getters",
+    "ClassSkillTree.java provides all 3x4 default skills + 3x9 milestone skills as defined in the requirements",
+    "Player can be constructed with a CharacterClass and has correct starting stats",
+    "SaveData includes characterClass field in both serialization and deserialization",
+    "CombatEngine.startGame has CharacterClass overload",
+    "Class passives (THICK_SKIN, ARCANE_AFFINITY, KEEN_EDGE) are implemented",
+    "New SkillEffect types are added and handled in Player.applySkillEffect()"
+  ],
+  "verification": ["cd /projects/sandbox/Plague-of-Danjin && ./gradlew classes"],
+  "blocked_reason": null,
+  "findings": "All new SkillEffect types added and handled in Player.applySkillEffect(). THICK_SKIN passive implemented via Player.takeDamage() override rather than CombatEngine for cleaner separation. ARCANE_AFFINITY mana regen handled in CombatEngine.processPlayerAction(). Class starting items created inline in Player.equipClassStartingItems(). SkillTree backward compatibility maintained via no-arg constructor. Dodge-next-attack mechanism uses a flag on Player that is checked in the overridden takeDamage method. Immortal Stand reuses autoReviveActive flag with a class-specific check."
+}

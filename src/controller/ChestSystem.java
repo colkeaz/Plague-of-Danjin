@@ -12,14 +12,30 @@ import model.items.ItemRegistry;
 
 public class ChestSystem extends GameEventDispatcher {
     private final Random rand = new Random();
+    private int spawnChance = 50;
 
     /**
-     * Attempts to find a chest with a 50% chance.
+     * Sets the chest spawn chance percentage (default 50%).
+     * Used by the lucky_coin unlockable to set it to 65%.
+     */
+    public void setSpawnChance(int chance) {
+        this.spawnChance = chance;
+    }
+
+    /**
+     * Returns the current spawn chance percentage.
+     */
+    public int getSpawnChance() {
+        return spawnChance;
+    }
+
+    /**
+     * Attempts to find a chest with the configured spawn chance.
      * If a chest is found, applies the loot effect to the player and fires the appropriate event.
      * Returns true if a chest was found, false otherwise.
      */
     public boolean tryFindChest(Player player) {
-        if (rand.nextInt(100) < 50) {
+        if (rand.nextInt(100) < spawnChance) {
             applyChestReward(player);
             return true;
         }

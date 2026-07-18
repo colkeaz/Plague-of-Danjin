@@ -1,0 +1,21 @@
+{
+  "task_id": "task-world-map-story-progression",
+  "task_description": "Transform the game from a linear 20-wave gauntlet into a non-linear dungeon hub with branching sub-areas. Implement world map with 4 areas (Goblin Warrens, Bone Cathedral, Plague Gardens, Lich's Throne) around a central hub (Danjin's Core). Each area has encounters, events, bosses, and key rewards. Preserve existing wave-based combat as Classic Mode. Add story progression, multiple endings, new enemies, and full save/load support.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "skipped",
+    "docker_build": "skipped",
+    "summary": "Clean build (./gradlew clean classes) passes. No test framework configured for this project. All 13 new files created, 8+ existing files modified. Story mode and classic mode both wired correctly."
+  },
+  "review_v2_fixes": {
+    "status": "completed",
+    "issues_addressed": [
+      "Issue 1: Plague Gardens absorb choice now applies permanent poison (StatusEffect POISON, 999 turns, potency 5, source 'Corrupted Tree') matching the UI text promise of '+20 ATK, take poison 5/turn'",
+      "Issue 2: VictoryScreen epilogue no longer double-counts Lich's Offer -- removed the eventChoices increment for lichChoice==0 since danjinHeartAbsorbed flag already adds +2 corruption. Refusal (lichChoice==1) still counts as pureChoices."
+    ]
+  }
+}

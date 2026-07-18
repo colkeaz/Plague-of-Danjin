@@ -14,12 +14,16 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import controller.CombatEngine;
 import controller.GameState;
+import controller.MetaProgression;
+import controller.SaveManager;
 import model.PlayerAction;
 import model.events.GameEvent;
 import model.events.GameEventListener;
 import model.events.GameEventType;
 import view.PlagueOfDanjinGame;
 import view.assets.AssetLoader;
+import view.audio.MusicManager;
+import view.audio.SFXManager;
 import view.effects.VisualEffectsManager;
 import view.rendering.AnimationManager;
 import view.rendering.PixelRenderer;
@@ -50,6 +54,8 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
     private final AnimationManager animationManager;
     private final ScreenShake screenShake;
     private final VisualEffectsManager visualEffects;
+    private final SFXManager sfxManager;
+    private final MusicManager musicManager;
 
     // Enemy display position constants (matching HUD layout)
     private static final float ENEMY_CENTER_X = 160f;
@@ -91,6 +97,8 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         this.animationManager = new AnimationManager();
         this.screenShake = new ScreenShake();
         this.visualEffects = new VisualEffectsManager();
+        this.sfxManager = game.getSfxManager();
+        this.musicManager = game.getMusicManager();
 
         this.waitingForAnimation = false;
         this.pendingState = null;
@@ -105,11 +113,35 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         // Set up UI
         combatMenu.setPlayer(engine.getPlayer());
 
+        // Set class-specific player sprite key for HUD
+        model.CharacterClass charClass = engine.getCharacterClass();
+        if (charClass != null) {
+            hud.setPlayerSpriteKey("player_" + charClass.name().toLowerCase());
+        }
+
         // Register message log as event listener on the engine
         engine.addListener(messageLog);
 
         // Register this screen as a listener for animation triggers
         engine.addListener(this);
+
+        // Register SFX manager for audio feedback on game events
+        engine.addListener(sfxManager);
+
+        // Ensure SaveManager is set on engine for auto-save at wave transitions
+        engine.setSaveManager(game.getSaveManager());
+
+        // Set MetaProgression on engine for periodic persistence at wave transitions
+        MetaProgression meta = game.getMetaProgression();
+        engine.setMetaProgression(meta);
+
+        // Register MetaProgression as listener if not already registered
+        if (meta != null) {
+            engine.addListener(meta);
+        }
+
+        // Start combat music
+        musicManager.play("combat_theme");
     }
 
     @Override
@@ -223,10 +255,14 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         animationManager.update(delta);
         hud.update(delta);
         visualEffects.update(delta);
+        musicManager.update(delta);
         torchlightTimer += delta;
 
         // Handle state machine transitions gated by animations
         handleStateTransitions();
+
+        // Update music based on current wave (boss theme for waves 5/10/15/20)
+        updateMusicTrack();
 
         // Apply screen shake
         renderer.applyCameraOffset(screenShake.getOffsetX(), screenShake.getOffsetY());
@@ -299,6 +335,34 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         }
     }
 
+    /**
+     * Switches music track based on current game state and wave number.
+     * Boss theme plays on waves 5, 10, 15, 20; combat theme otherwise.
+     */
+    private void updateMusicTrack() {
+        GameState state = engine.getCurrentState();
+        switch (state) {
+            case AWAITING_PLAYER_ACTION:
+            case PROCESSING_ACTION:
+            case ENEMY_TURN:
+                int wave = engine.getCurrentWave();
+                if (wave % 5 == 0) {
+                    musicManager.play("boss_theme");
+                } else {
+                    musicManager.play("combat_theme");
+                }
+                break;
+            case WAVE_TRANSITION:
+                musicManager.play("dungeon_theme");
+                break;
+            case GAME_OVER:
+                musicManager.stop();
+                break;
+            default:
+                break;
+        }
+    }
+
     private void handleStateTransitions() {
         GameState currentState = engine.getCurrentState();
 
@@ -338,6 +402,16 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
                 }
                 break;
 
+            case AREA_NAVIGATION:
+                // Story mode: combat encounter complete, return to AreaScreen
+                game.setScreen(new AreaScreen(game, engine));
+                break;
+
+            case WORLD_MAP:
+                // Story mode: area complete, return to WorldMapScreen
+                game.setScreen(new WorldMapScreen(game, engine));
+                break;
+
             case SKILL_CHOICE:
                 game.setScreen(new SkillChoiceScreen(game, engine));
                 break;
@@ -346,11 +420,17 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
                 game.setScreen(new EventRoomScreen(game, engine));
                 break;
 
+            case QTE_EVENT:
+                game.setScreen(new QTEScreen(game, engine));
+                break;
+
             case VICTORY:
+                handleRunEnd(true);
                 game.setScreen(new VictoryScreen(game, engine));
                 break;
 
             case GAME_OVER:
+                handleRunEnd(false);
                 showingGameOver = true;
                 break;
 
@@ -360,6 +440,37 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
             default:
                 break;
+        }
+    }
+
+    /**
+     * Handles end-of-run operations: updates MetaProgression, saves it, and deletes run save.
+     */
+    private boolean runEndHandled = false;
+
+    private void handleRunEnd(boolean victory) {
+        if (runEndHandled) return;
+        runEndHandled = true;
+
+        MetaProgression meta = game.getMetaProgression();
+        SaveManager saveManager = game.getSaveManager();
+
+        if (meta != null) {
+            meta.recordRunEnd(victory, engine.getCurrentWave(), engine.getTurnCounter());
+
+            // Check unlock conditions
+            boolean danjinAbsorbed = engine.getRunModifiers().isDanjinHeartAbsorbed();
+            boolean danjinShattered = engine.getRunModifiers().isDanjinHeartShattered();
+            // Victory implies Lich was defeated (wave 20 boss)
+            boolean defeatedLich = victory;
+            meta.checkAndAwardUnlocks(danjinAbsorbed, danjinShattered, defeatedLich);
+        }
+
+        if (saveManager != null) {
+            if (meta != null) {
+                saveManager.saveMetaProgression(meta);
+            }
+            saveManager.deleteSave();
         }
     }
 
@@ -416,7 +527,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         // Game over - restart
         if (showingGameOver && keycode == Input.Keys.ENTER) {
-            game.setScreen(new IntroScreen(game));
+            game.setScreen(new MainMenuScreen(game));
             return true;
         }
 
@@ -532,7 +643,7 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
 
         // Game over - restart
         if (showingGameOver) {
-            game.setScreen(new IntroScreen(game));
+            game.setScreen(new MainMenuScreen(game));
             return true;
         }
 
@@ -581,6 +692,11 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         // libGDX's Game.setScreen() calls hide() on the old screen, not dispose().
         engine.removeListener(messageLog);
         engine.removeListener(this);
+        engine.removeListener(sfxManager);
+        MetaProgression meta = game.getMetaProgression();
+        if (meta != null) {
+            engine.removeListener(meta);
+        }
     }
 
     @Override
@@ -588,5 +704,10 @@ public class GameScreen implements Screen, InputProcessor, GameEventListener {
         // Also deregister here for safety if dispose() is called directly
         engine.removeListener(messageLog);
         engine.removeListener(this);
+        engine.removeListener(sfxManager);
+        MetaProgression meta = game.getMetaProgression();
+        if (meta != null) {
+            engine.removeListener(meta);
+        }
     }
 }

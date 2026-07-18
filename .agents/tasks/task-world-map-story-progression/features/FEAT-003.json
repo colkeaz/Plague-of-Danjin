@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Create the view layer: WorldMapScreen, AreaScreen, RestShrineScreen. Update MainMenuScreen to offer Story Mode vs Classic Mode. Update ClassSelectionScreen to route to WorldMapScreen in story mode. Update GameScreen to return to AreaScreen/WorldMapScreen after combat in story mode. Add world-map-related sprites to SpriteGenerator and area-specific music to MusicManager. Wire PlagueOfDanjinGame for new screen routing. Implement VictoryScreen epilogue with multiple endings based on choices.",
+  "status": "completed",
+  "steps": [
+    "Create src/view/screens/WorldMapScreen.java - Implements Screen + InputAdapter. Shows the dungeon hub layout matching the spec's ASCII diagram (320x240). Area nodes colored by status (green=completed, yellow=in-progress, red=locked, white=available). Shows key count, class name, connection lines between nodes. Input: number keys 1-4 to select area, R for rest shrine. Transitions to AreaScreen on area select. Uses Pixmap-generated background and particles.",
+    "Create src/view/screens/AreaScreen.java - Implements Screen + InputAdapter. Shows current area name, description, encounter list (nodes colored by status), area-specific flavor text. Input: Enter to start next encounter, Escape to retreat to hub. Has typewriter intro text on first entry. Transitions to GameScreen for combat encounters, EventRoomScreen for event encounters.",
+    "Create src/view/screens/RestShrineScreen.java - Implements Screen + InputAdapter. Shows rest shrine with options: (1) Rest - full heal once per run, (2) Lore stones - show story exposition text about Morthga's fall (3 lore entries), (3) Return to map. Tracks if rest was already used.",
+    "Update src/view/screens/MainMenuScreen.java - Change menu options from ['New Game', 'Continue', 'Stats', 'Unlocks'] to ['Story Mode', 'Classic Mode', 'Continue', 'Stats', 'Unlocks']. Story Mode goes to IntroScreen which then routes to ClassSelection then WorldMapScreen. Classic Mode goes through existing flow (IntroScreen -> ClassSelection -> GameScreen with wave combat). Update the selectOption method and MENU_OPTIONS array.",
+    "Update src/view/screens/ClassSelectionScreen.java - Add a gameMode field (passed from IntroScreen or constructor). In selectClass(): if story mode, call engine.startStoryMode(playerName, selectedClass) and setScreen(new WorldMapScreen(game, engine)); if classic mode, use existing engine.startGame(playerName, selectedClass) -> GameScreen flow.",
+    "Update src/view/screens/IntroScreen.java - Accept and pass through a gameMode parameter so ClassSelectionScreen knows which mode was chosen.",
+    "Update src/view/screens/GameScreen.java - After combat victory in story mode: (1) When state is WAVE_TRANSITION in story mode, check if area is complete. If area complete (boss defeated), show key earned message then transition to WorldMapScreen. If encounters remain, transition to AreaScreen. (2) Modify handleStateTransitions() to detect story mode and route to WorldMapScreen/AreaScreen instead of auto-advancing waves.",
+    "Update src/view/screens/VictoryScreen.java - Add epilogue text that references: which areas explored first, choices made in area events, whether Danjin's Heart was absorbed/resisted/shattered, player class and name. Implement 3 ending variations: 'Pure Hero' (resisted corruption, helped NPCs), 'Corrupted Victor' (absorbed power), 'Pragmatic Survivor' (mixed choices).",
+    "Update src/view/sprites/SpriteGenerator.java - Add methods: generateWorldMapNodes() (5 area node sprites in different colors, 16x16 each), generatePlagueElementalSprite() (16x16 green/purple swirling entity), generateThornmotherSprite() (24x24 vine-covered boss). Register in generateAll(). Also add generateAreaBackgrounds() for area-themed background tile variants.",
+    "Update src/view/audio/MusicManager.java - Add 2 new tracks: 'world_map_theme' (ambient, mysterious, slower than dungeon_theme) and 'plague_gardens_theme' (toxic, dissonant). Register in generateAllTracks().",
+    "Update src/view/PlagueOfDanjinGame.java if needed - ensure WorldMapScreen, AreaScreen, RestShrineScreen are properly accessible (they take PlagueOfDanjinGame + CombatEngine like other screens, so no changes needed unless imports require it).",
+    "Update src/view/screens/CombatEngineRestorer.java - When loading a story mode save, restore WorldManager state and route to WorldMapScreen/AreaScreen as appropriate instead of GameScreen.",
+    "Run ./gradlew classes to verify everything compiles"
+  ],
+  "acceptance_criteria": [
+    "./gradlew classes compiles successfully",
+    "MainMenuScreen shows Story Mode and Classic Mode options",
+    "WorldMapScreen displays the 5 area nodes with correct connections and status coloring",
+    "AreaScreen shows encounter list with progress indication",
+    "RestShrineScreen offers heal (once per run) and lore viewing",
+    "Story Mode flow: Menu -> Intro -> ClassSelection -> WorldMapScreen -> AreaScreen -> GameScreen -> AreaScreen/WorldMapScreen",
+    "Classic Mode flow remains unchanged: Menu -> Intro -> ClassSelection -> GameScreen (20 waves)",
+    "SpriteGenerator generates PlagueElemental and Thornmother sprites",
+    "MusicManager has world_map_theme and plague_gardens_theme tracks",
+    "VictoryScreen shows epilogue with ending variation based on choices",
+    "Continue from save correctly routes to WorldMapScreen for story mode saves"
+  ],
+  "verification": [
+    "Run ./gradlew classes and confirm BUILD SUCCESSFUL"
+  ],
+  "blocked_reason": null,
+  "findings": "Build successful. All 4 new screen files created (WorldMapScreen, AreaScreen, RestShrineScreen, AreaEventScreen). MainMenuScreen now has 5 options with Story Mode at index 0 and Classic Mode at index 1. IntroScreen accepts boolean storyMode. ClassSelectionScreen routes to WorldMapScreen for story mode. GameScreen handles AREA_NAVIGATION (routes to AreaScreen) and WORLD_MAP (routes to WorldMapScreen) state transitions. VictoryScreen has 3 ending variations determined by event choices and danjin heart state. SpriteGenerator generates PlagueElemental (16x16), Thornmother (24x24), and 5 world map node sprites. MusicManager has world_map_theme and plague_gardens_theme. Continue in MainMenuScreen correctly routes to WorldMapScreen for story saves. Player.getHp() is the correct method (not getCurrentHp). All files compile cleanly with ./gradlew classes."
+}

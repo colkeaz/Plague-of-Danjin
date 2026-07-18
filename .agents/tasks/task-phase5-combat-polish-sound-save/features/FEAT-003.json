@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Save and Meta-Progression System - Create save/load with per-run persistence (auto-save between waves) and cross-run meta-progression (stats + unlockable starting bonuses). Includes MainMenuScreen with New Game, Continue, Stats, Unlocks options.",
+  "status": "completed",
+  "steps": [
+    "Create src/model/SaveData.java - data class representing serializable run state. Fields: int waveNumber, String playerName, int hp, int maxHp, int atk, int def, int mp, int maxMp, int mana, List<String> equippedItemNames (by slot), List<String> unlockedSkillIds, List<String> activeStatusEffects (type:duration:potency format), List<String> appliedRunModifiers, boolean danjinHeartAbsorbed, boolean danjinHeartShattered, int permanentDamagePerTurn. Methods: toJson() returning String, static fromJson(String json) parsing back. Use manual JSON construction with StringBuilder (no Gson/Jackson). Handle null safety.",
+    "Create src/controller/MetaProgression.java - tracks cross-run statistics and unlockables. Fields: int totalRuns, int totalVictories, int highestWave, int totalEnemiesKilled, int totalDamageDealt, int totalDamageTaken, int fastestVictoryTurns, List<String> earnedUnlockIds. Methods: recordRunStart(), recordRunEnd(boolean victory, int wave, int turns), recordEnemyKill(), recordDamageDealt(int), recordDamageTaken(int), checkUnlockConditions(). Define 6 unlockables: veteran_blade (first victory), swift_boots (victory < 60 turns), iron_constitution (100 enemies killed), blood_warrior (beat Lich without Holy Light), lucky_coin (5 completed runs), plague_survivor (win with Danjin's Curse active never shattered). Serialize/deserialize to ~/.plague_of_danjin/meta.json using manual JSON. Implement GameEventListener to track stats in real-time.",
+    "Create src/controller/SaveManager.java - serializes/deserializes game state. Methods: saveRun(CombatEngine engine) writes to ~/.plague_of_danjin/save.json, loadRun() returns SaveData or null, deleteSave(), hasSave() returns boolean, saveMetaProgression(MetaProgression), loadMetaProgression() returns MetaProgression. Uses Gdx.files.absolute() for file I/O. Creates ~/.plague_of_danjin/ directory if needed.",
+    "Integrate SaveManager with CombatEngine: Add auto-save call at wave transitions (in advanceWave() after wave is confirmed). Add method to apply loaded SaveData to restore game state. Add MetaProgression listener registration on engine to track events in real-time (ENEMY_DEFEATED increments kills, DAMAGE_DEALT increments damage dealt/taken). On GAME_VICTORY or PLAYER_DEFEATED, update MetaProgression and delete save.",
+    "Define unlockable starting bonuses and their application: veteran_blade = start with Item('Veterans Blade', ATK+8, WEAPON, RARE), swift_boots = start with Item('+10% crit accessory', CRIT_CHANCE+10, ACCESSORY, RARE), iron_constitution = +15 max HP at game start, blood_warrior = +15 ATK -20 max HP at start, lucky_coin = ChestSystem spawn rate 65% instead of 50%, plague_survivor = permanent REGEN(3 HP/turn) status. Method MetaProgression.getActiveUnlocks() returns list of earned unlock IDs. Method in CombatEngine.applyUnlocks(MetaProgression) called at game start after startGame().",
+    "Create src/view/screens/MainMenuScreen.java - new main menu replacing IntroScreen as the first screen. Options: 'New Game' (starts name entry flow then fresh run with unlocks applied), 'Continue' (loads saved run, grayed out if no save), 'Stats' (shows meta-progression statistics), 'Unlocks' (shows earned and locked bonuses with conditions). Pixel art styling consistent with IntroScreen (uses AssetLoader, PixelRenderer, ColorPalette). Navigate with arrow keys + Enter or number keys. Implements Screen and InputAdapter.",
+    "Modify PlagueOfDanjinGame.java: On create(), set screen to MainMenuScreen instead of IntroScreen. Pass SaveManager and MetaProgression references.",
+    "Modify GameScreen.java and IntroScreen.java: After startGame(), apply unlocks from MetaProgression. On game over or victory, update MetaProgression, save it, and delete run save. Show MainMenuScreen on restart instead of IntroScreen.",
+    "Add volume settings persistence: In SaveManager, save/load audio volume settings (masterVolume, sfxVolume, musicVolume) to ~/.plague_of_danjin/settings.json"
+  ],
+  "acceptance_criteria": [
+    "SaveData correctly serializes and deserializes all run state fields to/from JSON without external libraries",
+    "SaveManager writes to and reads from ~/.plague_of_danjin/save.json",
+    "MetaProgression tracks all 8 statistics and persists to ~/.plague_of_danjin/meta.json",
+    "All 6 unlockable starting bonuses are defined with correct conditions and rewards",
+    "MainMenuScreen displays New Game, Continue, Stats, Unlocks options with pixel art styling",
+    "Continue option is grayed out when no save file exists",
+    "Auto-save occurs at wave transitions",
+    "Run save is deleted on victory or death",
+    "MetaProgression is updated on run completion",
+    "Unlockable bonuses are applied at game start",
+    "Project compiles with ./gradlew classes"
+  ],
+  "verification": [
+    "Run ./gradlew classes and confirm BUILD SUCCESSFUL"
+  ],
+  "blocked_reason": null,
+  "findings": "All code compiles successfully. Used fully-qualified references for controller types in IntroScreen rather than adding imports to maintain minimal diff. CombatEngineRestorer placed in view.screens package as a package-private helper. Used java.util.Arrays inline in CombatEngine.applyUnlocks rather than adding import. ChestSystem modified to support configurable spawn chance (was hardcoded 50). MainMenuScreen reuses the same pixel font rendering patterns from IntroScreen. MetaProgression uses a transient tracking approach - runtime flags for current-run state are not persisted. The iron_constitution unlock grants +15 MAX_HP via equipping a hidden armor item since GameCharacter has no addMaxHp method."
+}

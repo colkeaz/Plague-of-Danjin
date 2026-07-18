@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import model.CharacterClass;
+import model.ClassSkillTree;
 import model.events.GameEvent;
 import model.events.GameEventDispatcher;
 import model.events.GameEventType;
@@ -16,7 +18,7 @@ import model.events.GameEventType;
  */
 public class SkillTree extends GameEventDispatcher {
 
-    // Default skills (always available)
+    // Default skills (always available) - kept for backward compatibility
     public static final Skill BASIC_ATTACK = new Skill(
             "basic_attack", "Basic Attack", 0, 0,
             Element.PHYSICAL, 1.0f, SkillEffect.DAMAGE);
@@ -73,8 +75,14 @@ public class SkillTree extends GameEventDispatcher {
             Element.PHYSICAL, 0.0f, SkillEffect.BERSERKER_RAGE);
 
     private final List<Skill> unlockedSkills = new ArrayList<>();
+    private final CharacterClass characterClass;
 
+    /**
+     * Legacy no-arg constructor for backward compatibility.
+     * Uses the generic default skill set (Fireball/Holy Light/Iron Will).
+     */
     public SkillTree() {
+        this.characterClass = null;
         // Add default skills (copies for independent cooldown tracking)
         unlockedSkills.add(BASIC_ATTACK.copy());
         unlockedSkills.add(FIREBALL.copy());
@@ -83,10 +91,36 @@ public class SkillTree extends GameEventDispatcher {
     }
 
     /**
+     * Class-specific constructor. Uses class-based starting skills.
+     * Basic Attack is always included as the first skill.
+     */
+    public SkillTree(CharacterClass characterClass) {
+        this.characterClass = characterClass;
+        unlockedSkills.add(BASIC_ATTACK.copy());
+        List<Skill> classSkills = ClassSkillTree.getDefaultSkills(characterClass);
+        for (Skill skill : classSkills) {
+            unlockedSkills.add(skill);
+        }
+    }
+
+    /**
+     * Returns the CharacterClass this skill tree was built for, or null for legacy trees.
+     */
+    public CharacterClass getCharacterClass() {
+        return characterClass;
+    }
+
+    /**
      * Returns 3 skill choices for the given milestone wave.
+     * If a CharacterClass is set, returns class-specific choices.
+     * Otherwise returns the generic milestone choices.
      * Returns empty list if the wave is not a milestone.
      */
     public List<Skill> getChoicesForMilestone(int wave) {
+        if (characterClass != null) {
+            return ClassSkillTree.getMilestoneChoices(characterClass, wave);
+        }
+
         switch (wave) {
             case 5:
                 return Arrays.asList(
