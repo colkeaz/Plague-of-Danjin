@@ -105,26 +105,26 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "Plague of Danjin ${{ github.ref_name }}"
-         body: |
-          ## Plague of Danjin ${{ github.ref_name }}
-
-          This will be the latest release of the new and improved Plague of Danjin, from a terminal-based dungeon crawler terminal game to a fully functional game where it has dedicated ui and actual app, if there were problems or bugs encountered, feel free to message any of my social accounts found in my profile.
-          
-          Thank you and have fun!
-
-          ### Download
-          Choose the version for your operating system:
-          - **Windows**: `PlagueOfDanjin-windows.zip`
-          - **macOS**: `PlagueOfDanjin-macos.zip`
-          - **Linux**: `PlagueOfDanjin-linux.zip`
-
-          ### How to Play
-          1. Download the ZIP for your platform
-          2. Extract the archive
-          3. Run `PlagueOfDanjin` (or `PlagueOfDanjin.exe` on Windows)
-
-          No Java installation required — the runtime is bundled.
-          files: |
-            artifacts/PlagueOfDanjin-windows/PlagueOfDanjin-windows.zip
-            artifacts/PlagueOfDanjin-macos/PlagueOfDanjin-macos.zip
-            artifacts/PlagueOfDanjin-linux/PlagueOfDanjin-linux.zip
+          body: |
+            ## Plague of Danjin ${{ github.ref_name }}
+  
+            This will be the latest release of the new and improved Plague of Danjin, from a terminal-based dungeon crawler terminal game to a fully functional game where it has dedicated ui and actual app, if there were problems or bugs encountered, feel free to message any of my social accounts found in my profile.
+            
+            Thank you and have fun!
+  
+            ### Download
+            Choose the version for your operating system:
+            - **Windows**: `PlagueOfDanjin-windows.zip`
+            - **macOS**: `PlagueOfDanjin-macos.zip`
+            - **Linux**: `PlagueOfDanjin-linux.zip`
+  
+            ### How to Play
+            1. Download the ZIP for your platform
+            2. Extract the archive
+            3. Run `PlagueOfDanjin` (or `PlagueOfDanjin.exe` on Windows)
+  
+            No Java installation required — the runtime is bundled.
+            files: |
+              artifacts/PlagueOfDanjin-windows/PlagueOfDanjin-windows.zip
+              artifacts/PlagueOfDanjin-macos/PlagueOfDanjin-macos.zip
+              artifacts/PlagueOfDanjin-linux/PlagueOfDanjin-linux.zip
